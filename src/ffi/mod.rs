@@ -9,28 +9,31 @@ mod bindgen_test {
     #[test]
     fn ffi_call() {
         let mut cif: bg::ffi_cif = Default::default();
-        let mut rc: bg::ffi_arg  = Default::default();
+        let mut rc: i64 = 0;
         let mut args: Vec<*mut bg::ffi_type> =
-            unsafe {
-                vec![&mut bg::ffi_type_sint64]
-            };
-        let mut values: Vec<i64> = vec![5, 7];
+            vec![ unsafe {&mut bg::ffi_type_sint64}
+                , unsafe {&mut bg::ffi_type_sint64} ];
+        let mut values: Vec<*mut i64> =
+            vec![ &mut 5i64 as *mut i64
+                , &mut 7i64 as *mut i64 ];
 
         unsafe {
             bg::ffi_prep_cif(&mut cif,
                              bg::FFI_DEFAULT_ABI,
-                             1,
+                             2,
                              &mut bg::ffi_type_sint64,
                              args.as_mut_ptr());
 
             bg::ffi_call(&mut cif,
-                         Some(mem::transmute(add_it)),
+                         mem::transmute(add_it as usize),
                          mem::transmute(&mut rc),
                          mem::transmute(values.as_mut_ptr()));
         }
+
+        assert_eq!(12, rc);
     }
 
-    extern "C" fn add_it(n: i64) -> i64 {
-        n + 1
+    extern "C" fn add_it(n: i64, m: i64) -> i64 {
+        return n + m;
     }
 }
