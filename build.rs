@@ -4,6 +4,9 @@ extern crate pkg_config;
 
 const C_IN:   &'static str = "src/c/include_ffi.h";
 const RS_OUT: &'static str = "src/ffi/bindgen.rs";
+
+// This shouldn't be necessary, but it's required on my system when using
+// sh -c as a command parser.
 const DYLD_LIBRARY_PATH
             : &'static str = "/Library/Developer/CommandLineTools/usr/lib";
 
