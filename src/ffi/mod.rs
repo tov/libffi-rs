@@ -107,12 +107,13 @@ mod bindgen_test {
     #[test]
     fn ffi_call() {
         let cif = Cif::new(&[Type::SInt64, Type::SInt64], Type::SInt64);
-
-        let rc = unsafe {
-            cif.call(add_it as usize, &[arg(&5i64), arg(&7i64)])
+        let f   = |m: i64, n: i64| -> i64 {
+            unsafe { cif.call(add_it as usize, &[arg(&m), arg(&n)]) }
         };
 
-        assert_eq!(12, rc);
+        assert_eq!(12, f(5, 7));
+        assert_eq!(13, f(6, 7));
+        assert_eq!(15, f(8, 7));
     }
 
     extern "C" fn add_it(n: i64, m: i64) -> i64 {
