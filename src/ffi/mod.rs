@@ -1,6 +1,8 @@
 #[allow(non_camel_case_types)]
 pub mod bindgen;
 
+use std::mem;
+
 #[derive(Debug)]
 pub struct Cif(bindgen::ffi_cif);
 
@@ -54,7 +56,7 @@ impl Type {
 }
 
 pub fn arg<T>(r: &T) -> Arg {
-    Arg(unsafe { ::std::mem::transmute(r as *const T) })
+    Arg(unsafe { mem::transmute(r as *const T) })
 }
 
 impl Cif {
@@ -97,6 +99,39 @@ impl Cif {
             mem::transmute(values.as_ptr()));
 
         return result;
+    }
+}
+
+pub struct Closure {
+    alloc: *mut ::std::os::raw::c_void,
+    code:  *mut ::std::os::raw::c_void,
+}
+
+impl Drop for Closure {
+    fn drop(&mut self) {
+        unsafe {
+            bindgen::ffi_closure_free(self.alloc);
+        }
+    }
+}
+
+impl Closure {
+    pub fn new() -> Self {
+        let mut code: *mut ::std::os::raw::c_void =
+            unsafe { mem::zeroed() };
+
+        let alloc = unsafe {
+            bindgen::ffi_closure_alloc(
+                mem::size_of::<bindgen::ffi_closure>(),
+                &mut code)
+        };
+
+        assert!(alloc as usize != 0);
+
+        Closure {
+            alloc: alloc,
+            code:  code,
+        }
     }
 }
 
