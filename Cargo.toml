@@ -4,5 +4,8 @@ version = "0.1.0"
 authors = ["Jesse A. Tov <jesse.tov@gmail.com>"]
 build = "build.rs"
 
+[dependencies]
+libc = "0.2.11"
+
 [build-dependencies]
 pkg-config = "0.3.7"

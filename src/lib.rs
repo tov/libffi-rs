@@ -1,3 +1,7 @@
+
+extern crate core;
+extern crate libc;
+
 pub mod ffi;
 pub mod low;
 
@@ -105,7 +109,7 @@ impl Cif {
 
 pub struct Closure {
     alloc: *mut ::std::os::raw::c_void,
-    code:  *mut ::std::os::raw::c_void,
+    _code:  *mut ::std::os::raw::c_void,
 }
 
 impl Drop for Closure {
@@ -131,7 +135,7 @@ impl Closure {
 
         Closure {
             alloc: alloc,
-            code:  code,
+            _code:  code,
         }
     }
 }
