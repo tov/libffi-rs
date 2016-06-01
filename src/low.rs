@@ -28,24 +28,28 @@ pub struct FfiTypeArray(FfiTypeArray_);
 
 /// Creates a null-terminated array of FfiType_. Takes ownership of
 /// the elements.
-unsafe fn ffi_type_array_create(elements: &[FfiType_]) -> FfiTypeArray_ {
+unsafe fn ffi_type_array_create(elements: Vec<FfiType>) -> FfiTypeArray_ {
     let size = elements.len();
     let array = libc::malloc((size+1) * mem::size_of::<FfiType_>())
                     as FfiTypeArray_;
 
     for i in 0 .. size {
-        *array.offset(i as isize) = elements[i];
+        *array.offset(i as isize) = elements[i].0;
     }
     *array.offset(size as isize) = ptr::null::<bindgen::ffi_type>() as FfiType_;
 
-    println!("ffi_type_array_create({:?}) = {:?}", elements, array);
+    for t in elements {
+        mem::forget(t);
+    }
+
+    println!("ffi_type_array_create(...) = {:?}", array);
 
     array
 }
 
 /// Creates a struct ffi_type with the given elements. Takes ownership
 /// of the elements.
-unsafe fn ffi_type_struct_create(elements: &[FfiType_]) -> FfiType_ {
+unsafe fn ffi_type_struct_create(elements: Vec<FfiType>) -> FfiType_ {
     println!("ffi_type_array_create({:?})", elements);
     let array    = ffi_type_array_create(elements);
     let ffi_type = libc::malloc(mem::size_of::<bindgen::ffi_type>())
@@ -56,7 +60,7 @@ unsafe fn ffi_type_struct_create(elements: &[FfiType_]) -> FfiType_ {
     (*ffi_type).type_     = bindgen::ffi_type_enum::STRUCT as u16;
     (*ffi_type).elements  = array;
 
-    println!("ffi_type_array_create({:?}) = {:?}", elements, ffi_type);
+    println!("ffi_type_array_create(...) = {:?}", ffi_type);
 
     ffi_type
 }
@@ -76,11 +80,7 @@ unsafe fn ffi_type_array_destroy(ffi_types: FfiTypeArray_) {
 /// Destroys an FfiType_ if it was dynamically allocated.
 unsafe fn ffi_type_destroy(ffi_type: FfiType_) {
     println!("ffi_type_destroy({:?})", ffi_type);
-    if ffi_type.is_null() { return }
-
-    let type_ = (*ffi_type).type_;
-
-    if type_ == bindgen::ffi_type_enum::STRUCT as u16 {
+    if (*ffi_type).type_ == bindgen::ffi_type_enum::STRUCT as u16 {
         ffi_type_array_destroy((*ffi_type).elements);
         libc::free(ffi_type as *mut libc::c_void);
     }
@@ -207,9 +207,8 @@ impl FfiType {
 
     pub fn structure(fields: Vec<FfiType>) -> Self {
         println!("FfiType::structure({:?})", fields);
-        let fields: Vec<FfiType_> = fields.into_iter().map(|t| t.0).collect();
         unsafe {
-            FfiType(ffi_type_struct_create(fields.as_slice()))
+            FfiType(ffi_type_struct_create(fields))
         }
     }
 }
