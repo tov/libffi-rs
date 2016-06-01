@@ -77,6 +77,13 @@ impl Drop for FfiType {
     }
 }
 
+impl Drop for FfiTypeArray {
+    fn drop(&mut self) {
+        unsafe { ffi_type_array_destroy(self.0) }
+    }
+}
+
+
 impl FfiType {
     pub fn void() -> Self {
         FfiType(unsafe { &mut bindgen::ffi_type_void })
