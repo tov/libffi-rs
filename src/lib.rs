@@ -1,13 +1,13 @@
 extern crate libc;
 
-pub mod ffi;
+pub mod bindgen;
 pub mod ffi_type;
 
-use ffi::bindgen;
+use bindgen::libffi as bg;
 use std::mem;
 
 #[derive(Debug)]
-pub struct Cif(bindgen::ffi_cif);
+pub struct Cif(bg::ffi_cif);
 
 #[derive(Debug)]
 pub struct Arg(*mut ::std::os::raw::c_void);
@@ -33,26 +33,26 @@ pub enum Type {
 }
 
 impl Type {
-    fn as_ffi_type(self) -> *mut bindgen::ffi_type {
+    fn as_ffi_type(self) -> *mut bg::ffi_type {
         use Type::*;
         unsafe {
             match self {
-                Void => &mut bindgen::ffi_type_void,
-                UInt8 => &mut bindgen::ffi_type_uint8,
-                SInt8 => &mut bindgen::ffi_type_sint8,
-                UInt16 => &mut bindgen::ffi_type_uint16,
-                SInt16 => &mut bindgen::ffi_type_sint16,
-                UInt32 => &mut bindgen::ffi_type_uint32,
-                SInt32 => &mut bindgen::ffi_type_sint32,
-                UInt64 => &mut bindgen::ffi_type_uint64,
-                SInt64 => &mut bindgen::ffi_type_sint64,
-                Float => &mut bindgen::ffi_type_float,
-                Double => &mut bindgen::ffi_type_double,
-                Pointer => &mut bindgen::ffi_type_pointer,
-                LongDouble => &mut bindgen::ffi_type_longdouble,
-                ComplexFloat => &mut bindgen::ffi_type_complex_float,
-                ComplexDouble => &mut bindgen::ffi_type_complex_double,
-                ComplexLongDouble => &mut bindgen::ffi_type_complex_double,
+                Void => &mut bg::ffi_type_void,
+                UInt8 => &mut bg::ffi_type_uint8,
+                SInt8 => &mut bg::ffi_type_sint8,
+                UInt16 => &mut bg::ffi_type_uint16,
+                SInt16 => &mut bg::ffi_type_sint16,
+                UInt32 => &mut bg::ffi_type_uint32,
+                SInt32 => &mut bg::ffi_type_sint32,
+                UInt64 => &mut bg::ffi_type_uint64,
+                SInt64 => &mut bg::ffi_type_sint64,
+                Float => &mut bg::ffi_type_float,
+                Double => &mut bg::ffi_type_double,
+                Pointer => &mut bg::ffi_type_pointer,
+                LongDouble => &mut bg::ffi_type_longdouble,
+                ComplexFloat => &mut bg::ffi_type_complex_float,
+                ComplexDouble => &mut bg::ffi_type_complex_double,
+                ComplexLongDouble => &mut bg::ffi_type_complex_double,
             }
         }
     }
@@ -64,24 +64,24 @@ pub fn arg<T>(r: &T) -> Arg {
 
 impl Cif {
     pub fn new(args: &[Type], result: Type) -> Self {
-        let mut cif: bindgen::ffi_cif = Default::default();
+        let mut cif: bg::ffi_cif = Default::default();
         let mut real_args: Vec<_> =
             args.iter().map(|t| t.as_ffi_type()).collect();
 
         let result = unsafe {
-            bindgen::ffi_prep_cif(&mut cif,
-                                  bindgen::FFI_DEFAULT_ABI,
+            bg::ffi_prep_cif(&mut cif,
+                                  bg::FFI_DEFAULT_ABI,
                                   args.len() as u32,
                                   result.as_ffi_type(),
                                   real_args.as_mut_ptr())
         };
 
         match result {
-            bindgen::ffi_status::FFI_OK
+            bg::ffi_status::FFI_OK
                 => (),
-            bindgen::ffi_status::FFI_BAD_TYPEDEF
+            bg::ffi_status::FFI_BAD_TYPEDEF
                 => panic!("FFI_BAD_TYPEDEF"),
-            bindgen::ffi_status::FFI_BAD_ABI
+            bg::ffi_status::FFI_BAD_ABI
                 => panic!("FFI_BAD_ABI"),
         }
 
@@ -95,7 +95,7 @@ impl Cif {
 
         let mut result: R = mem::zeroed();
 
-        bindgen::ffi_call(
+        bg::ffi_call(
             mem::transmute(&self.0),
             mem::transmute(f),
             mem::transmute(&mut result),
@@ -113,7 +113,7 @@ pub struct Closure {
 impl Drop for Closure {
     fn drop(&mut self) {
         unsafe {
-            bindgen::ffi_closure_free(self.alloc);
+            bg::ffi_closure_free(self.alloc);
         }
     }
 }
@@ -124,8 +124,8 @@ impl Closure {
             unsafe { mem::zeroed() };
 
         let alloc = unsafe {
-            bindgen::ffi_closure_alloc(
-                mem::size_of::<bindgen::ffi_closure>(),
+            bg::ffi_closure_alloc(
+                mem::size_of::<bg::ffi_closure>(),
                 &mut code)
         };
 
@@ -139,7 +139,7 @@ impl Closure {
 }
 
 #[cfg(test)]
-mod bindgen_test {
+mod test {
     use super::*;
 
     #[test]
