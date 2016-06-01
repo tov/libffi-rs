@@ -3,7 +3,7 @@ extern crate core;
 extern crate libc;
 
 pub mod ffi;
-pub mod low;
+pub mod ffi_type;
 
 use ffi::bindgen;
 use std::mem;
