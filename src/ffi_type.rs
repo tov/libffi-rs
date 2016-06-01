@@ -148,6 +148,10 @@ impl FfiType {
             FfiType(ffi_type_struct_create(fields))
         }
     }
+
+    pub unsafe fn as_raw_ptr(&self) -> *mut bindgen::ffi_type {
+        self.0
+    }
 }
 
 impl FfiTypeArray {
@@ -155,6 +159,10 @@ impl FfiTypeArray {
         unsafe {
             FfiTypeArray(ffi_type_array_create(types))
         }
+    }
+
+    pub unsafe fn as_raw_ptr(&self) -> *mut *mut bindgen::ffi_type {
+        self.0
     }
 }
 
