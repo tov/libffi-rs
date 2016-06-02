@@ -4,6 +4,7 @@ hard: test
 build:
 	clear
 	cargo build
+	cargo doc
 
 run:
 	clear

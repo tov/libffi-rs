@@ -1,7 +1,10 @@
 extern crate libc;
 
-pub mod bindgen;
+mod bindgen;
+pub use bindgen::libffi as c;
+
 pub mod ffi_type;
+pub mod low;
 
 use bindgen::libffi as bg;
 use std::mem;
