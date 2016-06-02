@@ -55,38 +55,38 @@ impl Cif {
     }
 }
 
-// pub struct Closure {
-//     alloc: *mut ::std::os::raw::c_void,
-//     _code:  *mut ::std::os::raw::c_void,
-// }
+pub struct Closure {
+    cif:   Cif,
+    alloc: *mut ::low::ffi_closure,
+    code:  extern "C" fn(),
+}
 
-// impl Drop for Closure {
-//     fn drop(&mut self) {
-//         unsafe {
-//             c::ffi_closure_free(self.alloc);
-//         }
-//     }
-// }
+impl Drop for Closure {
+    fn drop(&mut self) {
+        unsafe {
+            low::closure_free(self.alloc);
+        }
+    }
+}
 
-// impl Closure {
-//     pub fn new() -> Self {
-//         let mut code: *mut ::std::os::raw::c_void =
-//             unsafe { mem::zeroed() };
+impl Closure {
+    pub fn new<U>(mut cif: Cif,
+                  fun: low::Callback<U>,
+                  userdata: &mut U) -> Self
+    {
+        let (alloc, code) = low::closure_alloc();
 
-//         let alloc = unsafe {
-//             c::ffi_closure_alloc(
-//                 mem::size_of::<c::ffi_closure>(),
-//                 &mut code)
-//         };
+        unsafe {
+            low::prep_closure_loc(alloc, &mut cif.cif, fun, userdata, code)
+        }.expect("Closure::new");
 
-//         assert!(alloc as usize != 0);
-
-//         Closure {
-//             alloc: alloc,
-//             _code:  code,
-//         }
-//     }
-// }
+        Closure {
+            cif:   cif,
+            alloc: alloc,
+            code:  code,
+        }
+    }
+}
 
 #[cfg(test)]
 mod test {
@@ -98,8 +98,8 @@ mod test {
 
         let args = FfiTypeArray::new(vec![FfiType::sint64(),
                                           FfiType::sint64()]);
-        let cif = Cif::new(args, FfiType::sint64());
-        let f   = |m: i64, n: i64| -> i64 {
+        let cif  = Cif::new(args, FfiType::sint64());
+        let f    = |m: i64, n: i64| -> i64 {
             unsafe { cif.call(add_it as usize, &[arg(&m), arg(&n)]) }
         };
 

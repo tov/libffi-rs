@@ -92,11 +92,13 @@ pub unsafe fn call<R>(cif:  *mut ffi_cif,
 
 /// Allocates a closure, returning a pair of the writable closure
 /// object and the function pointer for calling it.
-pub unsafe fn closure_alloc() -> (*mut ffi_closure, extern "C" fn()) {
-    let mut code_pointer: *mut c_void = mem::uninitialized();
-    let closure = c::ffi_closure_alloc(mem::size_of::<ffi_closure>(),
-                                       &mut code_pointer);
-    (mem::transmute(closure), mem::transmute(code_pointer))
+pub fn closure_alloc() -> (*mut ffi_closure, extern "C" fn()) {
+    unsafe {
+        let mut code_pointer: *mut c_void = mem::uninitialized();
+        let closure = c::ffi_closure_alloc(mem::size_of::<ffi_closure>(),
+                                           &mut code_pointer);
+        (mem::transmute(closure), mem::transmute(code_pointer))
+    }
 }
 
 /// Frees the resources associated with a closure.
@@ -104,22 +106,26 @@ pub unsafe fn closure_free(closure: *mut ffi_closure) {
     c::ffi_closure_free(mem::transmute(closure));
 }
 
-/// The type of function called by a closure.
-pub type Callback = unsafe extern "C" fn(cif:      *mut ffi_cif,
-                                         result:   *mut c_void,
-                                         args:     *mut *mut c_void,
-                                         userdata: *mut c_void);
+/// The type of function called by a closure. `U` is the type of
+/// the user data captured by the closure and passed to the callback.
+pub type Callback<U> = unsafe extern "C" fn(cif:      *mut ffi_cif,
+                                            result:   *mut c_void,
+                                            args:     *mut *mut c_void,
+                                            userdata: &mut U);
 
 /// Prepares a closure to call the given callback function with the
 /// given user data.
-pub unsafe fn prep_closure_loc(closure:  *mut ffi_closure,
-                               cif:      *mut ffi_cif,
-                               fun:      Callback,
-                               userdata: *mut c_void,
-                               code:     extern "C" fn()) -> Result<()>
+pub unsafe fn prep_closure_loc<U>(closure:  *mut ffi_closure,
+                                  cif:      *mut ffi_cif,
+                                  fun:      Callback<U>,
+                                  userdata: &mut U,
+                                  code:     extern "C" fn()) -> Result<()>
 {
-    let status = c::ffi_prep_closure_loc(closure, cif, Some(fun),
-                                         userdata, mem::transmute(code));
+    let status = c::ffi_prep_closure_loc(closure,
+                                         cif,
+                                         Some(mem::transmute(fun)),
+                                         mem::transmute(userdata),
+                                         mem::transmute(code));
     ffi_status_to_result(status, ())
 }
 
