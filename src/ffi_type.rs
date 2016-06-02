@@ -1,15 +1,20 @@
-use super::bindgen::libffi as bg;
 use std::{mem, ptr};
 use libc;
 
-type FfiType_      = *mut bg::ffi_type;
+use c;
+use low;
+
+type FfiType_      = *mut low::ffi_type;
 type FfiTypeArray_ = *mut FfiType_;
 
 #[derive(Debug)]
 pub struct FfiType(FfiType_);
 
 #[derive(Debug)]
-pub struct FfiTypeArray(FfiTypeArray_);
+pub struct FfiTypeArray {
+    ptr: FfiTypeArray_,
+    len: usize,
+}
 
 /// Creates a null-terminated array of FfiType_. Takes ownership of
 /// the elements.
@@ -21,7 +26,7 @@ unsafe fn ffi_type_array_create(elements: Vec<FfiType>) -> FfiTypeArray_ {
     for i in 0 .. size {
         *array.offset(i as isize) = elements[i].0;
     }
-    *array.offset(size as isize) = ptr::null::<bg::ffi_type>() as FfiType_;
+    *array.offset(size as isize) = ptr::null::<low::ffi_type>() as FfiType_;
 
     for t in elements {
         mem::forget(t);
@@ -37,12 +42,12 @@ unsafe fn ffi_type_array_create(elements: Vec<FfiType>) -> FfiTypeArray_ {
 unsafe fn ffi_type_struct_create(elements: Vec<FfiType>) -> FfiType_ {
     println!("ffi_type_array_create({:?})", elements);
     let array    = ffi_type_array_create(elements);
-    let ffi_type = libc::malloc(mem::size_of::<bg::ffi_type>())
+    let ffi_type = libc::malloc(mem::size_of::<low::ffi_type>())
                        as FfiType_;
 
     (*ffi_type).size      = 0;
     (*ffi_type).alignment = 0;
-    (*ffi_type).type_     = bg::ffi_type_enum::STRUCT as u16;
+    (*ffi_type).type_     = c::ffi_type_enum::STRUCT as u16;
     (*ffi_type).elements  = array;
 
     println!("ffi_type_array_create(...) = {:?}", ffi_type);
@@ -65,7 +70,7 @@ unsafe fn ffi_type_array_destroy(ffi_types: FfiTypeArray_) {
 /// Destroys an FfiType_ if it was dynamically allocated.
 unsafe fn ffi_type_destroy(ffi_type: FfiType_) {
     println!("ffi_type_destroy({:?})", ffi_type);
-    if (*ffi_type).type_ == bg::ffi_type_enum::STRUCT as u16 {
+    if (*ffi_type).type_ == c::ffi_type_enum::STRUCT as u16 {
         ffi_type_array_destroy((*ffi_type).elements);
         libc::free(ffi_type as *mut libc::c_void);
     }
@@ -79,74 +84,74 @@ impl Drop for FfiType {
 
 impl Drop for FfiTypeArray {
     fn drop(&mut self) {
-        unsafe { ffi_type_array_destroy(self.0) }
+        unsafe { ffi_type_array_destroy(self.ptr) }
     }
 }
 
 
 impl FfiType {
     pub fn void() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_void })
+        FfiType(unsafe { &mut low::ffi_type_void })
     }
 
     pub fn uint8() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_uint8 })
+        FfiType(unsafe { &mut low::ffi_type_uint8 })
     }
 
     pub fn sint8() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_sint8 })
+        FfiType(unsafe { &mut low::ffi_type_sint8 })
     }
 
     pub fn uint16() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_uint16 })
+        FfiType(unsafe { &mut low::ffi_type_uint16 })
     }
 
     pub fn sint16() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_sint16 })
+        FfiType(unsafe { &mut low::ffi_type_sint16 })
     }
 
     pub fn uint32() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_uint32 })
+        FfiType(unsafe { &mut low::ffi_type_uint32 })
     }
 
     pub fn sint32() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_sint32 })
+        FfiType(unsafe { &mut low::ffi_type_sint32 })
     }
 
     pub fn uint64() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_uint64 })
+        FfiType(unsafe { &mut low::ffi_type_uint64 })
     }
 
     pub fn sint64() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_sint64 })
+        FfiType(unsafe { &mut low::ffi_type_sint64 })
     }
 
     pub fn float() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_float })
+        FfiType(unsafe { &mut low::ffi_type_float })
     }
 
     pub fn double() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_double })
+        FfiType(unsafe { &mut low::ffi_type_double })
     }
 
     pub fn pointer() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_pointer })
+        FfiType(unsafe { &mut low::ffi_type_pointer })
     }
 
     pub fn longdouble() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_longdouble })
+        FfiType(unsafe { &mut low::ffi_type_longdouble })
     }
 
     pub fn complex_float() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_complex_float })
+        FfiType(unsafe { &mut low::ffi_type_complex_float })
     }
 
     pub fn complex_double() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_complex_double })
+        FfiType(unsafe { &mut low::ffi_type_complex_double })
     }
 
     pub fn complex_longdouble() -> Self {
-        FfiType(unsafe { &mut bg::ffi_type_complex_longdouble })
+        FfiType(unsafe { &mut low::ffi_type_complex_longdouble })
     }
 
     pub fn structure(fields: Vec<FfiType>) -> Self {
@@ -156,20 +161,28 @@ impl FfiType {
         }
     }
 
-    pub unsafe fn as_raw_ptr(&self) -> *mut bg::ffi_type {
+    pub fn as_raw_ptr(&self) -> *mut low::ffi_type {
         self.0
     }
 }
 
 impl FfiTypeArray {
     pub fn new(types: Vec<FfiType>) -> Self {
+        let len = types.len();
         unsafe {
-            FfiTypeArray(ffi_type_array_create(types))
+            FfiTypeArray {
+                ptr: ffi_type_array_create(types),
+                len: len,
+            }
         }
     }
 
-    pub unsafe fn as_raw_ptr(&self) -> *mut *mut bg::ffi_type {
-        self.0
+    pub fn len(&self) -> usize {
+        self.len
+    }
+
+    pub fn as_raw_ptr(&self) -> *mut *mut low::ffi_type {
+        self.ptr
     }
 }
 
