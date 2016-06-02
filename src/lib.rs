@@ -44,21 +44,15 @@ impl Cif {
         }
     }
 
-//     pub unsafe fn call<R>(&self, f: usize, values: &[Arg]) -> R {
-//         use std::mem;
+    pub unsafe fn call<R>(&self, f: usize, values: &[Arg]) -> R {
+        use std::mem;
 
-//         assert!(self.0.nargs as usize == values.len());
+        assert!(self.cif.nargs as usize == values.len());
 
-//         let mut result: R = mem::zeroed();
-
-//         c::ffi_call(
-//             mem::transmute(&self.0),
-//             mem::transmute(f),
-//             mem::transmute(&mut result),
-//             mem::transmute(values.as_ptr()));
-
-//         return result;
-//     }
+        low::call::<R>(mem::transmute(&self.cif),
+                       mem::transmute(f),
+                       mem::transmute(values.as_ptr()))
+    }
 }
 
 // pub struct Closure {
@@ -94,23 +88,27 @@ impl Cif {
 //     }
 // }
 
-// #[cfg(test)]
-// mod test {
-//     use super::*;
+#[cfg(test)]
+mod test {
+    use super::*;
 
-//     #[test]
-//     fn ffi_call() {
-//         let cif = Cif::new(&[Type::SInt64, Type::SInt64], Type::SInt64);
-//         let f   = |m: i64, n: i64| -> i64 {
-//             unsafe { cif.call(add_it as usize, &[arg(&m), arg(&n)]) }
-//         };
+    #[test]
+    fn ffi_call() {
+        use ffi_type::*;
 
-//         assert_eq!(12, f(5, 7));
-//         assert_eq!(13, f(6, 7));
-//         assert_eq!(15, f(8, 7));
-//     }
+        let args = FfiTypeArray::new(vec![FfiType::sint64(),
+                                          FfiType::sint64()]);
+        let cif = Cif::new(args, FfiType::sint64());
+        let f   = |m: i64, n: i64| -> i64 {
+            unsafe { cif.call(add_it as usize, &[arg(&m), arg(&n)]) }
+        };
 
-//     extern "C" fn add_it(n: i64, m: i64) -> i64 {
-//         return n + m;
-//     }
-// }
+        assert_eq!(12, f(5, 7));
+        assert_eq!(13, f(6, 7));
+        assert_eq!(15, f(8, 7));
+    }
+
+    extern "C" fn add_it(n: i64, m: i64) -> i64 {
+        return n + m;
+    }
+}
