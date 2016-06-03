@@ -51,13 +51,11 @@ unsafe fn ffi_type_array_create(elements: Vec<FfiType>)
         mem::forget(t);
     }
 
-    println!("ffi_type_array_create(...) = {:?}", new);
-
     new
 }
 
 /// Creates a struct type from a raw array of element types.
-unsafe fn ffi_type_struct_create_raw(elements: FfiTypeArray_)
+unsafe fn ffi_type_struct_create_raw(elements: Owned<FfiTypeArray_>)
     -> Owned<FfiType_>
 {
     let new = libc::malloc(mem::size_of::<low::ffi_type>()) as FfiType_;
@@ -68,15 +66,12 @@ unsafe fn ffi_type_struct_create_raw(elements: FfiTypeArray_)
     (*new).type_     = c::ffi_type_enum::STRUCT as ::libc::c_ushort;
     (*new).elements  = elements;
 
-    println!("ffi_type_struct_create_raw({:?}) = {:?}", elements, new);
-
     new
 }
 
 /// Creates a struct ffi_type with the given elements. Takes ownership
 /// of the elements.
 unsafe fn ffi_type_struct_create(elements: Vec<FfiType>) -> Owned<FfiType_> {
-    println!("ffi_type_array_create({:?})", elements);
     ffi_type_struct_create_raw(ffi_type_array_create(elements))
 }
 
@@ -103,7 +98,6 @@ unsafe fn ffi_type_clone(old: FfiType_) -> Owned<FfiType_> {
 
 /// Destroys an array of FfiType_ and all of its elements.
 unsafe fn ffi_type_array_destroy(victim: Owned<FfiTypeArray_>) {
-    println!("ffi_type_array_destroy({:?})", victim);
     let mut current = victim;
     while !(*current).is_null() {
         ffi_type_destroy(*current);
@@ -115,7 +109,6 @@ unsafe fn ffi_type_array_destroy(victim: Owned<FfiTypeArray_>) {
 
 /// Destroys an FfiType_ if it was dynamically allocated.
 unsafe fn ffi_type_destroy(victim: Owned<FfiType_>) {
-    println!("ffi_type_destroy({:?})", victim);
     if (*victim).type_ == c::ffi_type_enum::STRUCT as u16 {
         ffi_type_array_destroy((*victim).elements);
         libc::free(victim as *mut libc::c_void);
@@ -212,9 +205,14 @@ impl FfiType {
     }
 
     pub fn structure(fields: Vec<FfiType>) -> Self {
-        println!("FfiType::structure({:?})", fields);
         unsafe {
             FfiType(ffi_type_struct_create(fields))
+        }
+    }
+
+    pub fn structure_from_array(fields: FfiTypeArray) -> Self {
+        unsafe {
+            FfiType(ffi_type_struct_create_raw(fields.0))
         }
     }
 

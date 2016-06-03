@@ -26,7 +26,11 @@ pub fn arg<T>(r: &T) -> Arg {
 }
 
 impl Cif {
-    pub fn new(args: FfiTypeArray, result: FfiType) -> Self {
+    pub fn new(args: Vec<FfiType>, result: FfiType) -> Self {
+        Self::from_type_array(FfiTypeArray::new(args), result)
+    }
+
+    pub fn from_type_array(args: FfiTypeArray, result: FfiType) -> Self {
         let mut cif: c::ffi_cif = Default::default();
 
         unsafe {
@@ -113,8 +117,8 @@ mod test {
     fn call() {
         use ffi_type::*;
 
-        let args = FfiTypeArray::new(vec![FfiType::sint64(),
-                                          FfiType::sint64()]);
+        let args = vec![FfiType::sint64(),
+                        FfiType::sint64()];
         let cif  = Cif::new(args, FfiType::sint64());
         let f    = |m: i64, n: i64| -> i64 {
             unsafe { cif.call(add_it as usize, &[arg(&m), arg(&n)]) }
@@ -132,8 +136,7 @@ mod test {
     #[test]
     fn closure() {
         use ffi_type::*;
-        let args = FfiTypeArray::new(vec![FfiType::sint64()]);
-        let cif  = Cif::new(args, FfiType::sint64());
+        let cif  = Cif::new(vec![FfiType::uint64()], FfiType::uint64());
         let mut env: u64 = 5;
 
         unsafe {
