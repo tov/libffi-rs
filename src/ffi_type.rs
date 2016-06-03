@@ -75,7 +75,19 @@ unsafe fn ffi_type_array_clone(ffi_types: FfiTypeArray_) -> FfiTypeArray_ {
 }
 
 unsafe fn ffi_type_clone(ffi_type: FfiType_) -> FfiType_ {
-    unimplemented!();
+    if (*ffi_type).type_ == c::ffi_type_enum::STRUCT as u16 {
+        let elements = ffi_type_array_clone((*ffi_type).elements);
+        let new = libc::malloc(mem::size_of::<low::ffi_type>()) as FfiType_;
+
+        (*new).size      = 0;
+        (*new).alignment = 0;
+        (*new).type_     = c::ffi_type_enum::STRUCT as u16;
+        (*new).elements  = elements;
+
+        new
+    } else {
+        ffi_type
+    }
 }
 
 /// Destroys an array of FfiType_ and all of its elements.
