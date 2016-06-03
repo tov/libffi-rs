@@ -55,10 +55,14 @@ impl Cif {
                        mem::transmute(f),
                        mem::transmute(values.as_ptr()))
     }
+
+    pub fn as_raw_ptr(&self) -> *mut c::ffi_cif {
+        unsafe { mem::transmute(&self.cif) }
+    }
 }
 
 pub struct Closure {
-    _cif:  Cif,
+    _cif:  Box<Cif>,
     alloc: *mut ::low::ffi_closure,
     code:  extern "C" fn(),
 }
@@ -71,16 +75,31 @@ impl Drop for Closure {
     }
 }
 
+pub fn new_closure(cif: *mut low::ffi_cif,
+                   callback: low::Callback,
+                   userdata: *mut c_void)
+    -> (*mut low::ffi_closure, extern "C" fn())
+{
+    let (closure, fun) = low::closure_alloc();
+
+    unsafe {
+        low::prep_closure_loc(closure,
+                              cif,
+                              mem::transmute(callback as usize),
+                              userdata,
+                              fun).unwrap();
+    }
+
+    (closure, fun)
+}
+
 impl Closure {
-    pub fn new(mut cif: Cif,
-               fun: low::Callback,
+    pub fn new(cif:  Cif,
+               callback: low::Callback,
                userdata: *mut c_void) -> Self
     {
-        let (alloc, code) = low::closure_alloc();
-
-        unsafe {
-            low::prep_closure_loc(alloc, &mut cif.cif, fun, userdata, code)
-        }.expect("Closure::new");
+        let mut cif = Box::new(cif);
+        let (alloc, code) = new_closure(cif.as_raw_ptr(), callback, userdata);
 
         Closure {
             _cif:  cif,
@@ -98,7 +117,6 @@ impl Closure {
 mod test {
     use super::*;
     use std::mem;
-    use std::os::raw::c_void;
 
     #[test]
     fn call() {
@@ -123,29 +141,27 @@ mod test {
     #[test]
     fn closure() {
         use ffi_type::*;
-
-        let args    = FfiTypeArray::new(vec![FfiType::uint64()]);
-        let cif     = Cif::new(args, FfiType::uint64());
-        let mut six = 6;
+        let args = FfiTypeArray::new(vec![FfiType::sint64()]);
+        let cif  = Cif::new(args, FfiType::sint64());
+        let mut env: u64 = 5;
 
         unsafe {
-            let psix: *mut c_void = mem::transmute(&mut six);
-            let closure           = Closure::new(cif, callback, psix);
+            let closure = Closure::new(cif.clone(),
+                                       mem::transmute(callback as usize),
+                                       mem::transmute(&mut env));
             let fun: unsafe extern "C" fn(u64) -> u64
-                                  = mem::transmute(closure.code_ptr());
+                = mem::transmute(closure.code_ptr());
 
-            // assert_eq!(11, fun(5));
+            assert_eq!(11, fun(6));
+            assert_eq!(12, fun(7));
         }
     }
 
     unsafe extern "C" fn callback(_cif: *mut low::ffi_cif,
-                                  result: *mut c_void,
-                                  args: *mut *mut c_void,
-                                  userdata: *mut c_void)
+                                  result: &mut u64,
+                                  args: *const &u64,
+                                  userdata: &u64)
     {
-        let result: *mut u64    = mem::transmute(result);
-        let args: *mut *mut u64 = mem::transmute(args);
-        let userdata: *mut u64  = mem::transmute(userdata);
         *result = **args + *userdata;
     }
 }

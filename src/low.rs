@@ -152,11 +152,10 @@ mod test {
         unsafe {
             let mut cif: ffi_cif = Default::default();
             let mut args: [*mut ffi_type; 1] = [&mut ffi_type_uint64];
-            // let mut fun: unsafe extern "C" fn(u64) -> u64 = mem::uninitialized();
             let mut env: u64 = 5;
 
             prep_cif(&mut cif, c::FFI_DEFAULT_ABI, 1, &mut ffi_type_uint64,
-                     args.as_mut_ptr());
+                     args.as_mut_ptr()).unwrap();
 
             let (closure, fun_) = closure_alloc();
             let fun: unsafe extern "C" fn(u64) -> u64 = mem::transmute(fun_);
@@ -165,7 +164,7 @@ mod test {
                              &mut cif,
                              callback,
                              mem::transmute(&mut env),
-                             mem::transmute(fun));
+                             mem::transmute(fun)).unwrap();
 
             assert_eq!(11, fun(6));
             assert_eq!(12, fun(7));
