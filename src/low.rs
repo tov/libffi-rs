@@ -108,19 +108,19 @@ pub unsafe fn closure_free(closure: *mut ffi_closure) {
 
 /// The type of function called by a closure. `U` is the type of
 /// the user data captured by the closure and passed to the callback.
-pub type Callback<U>
-    = unsafe extern "C" fn(cif:      *mut ffi_cif,
-                           result:   *mut c_void,
-                           args:     *mut *mut c_void,
-                           userdata: *mut U);
+pub type Callback<U, R>
+    = unsafe extern "C" fn(cif:      &ffi_cif,
+                           result:   &mut R,
+                           args:     *const *const c_void,
+                           userdata: &U);
 
 /// Prepares a closure to call the given callback function with the
 /// given user data.
-pub unsafe fn prep_closure_loc<U>(closure:  *mut ffi_closure,
-                                  cif:      *mut ffi_cif,
-                                  callback: Callback<U>,
-                                  userdata: *mut U,
-                                  code:     extern "C" fn()) -> Result<()>
+pub unsafe fn prep_closure_loc<U, R>(closure:  *mut ffi_closure,
+                                     cif:      *mut ffi_cif,
+                                     callback: Callback<U, R>,
+                                     userdata: *mut U,
+                                     code:     extern "C" fn()) -> Result<()>
 {
     let status = c::ffi_prep_closure_loc(closure,
                                          cif,
@@ -137,14 +137,12 @@ mod test {
     use std::mem;
     use std::os::raw::c_void;
 
-    unsafe extern "C" fn callback(_cif: *mut ffi_cif,
-                                  result: *mut c_void,
-                                  args: *mut *mut c_void,
-                                  userdata: *mut c_void)
+    unsafe extern "C" fn callback(_cif: &ffi_cif,
+                                  result: &mut u64,
+                                  args: *const *const c_void,
+                                  userdata: &u64)
     {
-        let result:    *mut u64 = mem::transmute(result);
-        let args: *mut *mut u64 = mem::transmute(args);
-        let userdata:  *mut u64 = mem::transmute(userdata);
+        let args: *const &u64 = mem::transmute(args);
         *result = **args + *userdata;
     }
 
