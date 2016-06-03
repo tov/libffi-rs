@@ -19,10 +19,10 @@ pub struct FfiTypeArray(FfiTypeArray_);
 /// Computes the length of a raw `FfiTypeArray_` by searching for the
 /// null terminator.
 unsafe fn ffi_type_array_len(mut array: FfiTypeArray_) -> usize {
-    let mut current = array;
     let mut count   = 0;
-    while !(*current).is_null() {
+    while !(*array).is_null() {
         count += 1;
+        array = array.offset(1);
     }
     count
 }
@@ -31,6 +31,7 @@ unsafe fn ffi_type_array_len(mut array: FfiTypeArray_) -> usize {
 unsafe fn ffi_type_array_create_empty(len: usize) -> Owned<FfiTypeArray_> {
     let array = libc::malloc((len + 1) * mem::size_of::<FfiType_>())
                     as FfiTypeArray_;
+    assert!(!array.is_null());
     *array.offset(len as isize) = ptr::null::<low::ffi_type>() as FfiType_;
     array
 }
@@ -60,6 +61,7 @@ unsafe fn ffi_type_struct_create_raw(elements: FfiTypeArray_)
     -> Owned<FfiType_>
 {
     let new = libc::malloc(mem::size_of::<low::ffi_type>()) as FfiType_;
+    assert!(!new.is_null());
 
     (*new).size      = 0;
     (*new).alignment = 0;
