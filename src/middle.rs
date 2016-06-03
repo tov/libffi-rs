@@ -1,9 +1,14 @@
+//! The main idea is to wrap types `ffi_cif` and `ffi_closure` as `Cif` and
+//! `Closure`, respectively, so that the resources are managed properly.
+//! Calling a function via a CIF or closure is still unsafe.
 pub use types::*;
 
 use low;
 use std::mem;
 use std::os::raw::c_void;
 
+/// A CIF (“Call InterFace”) describing the calling convention and types
+/// for calling a function.
 #[derive(Clone, Debug)]
 pub struct Cif {
     cif:    low::ffi_cif,
@@ -11,18 +16,34 @@ pub struct Cif {
     result: Type,
 }
 
+/// When calling a function via a CIF, each argument must be passed
+/// as a C `void*`. Wrapping the argument in the `Arg` struct
+/// accomplishes the necessary coercion.
 #[derive(Debug)]
 pub struct Arg(*mut c_void);
 
+impl Arg {
+    /// Coerces an argument reference into the `Arg` types.
+    pub fn new<T>(r: &T) -> Self {
+        Arg(unsafe { mem::transmute(r as *const T) })
+    }
+}
+
+/// Coerces an argument reference into the `Arg` types. (This is the same
+/// as [`Arg::new`](struct.Arg.html#method.new)).
 pub fn arg<T>(r: &T) -> Arg {
-    Arg(unsafe { mem::transmute(r as *const T) })
+    Arg::new(r)
 }
 
 impl Cif {
+    /// Creates a new CIF for the given argument and result types,
+    /// using the default calling convention.
     pub fn new(args: Vec<Type>, result: Type) -> Self {
         Self::from_type_array(TypeArray::new(args), result)
     }
 
+    /// Creates a new CIF for the given argument and result types,
+    /// using the default calling convention.
     pub fn from_type_array(args: TypeArray, result: Type) -> Self {
         let mut cif: low::ffi_cif = Default::default();
 
@@ -43,6 +64,7 @@ impl Cif {
         }
     }
 
+    /// Calls function `f` passing it the given arguments.
     pub unsafe fn call<R>(&self, f: usize, values: &[Arg]) -> R {
         use std::mem;
 
@@ -53,11 +75,18 @@ impl Cif {
                        mem::transmute(values.as_ptr()))
     }
 
+    /// Gets a raw pointer to the underlying
+    /// [`ffi_cif`](../low/struct.ffi_cif.html). This can be used
+    /// for passing the CIF to functions from the [`low`](../low/index.html)
+    /// and [`raw`](../raw/index.html) modules.
     pub fn as_raw_ptr(&self) -> *mut low::ffi_cif {
         unsafe { mem::transmute(&self.cif) }
     }
 }
 
+/// Represents a closure, which captures a `void*` (user data) and
+/// passes it to a callback when the code pointer (obtained via
+/// [`code_ptr`](struct.Closure.html#method.code_ptr) is invoked.
 pub struct Closure {
     _cif:  Box<Cif>,
     alloc: *mut ::low::ffi_closure,
@@ -73,6 +102,10 @@ impl Drop for Closure {
 }
 
 impl Closure {
+    /// Creates a new closure. The CIF describes the calling convention
+    /// for the resulting C function. When called, the C function will
+    /// call `callback`, passing along its arguments and the captures
+    /// `userdata`.
     pub fn new<U, R>(cif:  Cif,
                      callback: low::Callback<U, R>,
                      userdata: *mut U) -> Self
@@ -95,6 +128,8 @@ impl Closure {
         }
     }
 
+    /// Obtains the callable code pointer for a closure. The result
+    /// needs to be transmuted to the correct type before it can be called.
     pub fn code_ptr(&self) -> unsafe extern "C" fn() {
         self.code
     }

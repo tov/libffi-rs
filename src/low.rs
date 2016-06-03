@@ -1,19 +1,21 @@
-//! A low-level wrapping of libffi. This layer makes no attempts at safety,
-//! but tries to provide a somewhat more idiomatic interface. It also
-//! re-exports types and constants necessary for using the library.
-
-use raw;
-
 use std::mem;
 use std::os::raw::{c_void, c_uint};
 
-/// The two kinds of errors reported by libffi.
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
-pub enum Error { BadTypedef, BadAbi }
+use raw;
 
-/// A specialized `Result` type for libffi operations.
+/// The two kinds of errors reported by libffi.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Error {
+    /// Given a bad type representation
+    BadTypedef,
+    /// Given a bad or unrecognized ABI
+    BadAbi,
+}
+
+/// The `Result` type specialized for libffi `Error`s.
 pub type Result<T> = ::std::result::Result<T, Error>;
 
+/// Converts the raw status type to a `Result`.
 fn ffi_status_to_result<R>(status: raw::ffi_status, good: R) -> Result<R> {
     use raw::ffi_status::*;
     match status {
@@ -49,11 +51,17 @@ pub use raw::ffi_type_complex_float;
 pub use raw::ffi_type_complex_double;
 pub use raw::ffi_type_complex_longdouble;
 
+/// Type tags used in constructing and inspecting `ffi_type`s. In
+/// particular, the `type_` field contains a value that indicates
+/// what kind of type is represented. These two tags are for the
+/// two kinds of types that we dynamically (de)allocate.
 pub mod type_tag {
     use raw;
     use std::os::raw::c_ushort;
 
+    /// Indicates a structure type
     pub const STRUCT:  c_ushort = raw::ffi_type_enum::STRUCT as c_ushort;
+    /// Indicates a complex number type
     pub const COMPLEX: c_ushort = raw::ffi_type_enum::COMPLEX as c_ushort;
 }
 
@@ -74,7 +82,9 @@ pub unsafe fn prep_cif(cif: *mut ffi_cif,
 }
 
 /// Initalizes a CIF (Call InterFace) for a varargs function with
-/// the given ABI and types.
+/// the given ABI and types. Note that the CIF retains references to
+/// `rtype` and `atypes`, so if they are no longer live when the CIF
+/// is used then the result is undefined.
 pub unsafe fn prep_cif_var(cif: *mut ffi_cif,
                            abi: ffi_abi,
                            nfixedargs: usize,
@@ -89,8 +99,8 @@ pub unsafe fn prep_cif_var(cif: *mut ffi_cif,
     ffi_status_to_result(status, ())
 }
 
-/// Calls a C function using the calling convention and types specified
-/// by the given CIF.
+/// Calls C function `fun` using the calling convention and types
+/// specified by the given CIF, and with the given arguments.
 pub unsafe fn call<R>(cif:  *mut ffi_cif,
                       fun:  extern "C" fn(),
                       args: *mut *mut c_void) -> R
@@ -101,7 +111,8 @@ pub unsafe fn call<R>(cif:  *mut ffi_cif,
 }
 
 /// Allocates a closure, returning a pair of the writable closure
-/// object and the function pointer for calling it.
+/// object and the function pointer for calling it. The latter lives
+/// until the former is freed using `closure_free`.
 pub fn closure_alloc() -> (*mut ffi_closure, extern "C" fn()) {
     unsafe {
         let mut code_pointer: *mut c_void = mem::uninitialized();
@@ -117,7 +128,9 @@ pub unsafe fn closure_free(closure: *mut ffi_closure) {
 }
 
 /// The type of function called by a closure. `U` is the type of
-/// the user data captured by the closure and passed to the callback.
+/// the user data captured by the closure and passed to the callback,
+/// and `R` is the type of the result. The parameters are not typed,
+/// since they are passed as a C array of `void*`.
 pub type Callback<U, R>
     = unsafe extern "C" fn(cif:      &ffi_cif,
                            result:   &mut R,
@@ -125,7 +138,9 @@ pub type Callback<U, R>
                            userdata: &U);
 
 /// Prepares a closure to call the given callback function with the
-/// given user data.
+/// given user data. Note that the closure retains a reference to CIF
+/// `cif`, so it must live as long as the resulting closure does or
+/// the result is undefined.
 pub unsafe fn prep_closure_loc<U, R>(closure:  *mut ffi_closure,
                                      cif:      *mut ffi_cif,
                                      callback: Callback<U, R>,
@@ -156,6 +171,7 @@ mod test {
         *result = **args + *userdata;
     }
 
+    // Tests that we can create and call a closure using this layer.
     #[test]
     fn closure() {
         unsafe {
