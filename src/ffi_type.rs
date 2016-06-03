@@ -132,6 +132,18 @@ impl Drop for FfiTypeArray {
     }
 }
 
+impl Clone for FfiType {
+    fn clone(&self) -> Self {
+        unsafe { FfiType(ffi_type_clone(self.0)) }
+    }
+}
+
+impl Clone for FfiTypeArray {
+    fn clone(&self) -> Self {
+        unsafe { FfiTypeArray(ffi_type_array_clone(self.0)) }
+    }
+}
+
 impl FfiType {
     pub fn void() -> Self {
         FfiType(unsafe { &mut low::ffi_type_void })
