@@ -64,7 +64,9 @@ impl Cif {
         }
     }
 
-    /// Calls function `f` passing it the given arguments.
+    /// Calls function `f` passing it the given arguments. Note that
+    /// the funtion pointer is passed as a `usize`, which tends to be
+    /// more convenient (and the types aren’t checked anyway).
     pub unsafe fn call<R>(&self, f: usize, values: &[Arg]) -> R {
         use std::mem;
 
@@ -108,7 +110,7 @@ impl Closure {
     /// `userdata`.
     pub fn new<U, R>(cif:  Cif,
                      callback: low::Callback<U, R>,
-                     userdata: *mut U) -> Self
+                     userdata: *const U) -> Self
     {
         let cif = Box::new(cif);
         let (alloc, code) = low::closure_alloc();
@@ -165,12 +167,10 @@ mod test {
     fn closure() {
         use types::*;
         let cif  = Cif::new(vec![Type::uint64()], Type::uint64());
-        let mut env: u64 = 5;
+        let env: u64 = 5;
+        let closure = Closure::new(cif, callback, &env);
 
         unsafe {
-            let closure = Closure::new(cif.clone(),
-                                       callback,
-                                       &mut env);
             let fun: unsafe extern "C" fn(u64) -> u64
                 = mem::transmute(closure.code_ptr());
 
@@ -186,5 +186,35 @@ mod test {
     {
         let args: *const &u64 = mem::transmute(args);
         *result = **args + *userdata;
+    }
+
+    #[test]
+    fn rust_lambda() {
+        use types::*;
+        let cif = Cif::new(vec![Type::uint64(), Type::uint64()],
+                           Type::uint64());
+        let env = |x: u64, y: u64| x + y;
+        let closure = Closure::new(cif, callback2, &env);
+
+        unsafe {
+            let fun: unsafe extern "C" fn (u64, u64) -> u64
+                = mem::transmute(closure.code_ptr());
+
+            assert_eq!(11, fun(5, 6));
+        }
+
+    }
+
+    unsafe extern "C" fn callback2<F: Fn(u64, u64) -> u64>
+        (_cif: &low::ffi_cif,
+         result: &mut u64,
+         args: *const *const c_void,
+         userdata: &F)
+    {
+        let args: *const &u64 = mem::transmute(args);
+        let arg1 = **args.offset(0);
+        let arg2 = **args.offset(1);
+
+        *result = userdata(arg1, arg2);
     }
 }

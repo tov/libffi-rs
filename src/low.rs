@@ -144,7 +144,7 @@ pub type Callback<U, R>
 pub unsafe fn prep_closure_loc<U, R>(closure:  *mut ffi_closure,
                                      cif:      *mut ffi_cif,
                                      callback: Callback<U, R>,
-                                     userdata: *mut U,
+                                     userdata: *const U,
                                      code:     extern "C" fn()) -> Result<()>
 {
     let status = raw::ffi_prep_closure_loc(closure,
