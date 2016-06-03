@@ -55,6 +55,14 @@ unsafe fn ffi_type_struct_create(elements: Vec<FfiType>) -> FfiType_ {
     ffi_type
 }
 
+unsafe fn ffi_type_array_clone(ffi_types: FfiTypeArray_) -> FfiTypeArray_ {
+    unimplemented!();
+}
+
+unsafe fn ffn_type_clone(ffi_type: FfiType_) -> FfiType_ {
+    unimplemented!();
+}
+
 /// Destroys an array of FfiType_ and all of its elements.
 unsafe fn ffi_type_array_destroy(ffi_types: FfiTypeArray_) {
     println!("ffi_type_array_destroy({:?})", ffi_types);
