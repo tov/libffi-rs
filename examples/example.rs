@@ -1,6 +1,6 @@
 extern crate libffi;
 
-use libffi::ffi_type::FfiType;
+use libffi::types::FfiType;
 
 fn main() {
     FfiType::structure(vec![

@@ -2,11 +2,11 @@ extern crate libc;
 
 mod bindgen;
 
-pub mod ffi_type;
+pub mod types;
 pub mod low;
 
 pub use bindgen::libffi as c;
-pub use ffi_type::*;
+pub use types::*;
 
 use std::mem;
 use std::os::raw::c_void;
@@ -115,7 +115,7 @@ mod test {
 
     #[test]
     fn call() {
-        use ffi_type::*;
+        use types::*;
 
         let args = vec![FfiType::sint64(),
                         FfiType::sint64()];
@@ -135,7 +135,7 @@ mod test {
 
     #[test]
     fn closure() {
-        use ffi_type::*;
+        use types::*;
         let cif  = Cif::new(vec![FfiType::uint64()], FfiType::uint64());
         let mut env: u64 = 5;
 
