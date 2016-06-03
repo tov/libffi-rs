@@ -95,10 +95,10 @@ mod test {
     #[test]
     fn ffi_call() {
         use ffi_type::*;
+        use FfiType::*;
 
-        let args = FfiTypeArray::new(vec![FfiType::sint64(),
-                                          FfiType::sint64()]);
-        let cif  = Cif::new(args, FfiType::sint64());
+        let args = FfiTypeArray::new(vec![sint64(), sint64()]);
+        let cif  = Cif::new(args, sint64());
         let f    = |m: i64, n: i64| -> i64 {
             unsafe { cif.call(add_it as usize, &[arg(&m), arg(&n)]) }
         };
