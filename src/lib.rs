@@ -76,9 +76,9 @@ impl Drop for Closure {
 }
 
 impl Closure {
-    pub fn new(cif:  Cif,
-               callback: low::Callback,
-               userdata: *mut c_void) -> Self
+    pub fn new<U>(cif:  Cif,
+                  callback: low::Callback<U>,
+                  userdata: *mut U) -> Self
     {
         let cif = Box::new(cif);
         let (alloc, code) = low::closure_alloc();
@@ -138,7 +138,7 @@ mod test {
         unsafe {
             let closure = Closure::new(cif.clone(),
                                        mem::transmute(callback as usize),
-                                       mem::transmute(&mut env));
+                                       &mut env);
             let fun: unsafe extern "C" fn(u64) -> u64
                 = mem::transmute(closure.code_ptr());
 
