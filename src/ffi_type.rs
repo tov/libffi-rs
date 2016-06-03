@@ -27,29 +27,30 @@ unsafe fn ffi_type_array_len(mut array: FfiTypeArray_) -> usize {
     count
 }
 
-unsafe fn ffi_type_array_create_empty(size: usize) -> FfiTypeArray_ {
-    let array = libc::malloc((size + 1) * mem::size_of::<FfiType_>())
+/// Creates an empty `FfiTypeArray_` with null terminator.
+unsafe fn ffi_type_array_create_empty(len: usize) -> FfiTypeArray_ {
+    let array = libc::malloc((len + 1) * mem::size_of::<FfiType_>())
                     as FfiTypeArray_;
-    *array.offset(size as isize) = ptr::null::<low::ffi_type>() as FfiType_;
+    *array.offset(len as isize) = ptr::null::<low::ffi_type>() as FfiType_;
     array
 }
 
 /// Creates a null-terminated array of FfiType_. Takes ownership of
 /// the elements.
 unsafe fn ffi_type_array_create(elements: Vec<FfiType>) -> FfiTypeArray_ {
-    let size  = elements.len();
-    let array = ffi_type_array_create_empty(size);
+    let size = elements.len();
+    let new  = ffi_type_array_create_empty(size);
     for i in 0 .. size {
-        *array.offset(i as isize) = elements[i].0;
+        *new.offset(i as isize) = elements[i].0;
     }
 
     for t in elements {
         mem::forget(t);
     }
 
-    println!("ffi_type_array_create(...) = {:?}", array);
+    println!("ffi_type_array_create(...) = {:?}", new);
 
-    array
+    new
 }
 
 unsafe fn ffi_type_struct_create_raw(elements: FfiTypeArray_) -> FfiType_ {
@@ -72,12 +73,12 @@ unsafe fn ffi_type_struct_create(elements: Vec<FfiType>) -> FfiType_ {
     ffi_type_struct_create_raw(ffi_type_array_create(elements))
 }
 
-unsafe fn ffi_type_array_clone(ffi_types: FfiTypeArray_) -> FfiTypeArray_ {
-    let size = ffi_type_array_len(ffi_types);
+unsafe fn ffi_type_array_clone(old: FfiTypeArray_) -> FfiTypeArray_ {
+    let size = ffi_type_array_len(old);
     let new   = ffi_type_array_create_empty(size);
 
     for i in 0 .. size {
-        *new.offset(i as isize) = ffi_type_clone(*ffi_types.offset(i as isize));
+        *new.offset(i as isize) = ffi_type_clone(*old.offset(i as isize));
     }
 
     new
@@ -92,23 +93,23 @@ unsafe fn ffi_type_clone(old: FfiType_) -> FfiType_ {
 }
 
 /// Destroys an array of FfiType_ and all of its elements.
-unsafe fn ffi_type_array_destroy(ffi_types: FfiTypeArray_) {
-    println!("ffi_type_array_destroy({:?})", ffi_types);
-    let mut current = ffi_types;
+unsafe fn ffi_type_array_destroy(victim: FfiTypeArray_) {
+    println!("ffi_type_array_destroy({:?})", victim);
+    let mut current = victim;
     while !(*current).is_null() {
         ffi_type_destroy(*current);
         current = current.offset(1);
     }
 
-    libc::free(ffi_types as *mut libc::c_void);
+    libc::free(victim as *mut libc::c_void);
 }
 
 /// Destroys an FfiType_ if it was dynamically allocated.
-unsafe fn ffi_type_destroy(ffi_type: FfiType_) {
-    println!("ffi_type_destroy({:?})", ffi_type);
-    if (*ffi_type).type_ == c::ffi_type_enum::STRUCT as u16 {
-        ffi_type_array_destroy((*ffi_type).elements);
-        libc::free(ffi_type as *mut libc::c_void);
+unsafe fn ffi_type_destroy(victim: FfiType_) {
+    println!("ffi_type_destroy({:?})", victim);
+    if (*victim).type_ == c::ffi_type_enum::STRUCT as u16 {
+        ffi_type_array_destroy((*victim).elements);
+        libc::free(victim as *mut libc::c_void);
     }
 }
 
