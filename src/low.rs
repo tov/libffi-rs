@@ -108,23 +108,23 @@ pub unsafe fn closure_free(closure: *mut ffi_closure) {
 
 /// The type of function called by a closure. `U` is the type of
 /// the user data captured by the closure and passed to the callback.
-pub type Callback<U> = unsafe extern "C" fn(cif:      *mut ffi_cif,
-                                            result:   *mut c_void,
-                                            args:     *mut *mut c_void,
-                                            userdata: &mut U);
+pub type Callback = unsafe extern "C" fn(cif:      *mut ffi_cif,
+                                         result:   *mut c_void,
+                                         args:     *mut *mut c_void,
+                                         userdata: *mut c_void);
 
 /// Prepares a closure to call the given callback function with the
 /// given user data.
-pub unsafe fn prep_closure_loc<U>(closure:  *mut ffi_closure,
-                                  cif:      *mut ffi_cif,
-                                  fun:      Callback<U>,
-                                  userdata: &mut U,
-                                  code:     extern "C" fn()) -> Result<()>
+pub unsafe fn prep_closure_loc(closure:  *mut ffi_closure,
+                               cif:      *mut ffi_cif,
+                               fun:      Callback,
+                               userdata: *mut c_void,
+                               code:     extern "C" fn()) -> Result<()>
 {
     let status = c::ffi_prep_closure_loc(closure,
                                          cif,
                                          Some(mem::transmute(fun)),
-                                         mem::transmute(userdata),
+                                         userdata,
                                          mem::transmute(code));
     ffi_status_to_result(status, ())
 }

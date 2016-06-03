@@ -247,10 +247,22 @@ mod test {
     }
 
     #[test]
+    fn clone_uint64() {
+        FfiType::uint64().clone().clone();
+    }
+
+    #[test]
     fn create_struct() {
         FfiType::structure(vec![FfiType::sint64(),
                                 FfiType::sint64(),
                                 FfiType::uint64()]);
+    }
+
+    #[test]
+    fn clone_struct() {
+        FfiType::structure(vec![FfiType::sint64(),
+                                FfiType::sint64(),
+                                FfiType::uint64()]).clone().clone();
     }
 
 }

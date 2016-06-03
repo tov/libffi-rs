@@ -7,7 +7,9 @@ pub mod low;
 
 pub use bindgen::libffi as c;
 pub use ffi_type::*;
+
 use std::mem;
+use std::os::raw::c_void;
 
 #[derive(Clone, Debug)]
 pub struct Cif {
@@ -17,7 +19,7 @@ pub struct Cif {
 }
 
 #[derive(Debug)]
-pub struct Arg(*mut ::std::os::raw::c_void);
+pub struct Arg(*mut c_void);
 
 pub fn arg<T>(r: &T) -> Arg {
     Arg(unsafe { mem::transmute(r as *const T) })
@@ -38,8 +40,8 @@ impl Cif {
         // Note that cif retains references to args and result,
         // which is why we hold onto them here.
         Cif {
-            cif: cif,
-            args: args,
+            cif:    cif,
+            args:   args,
             result: result,
         }
     }
@@ -56,7 +58,7 @@ impl Cif {
 }
 
 pub struct Closure {
-    cif:   Cif,
+    _cif:  Cif,
     alloc: *mut ::low::ffi_closure,
     code:  extern "C" fn(),
 }
@@ -70,9 +72,9 @@ impl Drop for Closure {
 }
 
 impl Closure {
-    pub fn new<U>(mut cif: Cif,
-                  fun: low::Callback<U>,
-                  userdata: &mut U) -> Self
+    pub fn new(mut cif: Cif,
+               fun: low::Callback,
+               userdata: *mut c_void) -> Self
     {
         let (alloc, code) = low::closure_alloc();
 
@@ -81,19 +83,25 @@ impl Closure {
         }.expect("Closure::new");
 
         Closure {
-            cif:   cif,
+            _cif:  cif,
             alloc: alloc,
             code:  code,
         }
+    }
+
+    pub fn code_ptr(&self) -> unsafe extern "C" fn() {
+        self.code
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+    use std::mem;
+    use std::os::raw::c_void;
 
     #[test]
-    fn ffi_call() {
+    fn call() {
         use ffi_type::*;
 
         let args = FfiTypeArray::new(vec![FfiType::sint64(),
@@ -110,5 +118,34 @@ mod test {
 
     extern "C" fn add_it(n: i64, m: i64) -> i64 {
         return n + m;
+    }
+
+    #[test]
+    fn closure() {
+        use ffi_type::*;
+
+        let args    = FfiTypeArray::new(vec![FfiType::uint64()]);
+        let cif     = Cif::new(args, FfiType::uint64());
+        let mut six = 6;
+
+        unsafe {
+            let psix: *mut c_void = mem::transmute(&mut six);
+            let closure           = Closure::new(cif, callback, psix);
+            let fun: unsafe extern "C" fn(u64) -> u64
+                                  = mem::transmute(closure.code_ptr());
+
+            assert_eq!(11, fun(5));
+        }
+    }
+
+    unsafe extern "C" fn callback(_cif: *mut low::ffi_cif,
+                                  result: *mut c_void,
+                                  args: *mut *mut c_void,
+                                  userdata: *mut c_void)
+    {
+        // let result: *mut u64    = mem::transmute(result);
+        // let args: *mut *mut u64 = mem::transmute(args);
+        // let userdata: *mut u64  = mem::transmute(userdata);
+        // *result = **args + *userdata;
     }
 }
