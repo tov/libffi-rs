@@ -75,31 +75,21 @@ impl Drop for Closure {
     }
 }
 
-pub fn new_closure(cif: *mut low::ffi_cif,
-                   callback: low::Callback,
-                   userdata: *mut c_void)
-    -> (*mut low::ffi_closure, extern "C" fn())
-{
-    let (closure, fun) = low::closure_alloc();
-
-    unsafe {
-        low::prep_closure_loc(closure,
-                              cif,
-                              mem::transmute(callback as usize),
-                              userdata,
-                              fun).unwrap();
-    }
-
-    (closure, fun)
-}
-
 impl Closure {
     pub fn new(cif:  Cif,
                callback: low::Callback,
                userdata: *mut c_void) -> Self
     {
-        let mut cif = Box::new(cif);
-        let (alloc, code) = new_closure(cif.as_raw_ptr(), callback, userdata);
+        let cif = Box::new(cif);
+        let (alloc, code) = low::closure_alloc();
+
+        unsafe {
+            low::prep_closure_loc(alloc,
+                                  cif.as_raw_ptr(),
+                                  mem::transmute(callback as usize),
+                                  userdata,
+                                  code).unwrap();
+        }
 
         Closure {
             _cif:  cif,
