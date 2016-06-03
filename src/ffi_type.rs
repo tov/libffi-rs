@@ -1,3 +1,5 @@
+//! Representations of C types and arrays thereof.
+
 use std::{mem, ptr};
 use libc;
 
@@ -11,10 +13,7 @@ type FfiTypeArray_ = *mut FfiType_;
 pub struct FfiType(FfiType_);
 
 #[derive(Debug)]
-pub struct FfiTypeArray {
-    ptr: FfiTypeArray_,
-    len: usize,
-}
+pub struct FfiTypeArray(FfiTypeArray_);
 
 /// Computes the length of a raw `FfiTypeArray_` by searching for the
 /// null terminator.
@@ -53,6 +52,7 @@ unsafe fn ffi_type_array_create(elements: Vec<FfiType>) -> FfiTypeArray_ {
     new
 }
 
+/// Creates a struct type from a raw array of element types.
 unsafe fn ffi_type_struct_create_raw(elements: FfiTypeArray_) -> FfiType_ {
     let new = libc::malloc(mem::size_of::<low::ffi_type>()) as FfiType_;
 
@@ -73,9 +73,10 @@ unsafe fn ffi_type_struct_create(elements: Vec<FfiType>) -> FfiType_ {
     ffi_type_struct_create_raw(ffi_type_array_create(elements))
 }
 
+/// Makes a copy of a type array.
 unsafe fn ffi_type_array_clone(old: FfiTypeArray_) -> FfiTypeArray_ {
     let size = ffi_type_array_len(old);
-    let new   = ffi_type_array_create_empty(size);
+    let new  = ffi_type_array_create_empty(size);
 
     for i in 0 .. size {
         *new.offset(i as isize) = ffi_type_clone(*old.offset(i as isize));
@@ -84,6 +85,7 @@ unsafe fn ffi_type_array_clone(old: FfiTypeArray_) -> FfiTypeArray_ {
     new
 }
 
+/// Makes a copy of a type.
 unsafe fn ffi_type_clone(old: FfiType_) -> FfiType_ {
     if (*old).type_ == c::ffi_type_enum::STRUCT as u16 {
         ffi_type_struct_create_raw(ffi_type_array_clone((*old).elements))
@@ -121,10 +123,9 @@ impl Drop for FfiType {
 
 impl Drop for FfiTypeArray {
     fn drop(&mut self) {
-        unsafe { ffi_type_array_destroy(self.ptr) }
+        unsafe { ffi_type_array_destroy(self.0) }
     }
 }
-
 
 impl FfiType {
     pub fn void() -> Self {
@@ -204,22 +205,16 @@ impl FfiType {
 }
 
 impl FfiTypeArray {
-    pub fn new(types: Vec<FfiType>) -> Self {
-        let len = types.len();
-        unsafe {
-            FfiTypeArray {
-                ptr: ffi_type_array_create(types),
-                len: len,
-            }
-        }
+    pub fn new(elements: Vec<FfiType>) -> Self {
+        unsafe { FfiTypeArray(ffi_type_array_create(elements)) }
     }
 
     pub fn len(&self) -> usize {
-        self.len
+        unsafe { ffi_type_array_len(self.0) }
     }
 
     pub fn as_raw_ptr(&self) -> *mut *mut low::ffi_type {
-        self.ptr
+        self.0
     }
 }
 
