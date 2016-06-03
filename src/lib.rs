@@ -9,7 +9,7 @@ pub use bindgen::libffi as c;
 pub use ffi_type::*;
 use std::mem;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Cif {
     cif:    c::ffi_cif,
     args:   FfiTypeArray,
