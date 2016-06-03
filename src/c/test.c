@@ -1,31 +1,27 @@
+#include <assert.h>
 #include <stdio.h>
 #include <ffi.h>
+
+void callback(ffi_cif* cif, void* result, void** args, void* userdata)
+{
+    *(int*)result = *(int*)userdata + **(int**)args;
+}
 
 int main()
 {
     ffi_cif cif;
-    ffi_type *args[1];
-    void *values[1];
-    char *s;
-    ffi_arg rc;
+    ffi_type* args[1] = { &ffi_type_sint };
+    ffi_closure* closure;
+    int (*fn)(int);
+    int env = 5;
 
-    /* Initialize the argument info vectors */
-    args[0] = &ffi_type_pointer;
-    values[0] = &s;
+    assert(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 1,
+                        &ffi_type_sint, args)
+            == FFI_OK);
+    closure = ffi_closure_alloc(sizeof(ffi_closure), (void**)&fn);
+    assert(ffi_prep_closure_loc(closure, &cif, callback, &env, fn)
+            == FFI_OK);
 
-    /* Initialize the cif */
-    if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 1,
-                     & ffi_type_sint, args) == FFI_OK) {
-        s = "Hello World!";
-        ffi_call(&cif, (void(*)(void))puts, &rc, values);
-        /* rc now holds the result of the call to puts */
-
-        /* values holds a pointer to the function's arg, so to
-           call puts() again all we need to do is change the
-           value of s */
-        s = "This is cool!";
-        ffi_call(&cif, (void(*)(void))puts, &rc, values);
-    }
-
-    return 0;
+    printf("%d\n", fn(6));
+    printf("%d\n", fn(7));
 }
