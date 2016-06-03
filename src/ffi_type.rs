@@ -16,17 +16,32 @@ pub struct FfiTypeArray {
     len: usize,
 }
 
+/// Computes the length of a raw `FfiTypeArray_` by searching for the
+/// null terminator.
+unsafe fn ffi_type_array_len(mut array: FfiTypeArray_) -> usize {
+    let mut current = array;
+    let mut count   = 0;
+    while !(*current).is_null() {
+        count += 1;
+    }
+    count
+}
+
+unsafe fn ffi_type_array_create_empty(size: usize) -> FfiTypeArray_ {
+    let array = libc::malloc((size + 1) * mem::size_of::<FfiType_>())
+                    as FfiTypeArray_;
+    *array.offset(size as isize) = ptr::null::<low::ffi_type>() as FfiType_;
+    array
+}
+
 /// Creates a null-terminated array of FfiType_. Takes ownership of
 /// the elements.
 unsafe fn ffi_type_array_create(elements: Vec<FfiType>) -> FfiTypeArray_ {
-    let size = elements.len();
-    let array = libc::malloc((size+1) * mem::size_of::<FfiType_>())
-                    as FfiTypeArray_;
-
+    let size  = elements.len();
+    let array = ffi_type_array_create_empty(size);
     for i in 0 .. size {
         *array.offset(i as isize) = elements[i].0;
     }
-    *array.offset(size as isize) = ptr::null::<low::ffi_type>() as FfiType_;
 
     for t in elements {
         mem::forget(t);
@@ -58,20 +73,12 @@ unsafe fn ffi_type_struct_create(elements: Vec<FfiType>) -> FfiType_ {
 }
 
 unsafe fn ffi_type_array_clone(ffi_types: FfiTypeArray_) -> FfiTypeArray_ {
-    let mut current = ffi_types;
-    let mut count   = 0;
-    while !(*current).is_null() {
-        current = current.offset(1);
-        count += 1;
-    }
+    let size = ffi_type_array_len(ffi_types);
+    let new   = ffi_type_array_create_empty(size);
 
-    let new = libc::malloc((count+1) * mem::size_of::<FfiType_>())
-                    as FfiTypeArray_;
-
-    for i in 0 .. count {
+    for i in 0 .. size {
         *new.offset(i as isize) = ffi_type_clone(*ffi_types.offset(i as isize));
     }
-    *new.offset(count as isize) = ptr::null::<low::ffi_type>() as FfiType_;
 
     new
 }
