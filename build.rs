@@ -2,8 +2,8 @@ use std::process::Command;
 
 extern crate pkg_config;
 
-const C_IN:   &'static str = "src/c/include_ffi.h";
-const RS_OUT: &'static str = "src/bindgen/libffi.rs";
+const C_IN:   &'static str = "include/include_ffi.h";
+const RS_OUT: &'static str = "src/raw.rs";
 
 // This shouldn't be necessary, but it's required on my system when using
 // sh -c as a command parser.

@@ -3,7 +3,6 @@
 use std::{mem, ptr};
 use libc;
 
-use c;
 use low;
 
 type FfiType_      = *mut low::ffi_type;
@@ -63,7 +62,7 @@ unsafe fn ffi_type_struct_create_raw(elements: Owned<FfiTypeArray_>)
 
     (*new).size      = 0;
     (*new).alignment = 0;
-    (*new).type_     = c::ffi_type_enum::STRUCT as ::libc::c_ushort;
+    (*new).type_     = low::type_tag::STRUCT;
     (*new).elements  = elements;
 
     new
@@ -89,7 +88,7 @@ unsafe fn ffi_type_array_clone(old: FfiTypeArray_) -> Owned<FfiTypeArray_> {
 
 /// Makes a copy of a type.
 unsafe fn ffi_type_clone(old: FfiType_) -> Owned<FfiType_> {
-    if (*old).type_ == c::ffi_type_enum::STRUCT as u16 {
+    if (*old).type_ == low::type_tag::STRUCT {
         ffi_type_struct_create_raw(ffi_type_array_clone((*old).elements))
     } else {
         old
@@ -109,7 +108,7 @@ unsafe fn ffi_type_array_destroy(victim: Owned<FfiTypeArray_>) {
 
 /// Destroys an FfiType_ if it was dynamically allocated.
 unsafe fn ffi_type_destroy(victim: Owned<FfiType_>) {
-    if (*victim).type_ == c::ffi_type_enum::STRUCT as u16 {
+    if (*victim).type_ == low::type_tag::STRUCT {
         ffi_type_array_destroy((*victim).elements);
         libc::free(victim as *mut libc::c_void);
     }

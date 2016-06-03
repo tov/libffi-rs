@@ -2,7 +2,7 @@
 //! but tries to provide a somewhat more idiomatic interface. It also
 //! re-exports types and constants necessary for using the library.
 
-use c;
+use raw;
 
 use std::mem;
 use std::os::raw::{c_void, c_uint};
@@ -14,8 +14,8 @@ pub enum Error { BadTypedef, BadAbi }
 /// A specialized `Result` type for libffi operations.
 pub type Result<T> = ::std::result::Result<T, Error>;
 
-fn ffi_status_to_result<R>(status: c::ffi_status, good: R) -> Result<R> {
-    use c::ffi_status::*;
+fn ffi_status_to_result<R>(status: raw::ffi_status, good: R) -> Result<R> {
+    use raw::ffi_status::*;
     match status {
         FFI_OK => Ok(good),
         FFI_BAD_TYPEDEF => Err(Error::BadTypedef),
@@ -23,29 +23,39 @@ fn ffi_status_to_result<R>(status: c::ffi_status, good: R) -> Result<R> {
     }
 }
 
-pub use c::ffi_abi;
-pub use c::_ffi_type as ffi_type;
-pub use c::ffi_status;
+pub use raw::ffi_abi;
+pub use raw::_ffi_type as ffi_type;
+pub use raw::ffi_status;
 
-pub use c::ffi_cif;
-pub use c::ffi_closure;
+pub use raw::ffi_cif;
+pub use raw::ffi_closure;
 
-pub use c::ffi_type_void;
-pub use c::ffi_type_uint8;
-pub use c::ffi_type_sint8;
-pub use c::ffi_type_uint16;
-pub use c::ffi_type_sint16;
-pub use c::ffi_type_uint32;
-pub use c::ffi_type_sint32;
-pub use c::ffi_type_uint64;
-pub use c::ffi_type_sint64;
-pub use c::ffi_type_float;
-pub use c::ffi_type_double;
-pub use c::ffi_type_pointer;
-pub use c::ffi_type_longdouble;
-pub use c::ffi_type_complex_float;
-pub use c::ffi_type_complex_double;
-pub use c::ffi_type_complex_longdouble;
+pub use raw::FFI_DEFAULT_ABI;
+
+pub use raw::ffi_type_void;
+pub use raw::ffi_type_uint8;
+pub use raw::ffi_type_sint8;
+pub use raw::ffi_type_uint16;
+pub use raw::ffi_type_sint16;
+pub use raw::ffi_type_uint32;
+pub use raw::ffi_type_sint32;
+pub use raw::ffi_type_uint64;
+pub use raw::ffi_type_sint64;
+pub use raw::ffi_type_float;
+pub use raw::ffi_type_double;
+pub use raw::ffi_type_pointer;
+pub use raw::ffi_type_longdouble;
+pub use raw::ffi_type_complex_float;
+pub use raw::ffi_type_complex_double;
+pub use raw::ffi_type_complex_longdouble;
+
+pub mod type_tag {
+    use raw;
+    use std::os::raw::c_ushort;
+
+    pub const STRUCT:  c_ushort = raw::ffi_type_enum::STRUCT as c_ushort;
+    pub const COMPLEX: c_ushort = raw::ffi_type_enum::COMPLEX as c_ushort;
+}
 
 /// Initalizes a CIF (Call InterFace) with the given ABI and types.
 /// Note that the CIF retains references to `rtype` and `atypes`, so if
@@ -57,7 +67,7 @@ pub unsafe fn prep_cif(cif: *mut ffi_cif,
                        rtype: *mut ffi_type,
                        atypes: *mut *mut ffi_type) -> Result<()>
 {
-    let status = c::ffi_prep_cif(cif, abi,
+    let status = raw::ffi_prep_cif(cif, abi,
                                  nargs as c_uint,
                                  rtype, atypes);
     ffi_status_to_result(status, ())
@@ -72,7 +82,7 @@ pub unsafe fn prep_cif_var(cif: *mut ffi_cif,
                            rtype: *mut ffi_type,
                            atypes: *mut *mut ffi_type) -> Result<()>
 {
-    let status = c::ffi_prep_cif_var(cif, abi,
+    let status = raw::ffi_prep_cif_var(cif, abi,
                                      nfixedargs as c_uint,
                                      ntotalargs as c_uint,
                                      rtype, atypes);
@@ -86,7 +96,7 @@ pub unsafe fn call<R>(cif:  *mut ffi_cif,
                       args: *mut *mut c_void) -> R
 {
     let mut result: R = mem::uninitialized();
-    c::ffi_call(cif, Some(fun), mem::transmute(&mut result as *mut R), args);
+    raw::ffi_call(cif, Some(fun), mem::transmute(&mut result as *mut R), args);
     result
 }
 
@@ -95,7 +105,7 @@ pub unsafe fn call<R>(cif:  *mut ffi_cif,
 pub fn closure_alloc() -> (*mut ffi_closure, extern "C" fn()) {
     unsafe {
         let mut code_pointer: *mut c_void = mem::uninitialized();
-        let closure = c::ffi_closure_alloc(mem::size_of::<ffi_closure>(),
+        let closure = raw::ffi_closure_alloc(mem::size_of::<ffi_closure>(),
                                            &mut code_pointer);
         (mem::transmute(closure), mem::transmute(code_pointer))
     }
@@ -103,7 +113,7 @@ pub fn closure_alloc() -> (*mut ffi_closure, extern "C" fn()) {
 
 /// Frees the resources associated with a closure.
 pub unsafe fn closure_free(closure: *mut ffi_closure) {
-    c::ffi_closure_free(mem::transmute(closure));
+    raw::ffi_closure_free(mem::transmute(closure));
 }
 
 /// The type of function called by a closure. `U` is the type of
@@ -122,7 +132,7 @@ pub unsafe fn prep_closure_loc<U, R>(closure:  *mut ffi_closure,
                                      userdata: *mut U,
                                      code:     extern "C" fn()) -> Result<()>
 {
-    let status = c::ffi_prep_closure_loc(closure,
+    let status = raw::ffi_prep_closure_loc(closure,
                                          cif,
                                          Some(mem::transmute(callback)),
                                          mem::transmute(userdata),
@@ -132,7 +142,7 @@ pub unsafe fn prep_closure_loc<U, R>(closure:  *mut ffi_closure,
 
 #[cfg(test)]
 mod test {
-    use c;
+    use raw;
     use super::*;
     use std::mem;
     use std::os::raw::c_void;
@@ -153,7 +163,7 @@ mod test {
             let mut args: [*mut ffi_type; 1] = [&mut ffi_type_uint64];
             let mut env: u64 = 5;
 
-            prep_cif(&mut cif, c::FFI_DEFAULT_ABI, 1, &mut ffi_type_uint64,
+            prep_cif(&mut cif, raw::FFI_DEFAULT_ABI, 1, &mut ffi_type_uint64,
                      args.as_mut_ptr()).unwrap();
 
             let (closure, fun_) = closure_alloc();
