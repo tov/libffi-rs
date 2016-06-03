@@ -8,6 +8,7 @@ use low;
 
 type FfiType_      = *mut low::ffi_type;
 type FfiTypeArray_ = *mut FfiType_;
+type Owned<T>      = T;
 
 #[derive(Debug)]
 pub struct FfiType(FfiType_);
@@ -27,7 +28,7 @@ unsafe fn ffi_type_array_len(mut array: FfiTypeArray_) -> usize {
 }
 
 /// Creates an empty `FfiTypeArray_` with null terminator.
-unsafe fn ffi_type_array_create_empty(len: usize) -> FfiTypeArray_ {
+unsafe fn ffi_type_array_create_empty(len: usize) -> Owned<FfiTypeArray_> {
     let array = libc::malloc((len + 1) * mem::size_of::<FfiType_>())
                     as FfiTypeArray_;
     *array.offset(len as isize) = ptr::null::<low::ffi_type>() as FfiType_;
@@ -36,7 +37,9 @@ unsafe fn ffi_type_array_create_empty(len: usize) -> FfiTypeArray_ {
 
 /// Creates a null-terminated array of FfiType_. Takes ownership of
 /// the elements.
-unsafe fn ffi_type_array_create(elements: Vec<FfiType>) -> FfiTypeArray_ {
+unsafe fn ffi_type_array_create(elements: Vec<FfiType>)
+    -> Owned<FfiTypeArray_>
+{
     let size = elements.len();
     let new  = ffi_type_array_create_empty(size);
     for i in 0 .. size {
@@ -53,7 +56,9 @@ unsafe fn ffi_type_array_create(elements: Vec<FfiType>) -> FfiTypeArray_ {
 }
 
 /// Creates a struct type from a raw array of element types.
-unsafe fn ffi_type_struct_create_raw(elements: FfiTypeArray_) -> FfiType_ {
+unsafe fn ffi_type_struct_create_raw(elements: FfiTypeArray_)
+    -> Owned<FfiType_>
+{
     let new = libc::malloc(mem::size_of::<low::ffi_type>()) as FfiType_;
 
     (*new).size      = 0;
@@ -68,13 +73,13 @@ unsafe fn ffi_type_struct_create_raw(elements: FfiTypeArray_) -> FfiType_ {
 
 /// Creates a struct ffi_type with the given elements. Takes ownership
 /// of the elements.
-unsafe fn ffi_type_struct_create(elements: Vec<FfiType>) -> FfiType_ {
+unsafe fn ffi_type_struct_create(elements: Vec<FfiType>) -> Owned<FfiType_> {
     println!("ffi_type_array_create({:?})", elements);
     ffi_type_struct_create_raw(ffi_type_array_create(elements))
 }
 
 /// Makes a copy of a type array.
-unsafe fn ffi_type_array_clone(old: FfiTypeArray_) -> FfiTypeArray_ {
+unsafe fn ffi_type_array_clone(old: FfiTypeArray_) -> Owned<FfiTypeArray_> {
     let size = ffi_type_array_len(old);
     let new  = ffi_type_array_create_empty(size);
 
@@ -86,7 +91,7 @@ unsafe fn ffi_type_array_clone(old: FfiTypeArray_) -> FfiTypeArray_ {
 }
 
 /// Makes a copy of a type.
-unsafe fn ffi_type_clone(old: FfiType_) -> FfiType_ {
+unsafe fn ffi_type_clone(old: FfiType_) -> Owned<FfiType_> {
     if (*old).type_ == c::ffi_type_enum::STRUCT as u16 {
         ffi_type_struct_create_raw(ffi_type_array_clone((*old).elements))
     } else {
@@ -95,7 +100,7 @@ unsafe fn ffi_type_clone(old: FfiType_) -> FfiType_ {
 }
 
 /// Destroys an array of FfiType_ and all of its elements.
-unsafe fn ffi_type_array_destroy(victim: FfiTypeArray_) {
+unsafe fn ffi_type_array_destroy(victim: Owned<FfiTypeArray_>) {
     println!("ffi_type_array_destroy({:?})", victim);
     let mut current = victim;
     while !(*current).is_null() {
@@ -107,7 +112,7 @@ unsafe fn ffi_type_array_destroy(victim: FfiTypeArray_) {
 }
 
 /// Destroys an FfiType_ if it was dynamically allocated.
-unsafe fn ffi_type_destroy(victim: FfiType_) {
+unsafe fn ffi_type_destroy(victim: Owned<FfiType_>) {
     println!("ffi_type_destroy({:?})", victim);
     if (*victim).type_ == c::ffi_type_enum::STRUCT as u16 {
         ffi_type_array_destroy((*victim).elements);
