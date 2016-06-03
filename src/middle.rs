@@ -9,8 +9,8 @@ use std::os::raw::c_void;
 #[derive(Clone, Debug)]
 pub struct Cif {
     cif:    low::ffi_cif,
-    args:   FfiTypeArray,
-    result: FfiType,
+    args:   TypeArray,
+    result: Type,
 }
 
 #[derive(Debug)]
@@ -21,11 +21,11 @@ pub fn arg<T>(r: &T) -> Arg {
 }
 
 impl Cif {
-    pub fn new(args: Vec<FfiType>, result: FfiType) -> Self {
-        Self::from_type_array(FfiTypeArray::new(args), result)
+    pub fn new(args: Vec<Type>, result: Type) -> Self {
+        Self::from_type_array(TypeArray::new(args), result)
     }
 
-    pub fn from_type_array(args: FfiTypeArray, result: FfiType) -> Self {
+    pub fn from_type_array(args: TypeArray, result: Type) -> Self {
         let mut cif: low::ffi_cif = Default::default();
 
         unsafe {
@@ -113,8 +113,8 @@ mod test {
     fn call() {
         use types::*;
 
-        let args = vec![FfiType::sint64(), FfiType::sint64()];
-        let cif  = Cif::new(args, FfiType::sint64());
+        let args = vec![Type::sint64(), Type::sint64()];
+        let cif  = Cif::new(args, Type::sint64());
         let f    = |m: i64, n: i64| -> i64 {
             unsafe { cif.call(add_it as usize, &[arg(&m), arg(&n)]) }
         };
@@ -131,7 +131,7 @@ mod test {
     #[test]
     fn closure() {
         use types::*;
-        let cif  = Cif::new(vec![FfiType::uint64()], FfiType::uint64());
+        let cif  = Cif::new(vec![Type::uint64()], Type::uint64());
         let mut env: u64 = 5;
 
         unsafe {
