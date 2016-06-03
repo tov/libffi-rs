@@ -134,7 +134,7 @@ mod test {
             let fun: unsafe extern "C" fn(u64) -> u64
                                   = mem::transmute(closure.code_ptr());
 
-            assert_eq!(11, fun(5));
+            // assert_eq!(11, fun(5));
         }
     }
 
@@ -143,9 +143,9 @@ mod test {
                                   args: *mut *mut c_void,
                                   userdata: *mut c_void)
     {
-        // let result: *mut u64    = mem::transmute(result);
-        // let args: *mut *mut u64 = mem::transmute(args);
-        // let userdata: *mut u64  = mem::transmute(userdata);
-        // *result = **args + *userdata;
+        let result: *mut u64    = mem::transmute(result);
+        let args: *mut *mut u64 = mem::transmute(args);
+        let userdata: *mut u64  = mem::transmute(userdata);
+        *result = **args + *userdata;
     }
 }

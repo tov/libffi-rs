@@ -129,3 +129,46 @@ pub unsafe fn prep_closure_loc(closure:  *mut ffi_closure,
     ffi_status_to_result(status, ())
 }
 
+#[cfg(test)]
+mod test {
+    use c;
+    use super::*;
+    use std::mem;
+    use std::os::raw::c_void;
+
+    unsafe extern "C" fn callback(_cif: *mut ffi_cif,
+                                  result: *mut c_void,
+                                  args: *mut *mut c_void,
+                                  userdata: *mut c_void)
+    {
+        let result:    *mut u64 = mem::transmute(result);
+        let args: *mut *mut u64 = mem::transmute(args);
+        let userdata:  *mut u64 = mem::transmute(userdata);
+        *result = **args + *userdata;
+    }
+
+    #[test]
+    fn closure() {
+        unsafe {
+            let mut cif: ffi_cif = Default::default();
+            let mut args: [*mut ffi_type; 1] = [&mut ffi_type_uint64];
+            // let mut fun: unsafe extern "C" fn(u64) -> u64 = mem::uninitialized();
+            let mut env: u64 = 5;
+
+            prep_cif(&mut cif, c::FFI_DEFAULT_ABI, 1, &mut ffi_type_uint64,
+                     args.as_mut_ptr());
+
+            let (closure, fun_) = closure_alloc();
+            let fun: unsafe extern "C" fn(u64) -> u64 = mem::transmute(fun_);
+
+            prep_closure_loc(closure,
+                             &mut cif,
+                             callback,
+                             mem::transmute(&mut env),
+                             mem::transmute(fun));
+
+            assert_eq!(11, fun(6));
+            assert_eq!(12, fun(7));
+        }
+    }
+}
