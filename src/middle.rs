@@ -1,5 +1,3 @@
-//! Middle layer providing a somewhat safer (but still quite unsafe) API.
-
 pub use types::*;
 
 use low;
