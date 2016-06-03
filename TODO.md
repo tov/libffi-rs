@@ -1,4 +1,4 @@
 TODO:
 
- - FFI_TYPE_STRUCT
- - closures
+ - custom complex number types
+ - high-level / fully-typed APIs

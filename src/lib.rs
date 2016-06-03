@@ -117,8 +117,7 @@ mod test {
     fn call() {
         use types::*;
 
-        let args = vec![FfiType::sint64(),
-                        FfiType::sint64()];
+        let args = vec![FfiType::sint64(), FfiType::sint64()];
         let cif  = Cif::new(args, FfiType::sint64());
         let f    = |m: i64, n: i64| -> i64 {
             unsafe { cif.call(add_it as usize, &[arg(&m), arg(&n)]) }
