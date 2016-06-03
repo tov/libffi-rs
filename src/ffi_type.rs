@@ -37,22 +37,24 @@ unsafe fn ffi_type_array_create(elements: Vec<FfiType>) -> FfiTypeArray_ {
     array
 }
 
+unsafe fn ffi_type_struct_create_raw(elements: FfiTypeArray_) -> FfiType_ {
+    let new = libc::malloc(mem::size_of::<low::ffi_type>()) as FfiType_;
+
+    (*new).size      = 0;
+    (*new).alignment = 0;
+    (*new).type_     = c::ffi_type_enum::STRUCT as ::libc::c_ushort;
+    (*new).elements  = elements;
+
+    println!("ffi_type_struct_create_raw({:?}) = {:?}", elements, new);
+
+    new
+}
+
 /// Creates a struct ffi_type with the given elements. Takes ownership
 /// of the elements.
 unsafe fn ffi_type_struct_create(elements: Vec<FfiType>) -> FfiType_ {
     println!("ffi_type_array_create({:?})", elements);
-    let array    = ffi_type_array_create(elements);
-    let ffi_type = libc::malloc(mem::size_of::<low::ffi_type>())
-                       as FfiType_;
-
-    (*ffi_type).size      = 0;
-    (*ffi_type).alignment = 0;
-    (*ffi_type).type_     = c::ffi_type_enum::STRUCT as u16;
-    (*ffi_type).elements  = array;
-
-    println!("ffi_type_array_create(...) = {:?}", ffi_type);
-
-    ffi_type
+    ffi_type_struct_create_raw(ffi_type_array_create(elements))
 }
 
 unsafe fn ffi_type_array_clone(ffi_types: FfiTypeArray_) -> FfiTypeArray_ {
@@ -74,19 +76,11 @@ unsafe fn ffi_type_array_clone(ffi_types: FfiTypeArray_) -> FfiTypeArray_ {
     new
 }
 
-unsafe fn ffi_type_clone(ffi_type: FfiType_) -> FfiType_ {
-    if (*ffi_type).type_ == c::ffi_type_enum::STRUCT as u16 {
-        let elements = ffi_type_array_clone((*ffi_type).elements);
-        let new = libc::malloc(mem::size_of::<low::ffi_type>()) as FfiType_;
-
-        (*new).size      = 0;
-        (*new).alignment = 0;
-        (*new).type_     = c::ffi_type_enum::STRUCT as u16;
-        (*new).elements  = elements;
-
-        new
+unsafe fn ffi_type_clone(old: FfiType_) -> FfiType_ {
+    if (*old).type_ == c::ffi_type_enum::STRUCT as u16 {
+        ffi_type_struct_create_raw(ffi_type_array_clone((*old).elements))
     } else {
-        ffi_type
+        old
     }
 }
 
