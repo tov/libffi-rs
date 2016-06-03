@@ -56,10 +56,25 @@ unsafe fn ffi_type_struct_create(elements: Vec<FfiType>) -> FfiType_ {
 }
 
 unsafe fn ffi_type_array_clone(ffi_types: FfiTypeArray_) -> FfiTypeArray_ {
-    unimplemented!();
+    let mut current = ffi_types;
+    let mut count   = 0;
+    while !(*current).is_null() {
+        current = current.offset(1);
+        count += 1;
+    }
+
+    let new = libc::malloc((count+1) * mem::size_of::<FfiType_>())
+                    as FfiTypeArray_;
+
+    for i in 0 .. count {
+        *new.offset(i as isize) = ffi_type_clone(*ffi_types.offset(i as isize));
+    }
+    *new.offset(count as isize) = ptr::null::<low::ffi_type>() as FfiType_;
+
+    new
 }
 
-unsafe fn ffn_type_clone(ffi_type: FfiType_) -> FfiType_ {
+unsafe fn ffi_type_clone(ffi_type: FfiType_) -> FfiType_ {
     unimplemented!();
 }
 
