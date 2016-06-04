@@ -183,7 +183,7 @@ mod test {
     unsafe extern "C" fn callback(_cif: &low::ffi_cif,
                                   result: &mut u64,
                                   args: *const *const c_void,
-                                  userdata: &u64)
+                                  userdata: &mut u64)
     {
         let args: *const &u64 = mem::transmute(args);
         *result = **args + *userdata;
@@ -209,7 +209,7 @@ mod test {
         (_cif: &low::ffi_cif,
          result: &mut u64,
          args: *const *const c_void,
-         userdata: &F)
+         userdata: &mut F)
     {
         let args: *const &u64 = mem::transmute(args);
         let arg1 = **args.offset(0);

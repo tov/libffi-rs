@@ -135,7 +135,7 @@ pub type Callback<U, R>
     = unsafe extern "C" fn(cif:      &ffi_cif,
                            result:   &mut R,
                            args:     *const *const c_void,
-                           userdata: &U);
+                           userdata: &mut U);
 
 /// Prepares a closure to call the given callback function with the
 /// given user data. Note that the closure retains a reference to CIF
@@ -165,7 +165,7 @@ mod test {
     unsafe extern "C" fn callback(_cif: &ffi_cif,
                                   result: &mut u64,
                                   args: *const *const c_void,
-                                  userdata: &u64)
+                                  userdata: &mut u64)
     {
         let args: *const &u64 = mem::transmute(args);
         *result = **args + *userdata;
