@@ -108,7 +108,7 @@ pub unsafe fn call<R>(cif:  *mut ffi_cif,
     let mut result: R = mem::uninitialized();
     raw::ffi_call(cif,
                   Some(fun),
-                  mem::transmute::<*mut R, *mut c_void>(&mut result),
+                  &mut result as *mut R as *mut c_void,
                   args);
     result
 }

@@ -1,7 +1,6 @@
 //! The main idea is to wrap types `ffi_cif` and `ffi_closure` as `Cif` and
 //! `Closure`, respectively, so that the resources are managed properly.
 //! Calling a function via a CIF or closure is still unsafe.
-use std::mem;
 use std::os::raw::c_void;
 use std::marker::PhantomData;
 
@@ -23,12 +22,13 @@ pub struct Cif {
 /// as a C `void*`. Wrapping the argument in the `Arg` struct
 /// accomplishes the necessary coercion.
 #[derive(Debug)]
+#[repr(C)]
 pub struct Arg(*mut c_void);
 
 impl Arg {
     /// Coerces an argument reference into the `Arg` types.
     pub fn new<T>(r: &T) -> Self {
-        Arg(unsafe { mem::transmute(r as *const T) })
+        Arg(r as *const T as *mut c_void)
     }
 }
 
@@ -75,9 +75,11 @@ impl Cif {
 
         assert!(self.cif.nargs as usize == values.len());
 
-        low::call::<R>(mem::transmute(&self.cif),
-                       mem::transmute(f),
-                       mem::transmute(values.as_ptr()))
+        low::call::<R>(&self.cif as *const _ as *mut _,
+                       // TODO: Fun type instead of usize
+                       mem::transmute::<usize, extern "C" fn()>(f),
+                       mem::transmute::<*const Arg,
+                                        *mut *mut c_void>(values.as_ptr()))
     }
 
     /// Gets a raw pointer to the underlying
@@ -85,7 +87,7 @@ impl Cif {
     /// for passing the CIF to functions from the [`low`](../low/index.html)
     /// and [`raw`](../raw/index.html) modules.
     pub fn as_raw_ptr(&self) -> *mut low::ffi_cif {
-        unsafe { mem::transmute(&self.cif) }
+        &self.cif as *const _ as *mut _
     }
 }
 
