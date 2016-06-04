@@ -111,8 +111,8 @@ macro_rules! declare_closure {
         }
 
         impl<'a, $( $param: Copy, )* R> $closure<'a, $( $param, )* R> {
-            pub fn new<Callback>(cif: $cif<$( $param, )* R>,
-                                 callback: &'a Callback) -> Self
+            pub fn new_with_cif<Callback>(cif: $cif<$( $param, )* R>,
+                                          callback: &'a Callback) -> Self
                 where Callback: Fn($( $param, )*) -> R + 'a
             {
                 Self::from_parts(cif,
@@ -136,11 +136,11 @@ macro_rules! declare_closure {
         impl<'a, $($param: Copy + FfiType,)* R: FfiType>
             $closure<'a, $($param,)* R>
         {
-            pub fn wrap<Callback>(callback: &'a Callback) -> Self
+            pub fn new<Callback>(callback: &'a Callback) -> Self
                 where Callback: Fn($( $param, )*) -> R + 'a
             {
                 let cif = $cif::new($( $param::get_type(), )* R::get_type());
-                Self::new(cif, callback)
+                Self::new_with_cif(cif, callback)
             }
         }
     }
@@ -190,8 +190,8 @@ macro_rules! declare_closure_mut {
         }
 
         impl<'a, $( $param: Copy, )* R> $closure<'a, $( $param, )* R> {
-            pub fn new<Callback>(cif: $cif<$( $param, )* R>,
-                                 callback: &'a mut Callback) -> Self
+            pub fn new_with_cif<Callback>(cif: $cif<$( $param, )* R>,
+                                          callback: &'a mut Callback) -> Self
                 where Callback: FnMut($( $param, )*) -> R + 'a
             {
                 Self::from_parts(cif,
@@ -215,11 +215,11 @@ macro_rules! declare_closure_mut {
         impl<'a, $($param: Copy + FfiType,)* R: FfiType>
             $closure<'a, $($param,)* R>
         {
-            pub fn wrap<Callback>(callback: &'a mut Callback) -> Self
+            pub fn new<Callback>(callback: &'a mut Callback) -> Self
                 where Callback: FnMut($( $param, )*) -> R + 'a
             {
                 let cif = $cif::new($( $param::get_type(), )* R::get_type());
-                Self::new(cif, callback)
+                Self::new_with_cif(cif, callback)
             }
         }
     }
@@ -243,25 +243,25 @@ mod test {
     use super::types::*;
 
     #[test]
-    fn new() {
+    fn new_with_cif() {
         let x: u64 = 1;
         let f = |y: u64, z: u64| x + y + z;
 
         let type_   = u64::get_type();
         let cif     = Cif2::new(type_.clone(), type_.clone(), type_.clone());
-        let closure = Closure2::new(cif, &f);
+        let closure = Closure2::new_with_cif(cif, &f);
 
         assert_eq!(12, closure.code_ptr()(5, 6));
     }
 
     #[test]
-    fn new_mut() {
+    fn new_with_cif_mut() {
         let mut x: u64 = 0;
         let mut f = |y: u64| { x += y; x };
 
         let type_   = u64::get_type();
         let cif     = Cif1::new(type_.clone(), type_.clone());
-        let closure = ClosureMut1::new(cif, &mut f);
+        let closure = ClosureMut1::new_with_cif(cif, &mut f);
 
         let counter = closure.code_ptr();
 
@@ -271,11 +271,11 @@ mod test {
     }
 
     #[test]
-    fn wrap() {
+    fn new() {
         let x: u64 = 1;
         let f = |y: u64, z: u64| x + y + z;
 
-        let closure = Closure2::wrap(&f);
+        let closure = Closure2::new(&f);
 
         assert_eq!(12, closure.code_ptr()(5, 6));
     }
