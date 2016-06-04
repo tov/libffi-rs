@@ -103,7 +103,7 @@ macro_rules! declare_closure {
                 }
             }
 
-            pub fn code_ptr(&self) -> extern "C" fn($( $param, )*) -> R {
+            pub fn code_ptr(&self) -> unsafe extern "C" fn($( $param, )*) -> R {
                 unsafe {
                     ::std::mem::transmute(self.untyped.code_ptr())
                 }
@@ -181,7 +181,7 @@ macro_rules! declare_closure_mut {
                 }
             }
 
-            pub fn code_ptr(&self) -> extern "C" fn($( $param, )*) -> R {
+            pub fn code_ptr(&self) -> unsafe extern "C" fn($( $param, )*) -> R {
                 unsafe {
                     ::std::mem::transmute(self.untyped.code_ptr())
                 }
@@ -249,7 +249,9 @@ mod test {
         let cif     = Cif2::new(type_.clone(), type_.clone(), type_.clone());
         let closure = ClosureMut2::new(cif, f);
 
-        assert_eq!(12, closure.code_ptr()(5, 6));
+        unsafe {
+            assert_eq!(12, closure.code_ptr()(5, 6));
+        }
     }
 
     #[test]
@@ -262,9 +264,12 @@ mod test {
         let closure = ClosureMut1::new(cif, f);
 
         let counter = closure.code_ptr();
-        assert_eq!(5, counter(5));
-        assert_eq!(6, counter(1));
-        assert_eq!(8, counter(2));
+
+        unsafe {
+            assert_eq!(5, counter(5));
+            assert_eq!(6, counter(1));
+            assert_eq!(8, counter(2));
+        }
     }
 
     #[test]
@@ -274,6 +279,8 @@ mod test {
 
         let closure = ClosureMut2::wrap(f);
 
-        assert_eq!(12, closure.code_ptr()(5, 6));
+        unsafe {
+            assert_eq!(12, closure.code_ptr()(5, 6));
+        }
     }
 }
