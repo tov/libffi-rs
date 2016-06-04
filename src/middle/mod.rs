@@ -1,3 +1,5 @@
+//! Middle layer providing a somewhat safer (but still quite unsafe) API.
+//!
 //! The main idea is to wrap types `ffi_cif` and `ffi_closure` as `Cif` and
 //! `Closure`, respectively, so that the resources are managed properly.
 //! Calling a function via a CIF or closure is still unsafe.

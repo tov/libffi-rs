@@ -1,3 +1,9 @@
+//! A low-level wrapping of libffi, this layer makes no attempts at safety,
+//! but it tries to provide a somewhat more idiomatic interface.
+//!
+//! This module also re-exports types and constants necessary for using the
+//! library, so it should not be generally necessary to use the `raw` module.
+
 use std::mem;
 use std::os::raw::{c_void, c_uint};
 

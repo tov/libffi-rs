@@ -1,3 +1,34 @@
+//! High layer providing somewhat automatic marshalling of Rust closures
+//! as C function pointers.
+//!
+//! The main facility here is given by the structs `Closure`*`N`* and
+//! `ClosureMut`*`N`*, for natural numbers *`N`* from 0 to 12 (as of now).
+//! These represent C closures, which can be used to turn Rust lambdas
+//! (or in generally, anything that implements `Fn` or `FnMut`) into
+//! ordinary C function pointers. For example, a Rust value of type
+//! `Fn(u32, u32) -> u64` can be turned into a closure of type
+//! `Closure2<u32, u32, u64>`. Then a C function pointer of type
+//! `extern "C" fn(u32, u32) -> u64` can be borrowed from the closure
+//! and passed to C.
+//!
+//! Here’s an example using [`ClosureMut1`](struct.ClosureMut1.html):
+//!
+//! ```
+//! use libffi::high::ClosureMut1;
+//!
+//! let mut x = 0u64;
+//! let mut f = |y: u32| { x += y as u64; x };
+//!
+//! let closure = ClosureMut1::new(&mut f);
+//! let counter = closure.code_ptr();
+//!
+//! assert_eq!(5, counter(5));
+//! assert_eq!(6, counter(1));
+//! assert_eq!(8, counter(2));
+//! ```
+//!
+//! Note that in the above example, `closure` is an ordinary C function
+//! pointer of type `extern "C" fn(u64) -> u64`.
 use std::marker::PhantomData;
 use std::mem;
 
