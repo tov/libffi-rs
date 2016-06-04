@@ -57,6 +57,28 @@ declare_callback!( Callback8 A B C D E F G H );
 declare_callback!( Callback9 A B C D E F G H I );
 declare_callback!( Callback10 A B C D E F G H I J );
 
+macro_rules! declare_callback_mut {
+    ( $typename:ident $( $param:ident )* ) => {
+        pub type $typename<U, $( $param, )* R>
+            = extern "C" fn(cif:      &::low::ffi_cif,
+                            result:   &mut R,
+                            args:     &($( &$param, )*),
+                            userdata: &mut U);
+    }
+}
+
+declare_callback_mut!( CallbackMut0 );
+declare_callback_mut!( CallbackMut1 A );
+declare_callback_mut!( CallbackMut2 A B );
+declare_callback_mut!( CallbackMut3 A B C );
+declare_callback_mut!( CallbackMut4 A B C D );
+declare_callback_mut!( CallbackMut5 A B C D E );
+declare_callback_mut!( CallbackMut6 A B C D E F );
+declare_callback_mut!( CallbackMut7 A B C D E F G );
+declare_callback_mut!( CallbackMut8 A B C D E F G H );
+declare_callback_mut!( CallbackMut9 A B C D E F G H I );
+declare_callback_mut!( CallbackMut10 A B C D E F G H I J );
+
 macro_rules! declare_closure {
     ( $closure:ident $cif:ident $callback:ident $( $param:ident )*) => {
         pub struct $closure<$( $param, )* R> {
@@ -65,9 +87,9 @@ macro_rules! declare_closure {
         }
 
         impl<$( $param, )* R> $closure<$( $param, )* R> {
-            pub fn new<U>(cif: $cif<$( $param, )* R>,
-                          callback: $callback<U, $( $param, )* R>,
-                          userdata: &U) -> Self
+            pub fn from_parts<U>(cif: $cif<$( $param, )* R>,
+                                 callback: $callback<U, $( $param, )* R>,
+                                 userdata: &U) -> Self
             {
                 let callback: middle::Callback<U, R>
                     = unsafe { ::std::mem::transmute(callback) };
@@ -89,13 +111,13 @@ macro_rules! declare_closure {
         }
 
         impl<$( $param: Copy, )* R> $closure<$( $param, )* R> {
-            pub fn wrap<Callback>(cif: $cif<$( $param, )* R>,
-                                  callback: Callback) -> Self
+            pub fn new<Callback>(cif: $cif<$( $param, )* R>,
+                                 callback: Callback) -> Self
                 where Callback: Fn($( $param, )*) -> R
             {
-                Self::new(cif,
-                          Self::static_callback,
-                          &callback)
+                Self::from_parts(cif,
+                                 Self::static_callback,
+                                 &callback)
             }
 
             #[allow(non_snake_case)]
@@ -108,6 +130,16 @@ macro_rules! declare_closure {
               where Callback: Fn($( $param, )*) -> R
             {
                 *result = userdata($( $param, )*);
+            }
+        }
+
+        impl<$($param: Copy + FfiType,)* R: FfiType> $closure<$($param,)* R>
+        {
+            pub fn wrap<Callback>(callback: Callback) -> Self
+                where Callback: Fn($( $param, )*) -> R
+            {
+                let cif = $cif::new($( $param::get_type(), )* R::get_type());
+                Self::new(cif, callback)
             }
         }
     }
@@ -125,19 +157,122 @@ declare_closure!(Closure8 Cif8 Callback8 A B C D E F G H);
 declare_closure!(Closure9 Cif9 Callback9 A B C D E F G H I);
 declare_closure!(Closure10 Cif10 Callback10 A B C D E F G H I J);
 
+macro_rules! declare_closure_mut {
+    ( $closure:ident $cif:ident $callback:ident $( $param:ident )*) => {
+        pub struct $closure<$( $param, )* R> {
+            untyped: middle::Closure,
+            _marker: PhantomData<fn($( $param, )*) -> R>,
+        }
+
+        impl<$( $param, )* R> $closure<$( $param, )* R> {
+            pub fn from_parts<U>(cif: $cif<$( $param, )* R>,
+                                 callback: $callback<U, $( $param, )* R>,
+                                 userdata: &mut U) -> Self
+            {
+                let callback: middle::Callback<U, R>
+                    = unsafe { ::std::mem::transmute(callback) };
+                let closure
+                    = middle::Closure::new(cif.untyped,
+                                           callback,
+                                           userdata);
+                $closure {
+                    untyped: closure,
+                    _marker: PhantomData,
+                }
+            }
+
+            pub fn code_ptr(&self) -> extern "C" fn($( $param, )*) -> R {
+                unsafe {
+                    ::std::mem::transmute(self.untyped.code_ptr())
+                }
+            }
+        }
+
+        impl<$( $param: Copy, )* R> $closure<$( $param, )* R> {
+            pub fn new<Callback>(cif: $cif<$( $param, )* R>,
+                                 mut callback: Callback) -> Self
+                where Callback: FnMut($( $param, )*) -> R
+            {
+                Self::from_parts(cif,
+                                 Self::static_callback,
+                                 &mut callback)
+            }
+
+            #[allow(non_snake_case)]
+            extern "C" fn static_callback<Callback>
+                (_cif:     &::low::ffi_cif,
+                 result:   &mut R,
+                 &($( &$param, )*):
+                           &($( &$param, )*),
+                 userdata: &mut Callback)
+              where Callback: FnMut($( $param, )*) -> R
+            {
+                *result = userdata($( $param, )*);
+            }
+        }
+
+        impl<$($param: Copy + FfiType,)* R: FfiType> $closure<$($param,)* R>
+        {
+            pub fn wrap<Callback>(callback: Callback) -> Self
+                where Callback: FnMut($( $param, )*) -> R
+            {
+                let cif = $cif::new($( $param::get_type(), )* R::get_type());
+                Self::new(cif, callback)
+            }
+        }
+    }
+}
+
+declare_closure_mut!(ClosureMut0 Cif0 CallbackMut0);
+declare_closure_mut!(ClosureMut1 Cif1 CallbackMut1 A);
+declare_closure_mut!(ClosureMut2 Cif2 CallbackMut2 A B);
+declare_closure_mut!(ClosureMut3 Cif3 CallbackMut3 A B C);
+declare_closure_mut!(ClosureMut4 Cif4 CallbackMut4 A B C D);
+declare_closure_mut!(ClosureMut5 Cif5 CallbackMut5 A B C D E);
+declare_closure_mut!(ClosureMut6 Cif6 CallbackMut6 A B C D E F);
+declare_closure_mut!(ClosureMut7 Cif7 CallbackMut7 A B C D E F G);
+declare_closure_mut!(ClosureMut8 Cif8 CallbackMut8 A B C D E F G H);
+declare_closure_mut!(ClosureMut9 Cif9 CallbackMut9 A B C D E F G H I);
+declare_closure_mut!(ClosureMut10 Cif10 CallbackMut10 A B C D E F G H I J);
+
 #[cfg(test)]
 mod test {
     use super::*;
     use super::types::*;
 
     #[test]
-    fn wrap() {
+    fn new() {
         let x: u64 = 1;
         let f = |y: u64, z: u64| x + y + z;
 
         let type_   = u64::get_type();
         let cif     = Cif2::new(type_.clone(), type_.clone(), type_.clone());
-        let closure = Closure2::wrap(cif, f);
+        let closure = ClosureMut2::new(cif, f);
+
+        assert_eq!(12, closure.code_ptr()(5, 6));
+    }
+
+    #[test]
+    fn new_mut() {
+        let mut x: u64 = 0;
+        let f = |y: u64| { x += y; x };
+
+        let type_   = u64::get_type();
+        let cif     = Cif1::new(type_.clone(), type_.clone());
+        let closure = ClosureMut1::new(cif, f);
+
+        let counter = closure.code_ptr();
+        assert_eq!(5, counter(5));
+        assert_eq!(6, counter(1));
+        assert_eq!(8, counter(2));
+    }
+
+    #[test]
+    fn wrap() {
+        let x: u64 = 1;
+        let f = |y: u64, z: u64| x + y + z;
+
+        let closure = ClosureMut2::wrap(f);
 
         assert_eq!(12, closure.code_ptr()(5, 6));
     }
