@@ -2,17 +2,22 @@ use std::marker::PhantomData;
 
 use middle;
 
+/// Representations of C types for the high layer.
 pub mod types;
 use self::types::*;
 
 macro_rules! declare_cif {
     ( $typename:ident $( $param:ident )*) => {
+        /// Typed CIF (“Call InterFace”), which statically tracks
+        /// argument and result types.
         pub struct $typename<$( $param, )* R> {
             untyped: middle::Cif,
             _marker: PhantomData<fn($( $param, )*) -> R>,
         }
 
         impl<$( $param, )* R> $typename<$( $param, )* R> {
+            /// Creates a new statically-typed CIF from the given argument
+            /// and result types.
             #[allow(non_snake_case)]
             pub fn new($( $param: Type<$param>, )* result: Type<R>) -> Self {
                 let cif = middle::Cif::new(vec![$( $param.into_untyped() ),*],
@@ -20,19 +25,38 @@ macro_rules! declare_cif {
                 $typename { untyped: cif, _marker: PhantomData }
             }
         }
+
+        impl<$( $param: FfiType, )* R: FfiType> $typename<$( $param, )* R> {
+            /// Creates a new statically-typed CIF by reifying the
+            /// argument types as `Type<T>`s.
+            pub fn reify() -> Self {
+                Self::new($( $param::get_type(), )* R::get_type())
+            }
+        }
     }
 }
 
+/// Typed Call InterFace for 0-argument functions.
 declare_cif!(Cif0);
+/// Typed Call InterFace for 1-argument functions.
 declare_cif!(Cif1 A);
+/// Typed Call InterFace for 2-argument functions.
 declare_cif!(Cif2 A B);
+/// Typed Call InterFace for 3-argument functions.
 declare_cif!(Cif3 A B C);
+/// Typed Call InterFace for 4-argument functions.
 declare_cif!(Cif4 A B C D);
+/// Typed Call InterFace for 5-argument functions.
 declare_cif!(Cif5 A B C D E);
+/// Typed Call InterFace for 6-argument functions.
 declare_cif!(Cif6 A B C D E F);
+/// Typed Call InterFace for 7-argument functions.
 declare_cif!(Cif7 A B C D E F G);
+/// Typed Call InterFace for 8-argument functions.
 declare_cif!(Cif8 A B C D E F G H);
+/// Typed Call InterFace for 9-argument functions.
 declare_cif!(Cif9 A B C D E F G H I);
+/// Typed Call InterFace for 10-argument functions.
 declare_cif!(Cif10 A B C D E F G H I J);
 
 macro_rules! declare_callback {
@@ -139,8 +163,7 @@ macro_rules! declare_closure {
             pub fn new<Callback>(callback: &'a Callback) -> Self
                 where Callback: Fn($( $param, )*) -> R + 'a
             {
-                let cif = $cif::new($( $param::get_type(), )* R::get_type());
-                Self::new_with_cif(cif, callback)
+                Self::new_with_cif($cif::reify(), callback)
             }
         }
     }
@@ -218,8 +241,7 @@ macro_rules! declare_closure_mut {
             pub fn new<Callback>(callback: &'a mut Callback) -> Self
                 where Callback: FnMut($( $param, )*) -> R + 'a
             {
-                let cif = $cif::new($( $param::get_type(), )* R::get_type());
-                Self::new_with_cif(cif, callback)
+                Self::new_with_cif($cif::reify(), callback)
             }
         }
     }
