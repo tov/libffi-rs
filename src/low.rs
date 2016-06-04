@@ -25,6 +25,46 @@ fn ffi_status_to_result<R>(status: raw::ffi_status, good: R) -> Result<R> {
     }
 }
 
+/// Wraps a function pointer of unknown type. This is used to make
+/// the API a bit easier to understand, and to add a miniscule bit of
+/// type enforcement.
+#[derive(Clone, Copy, Debug)]
+#[repr(C)]
+pub struct CodePtr(pub *mut c_void);
+
+impl CodePtr {
+    /// Initializes a code pointer from a function pointer.
+    pub fn from_fun(fun: unsafe extern "C" fn()) -> Self {
+        CodePtr(fun as *mut c_void)
+    }
+
+    /// Initializes a code pointer from a void pointer.
+    pub fn from_ptr(fun: *const c_void) -> Self {
+        CodePtr(fun as *mut c_void)
+    }
+
+    /// Gets the code pointer typed as a `void*`.
+    pub fn as_ptr(&self) -> *mut c_void {
+        self.0
+    }
+
+    /// Gets the code pointer typed as a C function pointer. Note that
+    /// the returned type likely does not reflect the actual parameter and
+    /// return types of the function.
+    pub fn as_fun(&self) -> &unsafe extern "C" fn() {
+        unsafe {
+            mem::transmute::<&*mut c_void, &unsafe extern "C" fn()>(&self.0)
+        }
+    }
+
+    /// Gets the code pointer typed as a “safe” C function pointer.
+    /// Calling it isn’t actually safe, as the type doesn’t reflect the
+    /// actual parameter and return types.
+    pub unsafe fn as_safe_fun(&self) -> &extern "C" fn() {
+        mem::transmute::<&*mut c_void, &extern "C" fn()>(&self.0)
+    }
+}
+
 pub use raw::ffi_abi;
 pub use raw::_ffi_type as ffi_type;
 pub use raw::ffi_status;
@@ -102,13 +142,12 @@ pub unsafe fn prep_cif_var(cif: *mut ffi_cif,
 /// Calls C function `fun` using the calling convention and types
 /// specified by the given CIF, and with the given arguments.
 pub unsafe fn call<R>(cif:  *mut ffi_cif,
-                      fun:  unsafe extern "C" fn(),
+                      fun:  CodePtr,
                       args: *mut *mut c_void) -> R
 {
     let mut result: R = mem::uninitialized();
     raw::ffi_call(cif,
-                  Some(mem::transmute::<unsafe extern "C" fn(),
-                                        extern "C" fn()>(fun)),
+                  Some(*fun.as_safe_fun()),
                   &mut result as *mut R as *mut c_void,
                   args);
     result
@@ -117,13 +156,12 @@ pub unsafe fn call<R>(cif:  *mut ffi_cif,
 /// Allocates a closure, returning a pair of the writable closure
 /// object and the function pointer for calling it. The latter lives
 /// until the former is freed using `closure_free`.
-pub fn closure_alloc() -> (*mut ffi_closure, unsafe extern "C" fn()) {
+pub fn closure_alloc() -> (*mut ffi_closure, CodePtr) {
     unsafe {
         let mut code_pointer: *mut c_void = mem::uninitialized();
         let closure = raw::ffi_closure_alloc(mem::size_of::<ffi_closure>(),
-                                           &mut code_pointer);
-        (closure as *mut ffi_closure,
-         mem::transmute::<*mut c_void, unsafe extern "C" fn()>(code_pointer))
+                                             &mut code_pointer);
+        (closure as *mut ffi_closure, CodePtr::from_ptr(code_pointer))
     }
 }
 
@@ -157,7 +195,7 @@ pub unsafe fn prep_closure_loc<U, R>(closure:  *mut ffi_closure,
                                      cif:      *mut ffi_cif,
                                      callback: Callback<U, R>,
                                      userdata: *mut U,
-                                     code:     unsafe extern "C" fn())
+                                     code:     CodePtr)
     -> Result<()>
 {
     let status = raw::ffi_prep_closure_loc
@@ -165,7 +203,7 @@ pub unsafe fn prep_closure_loc<U, R>(closure:  *mut ffi_closure,
          cif,
          Some(mem::transmute::<Callback<U, R>, RawCallback>(callback)),
          userdata as *mut c_void,
-         code as *mut c_void);
+         code.as_ptr());
     ffi_status_to_result(status, ())
 }
 

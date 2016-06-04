@@ -5,6 +5,7 @@ use std::os::raw::c_void;
 use std::marker::PhantomData;
 
 use low;
+pub use low::{Callback, CodePtr};
 
 pub mod types;
 use self::types::*;
@@ -70,14 +71,13 @@ impl Cif {
     /// Calls function `f` passing it the given arguments. Note that
     /// the funtion pointer is passed as a `usize`, which tends to be
     /// more convenient (and the types aren’t checked anyway).
-    pub unsafe fn call<R>(&self, f: usize, values: &[Arg]) -> R {
+    pub unsafe fn call<R>(&self, f: CodePtr, values: &[Arg]) -> R {
         use std::mem;
 
         assert!(self.cif.nargs as usize == values.len());
 
         low::call::<R>(&self.cif as *const _ as *mut _,
-                       // TODO: Fun type instead of usize
-                       mem::transmute::<usize, extern "C" fn()>(f),
+                       f,
                        mem::transmute::<*const Arg,
                                         *mut *mut c_void>(values.as_ptr()))
     }
@@ -97,7 +97,7 @@ impl Cif {
 pub struct Closure<'a> {
     _cif:    Box<Cif>,
     alloc:   *mut ::low::ffi_closure,
-    code:    unsafe extern "C" fn(),
+    code:    CodePtr,
     _marker: PhantomData<&'a ()>,
 }
 
@@ -108,8 +108,6 @@ impl<'a> Drop for Closure<'a> {
         }
     }
 }
-
-pub use low::Callback;
 
 impl<'a> Closure<'a> {
     /// Creates a new closure. The CIF describes the calling convention
@@ -143,7 +141,7 @@ impl<'a> Closure<'a> {
     /// Obtains the callable code pointer for a closure. The result
     /// needs to be transmuted to the correct type before it can be called.
     pub fn code_ptr(&self) -> &unsafe extern "C" fn() {
-        &self.code
+        self.code.as_fun()
     }
 }
 
