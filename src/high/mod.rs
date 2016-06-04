@@ -278,4 +278,17 @@ mod test {
 
         assert_eq!(12, closure.code_ptr()(5, 6));
     }
+
+    #[test]
+    fn new_mut() {
+        let mut x: u64 = 0;
+        let mut f = |y: u32| { x += y as u64; x };
+
+        let closure = ClosureMut1::new(&mut f);
+        let counter = closure.code_ptr();
+
+        assert_eq!(5, counter(5));
+        assert_eq!(6, counter(1));
+        assert_eq!(8, counter(2));
+    }
 }
