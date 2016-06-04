@@ -1,12 +1,14 @@
 //! The main idea is to wrap types `ffi_cif` and `ffi_closure` as `Cif` and
 //! `Closure`, respectively, so that the resources are managed properly.
 //! Calling a function via a CIF or closure is still unsafe.
-pub mod types;
-use self::types::*;
-
-use low;
 use std::mem;
 use std::os::raw::c_void;
+use std::marker::PhantomData;
+
+use low;
+
+pub mod types;
+use self::types::*;
 
 /// A CIF (“Call InterFace”) describing the calling convention and types
 /// for calling a function.
@@ -90,13 +92,14 @@ impl Cif {
 /// Represents a closure, which captures a `void*` (user data) and
 /// passes it to a callback when the code pointer (obtained via
 /// [`code_ptr`](struct.Closure.html#method.code_ptr) is invoked.
-pub struct Closure {
-    _cif:  Box<Cif>,
-    alloc: *mut ::low::ffi_closure,
-    code:  extern "C" fn(),
+pub struct Closure<'a> {
+    _cif:    Box<Cif>,
+    alloc:   *mut ::low::ffi_closure,
+    code:    unsafe extern "C" fn(),
+    _marker: PhantomData<&'a ()>,
 }
 
-impl Drop for Closure {
+impl<'a> Drop for Closure<'a> {
     fn drop(&mut self) {
         unsafe {
             low::closure_free(self.alloc);
@@ -106,14 +109,14 @@ impl Drop for Closure {
 
 pub use low::Callback;
 
-impl Closure {
+impl<'a> Closure<'a> {
     /// Creates a new closure. The CIF describes the calling convention
     /// for the resulting C function. When called, the C function will
-    /// call `callback`, passing along its arguments and the captures
+    /// call `callback`, passing along its arguments and the captured
     /// `userdata`.
     pub fn new<U, R>(cif:      Cif,
                      callback: Callback<U, R>,
-                     userdata: &U) -> Self
+                     userdata: &'a U) -> Self
     {
         let cif = Box::new(cif);
         let (alloc, code) = low::closure_alloc();
@@ -127,16 +130,17 @@ impl Closure {
         }
 
         Closure {
-            _cif:  cif,
-            alloc: alloc,
-            code:  code,
+            _cif:    cif,
+            alloc:   alloc,
+            code:    code,
+            _marker: PhantomData,
         }
     }
 
     /// Obtains the callable code pointer for a closure. The result
     /// needs to be transmuted to the correct type before it can be called.
-    pub fn code_ptr(&self) -> unsafe extern "C" fn() {
-        self.code
+    pub fn code_ptr(&self) -> &unsafe extern "C" fn() {
+        &self.code
     }
 }
 
@@ -172,7 +176,7 @@ mod test {
         let closure = Closure::new(cif, callback, &env);
 
         unsafe {
-            let fun: unsafe extern "C" fn(u64) -> u64
+            let fun: &unsafe extern "C" fn(u64) -> u64
                 = mem::transmute(closure.code_ptr());
 
             assert_eq!(11, fun(6));
@@ -197,12 +201,11 @@ mod test {
         let closure = Closure::new(cif, callback2, &env);
 
         unsafe {
-            let fun: unsafe extern "C" fn (u64, u64) -> u64
+            let fun: &unsafe extern "C" fn (u64, u64) -> u64
                 = mem::transmute(closure.code_ptr());
 
             assert_eq!(11, fun(5, 6));
         }
-
     }
 
     unsafe extern "C" fn callback2<F: Fn(u64, u64) -> u64>
