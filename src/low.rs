@@ -106,25 +106,29 @@ pub unsafe fn call<R>(cif:  *mut ffi_cif,
                       args: *mut *mut c_void) -> R
 {
     let mut result: R = mem::uninitialized();
-    raw::ffi_call(cif, Some(fun), mem::transmute(&mut result as *mut R), args);
+    raw::ffi_call(cif,
+                  Some(fun),
+                  mem::transmute::<*mut R, *mut c_void>(&mut result),
+                  args);
     result
 }
 
 /// Allocates a closure, returning a pair of the writable closure
 /// object and the function pointer for calling it. The latter lives
 /// until the former is freed using `closure_free`.
-pub fn closure_alloc() -> (*mut ffi_closure, extern "C" fn()) {
+pub fn closure_alloc() -> (*mut ffi_closure, unsafe extern "C" fn()) {
     unsafe {
         let mut code_pointer: *mut c_void = mem::uninitialized();
         let closure = raw::ffi_closure_alloc(mem::size_of::<ffi_closure>(),
                                            &mut code_pointer);
-        (mem::transmute(closure), mem::transmute(code_pointer))
+        (closure as *mut ffi_closure,
+         mem::transmute::<*mut c_void, unsafe extern "C" fn()>(code_pointer))
     }
 }
 
 /// Frees the resources associated with a closure.
 pub unsafe fn closure_free(closure: *mut ffi_closure) {
-    raw::ffi_closure_free(mem::transmute(closure));
+    raw::ffi_closure_free(closure as *mut c_void);
 }
 
 /// The type of function called by a closure. `U` is the type of
@@ -137,6 +141,13 @@ pub type Callback<U, R>
                            args:     *const *const c_void,
                            userdata: &mut U);
 
+/// The callback type expected by `raw::ffi_prep_closure_loc`.
+pub type RawCallback
+    = unsafe extern "C" fn(cif:      *mut ffi_cif,
+                           result:   *mut c_void,
+                           args:     *mut *mut c_void,
+                           userdata: *mut c_void);
+
 /// Prepares a closure to call the given callback function with the
 /// given user data. Note that the closure retains a reference to CIF
 /// `cif`, so it must live as long as the resulting closure does or
@@ -144,14 +155,16 @@ pub type Callback<U, R>
 pub unsafe fn prep_closure_loc<U, R>(closure:  *mut ffi_closure,
                                      cif:      *mut ffi_cif,
                                      callback: Callback<U, R>,
-                                     userdata: *const U,
-                                     code:     extern "C" fn()) -> Result<()>
+                                     userdata: *mut U,
+                                     code:     unsafe extern "C" fn())
+    -> Result<()>
 {
-    let status = raw::ffi_prep_closure_loc(closure,
-                                         cif,
-                                         Some(mem::transmute(callback)),
-                                         mem::transmute(userdata),
-                                         mem::transmute(code));
+    let status = raw::ffi_prep_closure_loc
+        (closure,
+         cif,
+         Some(mem::transmute::<Callback<U, R>, RawCallback>(callback)),
+         userdata as *mut c_void,
+         code as *mut c_void);
     ffi_status_to_result(status, ())
 }
 

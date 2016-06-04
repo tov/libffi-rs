@@ -125,7 +125,8 @@ impl<'a> Closure<'a> {
             low::prep_closure_loc(alloc,
                                   cif.as_raw_ptr(),
                                   callback,
-                                  userdata,
+                                  // TODO: distinguish ClosureMut
+                                  userdata as *const U as *mut U,
                                   code).unwrap();
         }
 

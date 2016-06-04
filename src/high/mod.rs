@@ -1,4 +1,5 @@
 use std::marker::PhantomData;
+use std::mem;
 
 use middle;
 
@@ -80,7 +81,7 @@ macro_rules! define_closure_types {
             /// closure.
             pub fn code_ptr(&self) -> &extern "C" fn($( $T, )*) -> R {
                 unsafe {
-                    ::std::mem::transmute(self.untyped.code_ptr())
+                    mem::transmute(self.untyped.code_ptr())
                 }
             }
 
@@ -93,7 +94,7 @@ macro_rules! define_closure_types {
                                  userdata: &'a U) -> Self
             {
                 let callback: middle::Callback<U, R>
-                    = unsafe { ::std::mem::transmute(callback) };
+                    = unsafe { mem::transmute(callback) };
                 let closure
                     = middle::Closure::new(cif.untyped,
                                            callback,
@@ -155,7 +156,7 @@ macro_rules! define_closure_types {
             /// closure.
             pub fn code_ptr(&self) -> &extern "C" fn($( $T, )*) -> R {
                 unsafe {
-                    ::std::mem::transmute(self.untyped.code_ptr())
+                    mem::transmute(self.untyped.code_ptr())
                 }
             }
 
@@ -168,7 +169,7 @@ macro_rules! define_closure_types {
                                  userdata: &'a mut U) -> Self
             {
                 let callback: middle::Callback<U, R>
-                    = unsafe { ::std::mem::transmute(callback) };
+                    = unsafe { mem::transmute(callback) };
                 let closure
                     = middle::Closure::new(cif.untyped,
                                            callback,
