@@ -102,12 +102,13 @@ pub unsafe fn prep_cif_var(cif: *mut ffi_cif,
 /// Calls C function `fun` using the calling convention and types
 /// specified by the given CIF, and with the given arguments.
 pub unsafe fn call<R>(cif:  *mut ffi_cif,
-                      fun:  extern "C" fn(),
+                      fun:  unsafe extern "C" fn(),
                       args: *mut *mut c_void) -> R
 {
     let mut result: R = mem::uninitialized();
     raw::ffi_call(cif,
-                  Some(fun),
+                  Some(mem::transmute::<unsafe extern "C" fn(),
+                                        extern "C" fn()>(fun)),
                   &mut result as *mut R as *mut c_void,
                   args);
     result
