@@ -5,7 +5,7 @@ use std::os::raw::c_void;
 use std::marker::PhantomData;
 
 use low;
-pub use low::{Callback, CodePtr};
+pub use low::{Callback, CallbackMut, CodePtr};
 
 pub mod types;
 use self::types::*;
@@ -122,11 +122,37 @@ impl<'a> Closure<'a> {
         let (alloc, code) = low::closure_alloc();
 
         unsafe {
-            low::prep_closure_loc(alloc,
+            low::prep_closure(alloc,
+                              cif.as_raw_ptr(),
+                              callback,
+                              userdata as *const U,
+                              code).unwrap();
+        }
+
+        Closure {
+            _cif:    cif,
+            alloc:   alloc,
+            code:    code,
+            _marker: PhantomData,
+        }
+    }
+
+    /// Creates a new mutable closure. The CIF describes the calling convention
+    /// for the resulting C function. When called, the C function will
+    /// call `callback`, passing along its arguments and the captured
+    /// `userdata`.
+    pub fn new_mut<U, R>(cif:      Cif,
+                         callback: CallbackMut<U, R>,
+                         userdata: &'a mut U) -> Self
+    {
+        let cif = Box::new(cif);
+        let (alloc, code) = low::closure_alloc();
+
+        unsafe {
+            low::prep_closure_mut(alloc,
                                   cif.as_raw_ptr(),
                                   callback,
-                                  // TODO: distinguish ClosureMut
-                                  userdata as *const U as *mut U,
+                                  userdata as *mut U,
                                   code).unwrap();
         }
 
@@ -158,7 +184,8 @@ mod test {
         let args = vec![Type::sint64(), Type::sint64()];
         let cif  = Cif::new(args, Type::sint64());
         let f    = |m: i64, n: i64| -> i64 {
-            unsafe { cif.call(add_it as usize, &[arg(&m), arg(&n)]) }
+            unsafe { cif.call(CodePtr(add_it as *mut c_void),
+                              &[arg(&m), arg(&n)]) }
         };
 
         assert_eq!(12, f(5, 7));
@@ -188,7 +215,7 @@ mod test {
     unsafe extern "C" fn callback(_cif: &low::ffi_cif,
                                   result: &mut u64,
                                   args: *const *const c_void,
-                                  userdata: &mut u64)
+                                  userdata: &u64)
     {
         let args: *const &u64 = mem::transmute(args);
         *result = **args + *userdata;
@@ -213,7 +240,7 @@ mod test {
         (_cif: &low::ffi_cif,
          result: &mut u64,
          args: *const *const c_void,
-         userdata: &mut F)
+         userdata: &F)
     {
         let args: *const &u64 = mem::transmute(args);
         let arg1 = **args.offset(0);

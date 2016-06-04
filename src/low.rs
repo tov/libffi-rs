@@ -178,6 +178,16 @@ pub type Callback<U, R>
     = unsafe extern "C" fn(cif:      &ffi_cif,
                            result:   &mut R,
                            args:     *const *const c_void,
+                           userdata: &U);
+
+/// The type of function called by a mutable closure. `U` is the type of
+/// the user data captured by the closure and passed to the callback,
+/// and `R` is the type of the result. The parameters are not typed,
+/// since they are passed as a C array of `void*`.
+pub type CallbackMut<U, R>
+    = unsafe extern "C" fn(cif:      &ffi_cif,
+                           result:   &mut R,
+                           args:     *const *const c_void,
                            userdata: &mut U);
 
 /// The callback type expected by `raw::ffi_prep_closure_loc`.
@@ -191,11 +201,11 @@ pub type RawCallback
 /// given user data. Note that the closure retains a reference to CIF
 /// `cif`, so it must live as long as the resulting closure does or
 /// the result is undefined.
-pub unsafe fn prep_closure_loc<U, R>(closure:  *mut ffi_closure,
-                                     cif:      *mut ffi_cif,
-                                     callback: Callback<U, R>,
-                                     userdata: *mut U,
-                                     code:     CodePtr)
+pub unsafe fn prep_closure<U, R>(closure:  *mut ffi_closure,
+                                 cif:      *mut ffi_cif,
+                                 callback: Callback<U, R>,
+                                 userdata: *const U,
+                                 code:     CodePtr)
     -> Result<()>
 {
     let status = raw::ffi_prep_closure_loc
@@ -207,6 +217,25 @@ pub unsafe fn prep_closure_loc<U, R>(closure:  *mut ffi_closure,
     ffi_status_to_result(status, ())
 }
 
+/// Prepares a mutable closure to call the given callback function with the
+/// given user data. Note that the closure retains a reference to CIF
+/// `cif`, so it must live as long as the resulting closure does or
+/// the result is undefined.
+pub unsafe fn prep_closure_mut<U, R>(closure:  *mut ffi_closure,
+                                     cif:      *mut ffi_cif,
+                                     callback: CallbackMut<U, R>,
+                                     userdata: *mut U,
+                                     code:     CodePtr)
+    -> Result<()>
+{
+    let status = raw::ffi_prep_closure_loc
+        (closure,
+         cif,
+         Some(mem::transmute::<CallbackMut<U, R>, RawCallback>(callback)),
+         userdata as *mut c_void,
+         code.as_ptr());
+    ffi_status_to_result(status, ())
+}
 #[cfg(test)]
 mod test {
     use raw;
@@ -217,7 +246,7 @@ mod test {
     unsafe extern "C" fn callback(_cif: &ffi_cif,
                                   result: &mut u64,
                                   args: *const *const c_void,
-                                  userdata: &mut u64)
+                                  userdata: &u64)
     {
         let args: *const &u64 = mem::transmute(args);
         *result = **args + *userdata;
@@ -237,11 +266,11 @@ mod test {
             let (closure, fun_) = closure_alloc();
             let fun: unsafe extern "C" fn(u64) -> u64 = mem::transmute(fun_);
 
-            prep_closure_loc(closure,
-                             &mut cif,
-                             callback,
-                             mem::transmute(&mut env),
-                             mem::transmute(fun)).unwrap();
+            prep_closure(closure,
+                         &mut cif,
+                         callback,
+                         mem::transmute(&mut env),
+                         mem::transmute(fun)).unwrap();
 
             assert_eq!(11, fun(6));
             assert_eq!(12, fun(7));
