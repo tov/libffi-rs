@@ -168,12 +168,12 @@ macro_rules! define_closure_types {
                                  callback: $callback_mut<U, $( $T, )* R>,
                                  userdata: &'a mut U) -> Self
             {
-                let callback: middle::Callback<U, R>
+                let callback: middle::CallbackMut<U, R>
                     = unsafe { mem::transmute(callback) };
                 let closure
-                    = middle::Closure::new(cif.untyped,
-                                           callback,
-                                           userdata);
+                    = middle::Closure::new_mut(cif.untyped,
+                                               callback,
+                                               userdata);
                 $closure_mut {
                     untyped: closure,
                     _marker: PhantomData,
