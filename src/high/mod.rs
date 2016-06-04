@@ -67,7 +67,7 @@ macro_rules! declare_closure {
         impl<$( $param, )* R> $closure<$( $param, )* R> {
             pub fn new<U>(cif: $cif<$( $param, )* R>,
                           callback: $callback<U, $( $param, )* R>,
-                          userdata: &mut U) -> Self
+                          userdata: &U) -> Self
             {
                 let callback: middle::Callback<U, R>
                     = unsafe { ::std::mem::transmute(callback) };
@@ -87,6 +87,29 @@ macro_rules! declare_closure {
                 }
             }
         }
+
+        impl<$( $param: Copy, )* R> $closure<$( $param, )* R> {
+            pub fn wrap<Callback>(cif: $cif<$( $param, )* R>,
+                                  callback: Callback) -> Self
+                where Callback: Fn($( $param, )*) -> R
+            {
+                Self::new(cif,
+                          Self::static_callback,
+                          &callback)
+            }
+
+            #[allow(non_snake_case)]
+            extern "C" fn static_callback<Callback>
+                (_cif:     &::low::ffi_cif,
+                 result:   &mut R,
+                 &($( &$param, )*):
+                           &($( &$param, )*),
+                 userdata: &Callback)
+              where Callback: Fn($( $param, )*) -> R
+            {
+                *result = userdata($( $param, )*);
+            }
+        }
     }
 }
 
@@ -101,3 +124,21 @@ declare_closure!(Closure7 Cif7 Callback7 A B C D E F G);
 declare_closure!(Closure8 Cif8 Callback8 A B C D E F G H);
 declare_closure!(Closure9 Cif9 Callback9 A B C D E F G H I);
 declare_closure!(Closure10 Cif10 Callback10 A B C D E F G H I J);
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use super::types::*;
+
+    #[test]
+    fn wrap() {
+        let x: u64 = 1;
+        let f = |y: u64, z: u64| x + y + z;
+
+        let type_   = u64::get_type();
+        let cif     = Cif2::new(type_.clone(), type_.clone(), type_.clone());
+        let closure = Closure2::wrap(cif, f);
+
+        assert_eq!(12, closure.code_ptr()(5, 6));
+    }
+}
