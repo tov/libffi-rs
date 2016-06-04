@@ -10,56 +10,86 @@ macro_rules! define_closure_types {
     (
         $cif:ident $callback:ident $callback_mut:ident
                    $closure:ident  $closure_mut:ident ;
-                   $( $param:ident )*
+                   $( $T:ident )*
     )
         =>
     {
         /// Typed CIF (“Call InterFace”), which statically tracks
         /// argument and result types.
-        pub struct $cif<$( $param, )* R> {
+        pub struct $cif<$( $T, )* R> {
             untyped: middle::Cif,
-            _marker: PhantomData<fn($( $param, )*) -> R>,
+            _marker: PhantomData<fn($( $T, )*) -> R>,
         }
 
-        impl<$( $param, )* R> $cif<$( $param, )* R> {
+        impl<$( $T, )* R> $cif<$( $T, )* R> {
             /// Creates a new statically-typed CIF from the given argument
             /// and result types.
             #[allow(non_snake_case)]
-            pub fn new($( $param: Type<$param>, )* result: Type<R>) -> Self {
-                let cif = middle::Cif::new(vec![$( $param.into_untyped() ),*],
+            pub fn new($( $T: Type<$T>, )* result: Type<R>) -> Self {
+                let cif = middle::Cif::new(vec![$( $T.into_untyped() ),*],
                                            result.into_untyped());
                 $cif { untyped: cif, _marker: PhantomData }
             }
         }
 
-        impl<$( $param: FfiType, )* R: FfiType> $cif<$( $param, )* R> {
+        impl<$( $T: FfiType, )* R: FfiType> $cif<$( $T, )* R> {
             /// Creates a new statically-typed CIF by reifying the
             /// argument types as `Type<T>`s.
             pub fn reify() -> Self {
-                Self::new($( $param::get_type(), )* R::get_type())
+                Self::new($( $T::get_type(), )* R::get_type())
             }
         }
 
-        pub type $callback<U, $( $param, )* R>
+        /// The type of function that gets called from an immutable
+        /// typed closure.
+        pub type $callback<U, $( $T, )* R>
             = extern "C" fn(cif:      &::low::ffi_cif,
                             result:   &mut R,
-                            args:     &($( &$param, )*),
+                            args:     &($( &$T, )*),
                             userdata: &U);
 
-        pub type $callback_mut<U, $( $param, )* R>
+        /// The type of function that gets called from a mutable
+        /// typed closure.
+        pub type $callback_mut<U, $( $T, )* R>
             = extern "C" fn(cif:      &::low::ffi_cif,
                             result:   &mut R,
-                            args:     &($( &$param, )*),
+                            args:     &($( &$T, )*),
                             userdata: &mut U);
 
-        pub struct $closure<'a, $( $param, )* R> {
+        /// A mutable typed closure with the given argument and result
+        /// types.
+        pub struct $closure<'a, $( $T, )* R> {
             untyped: middle::Closure<'a>,
-            _marker: PhantomData<fn($( $param, )*) -> R>,
+            _marker: PhantomData<fn($( $T, )*) -> R>,
         }
 
-        impl<'a, $( $param, )* R> $closure<'a, $( $param, )* R> {
-            pub fn from_parts<U>(cif: $cif<$( $param, )* R>,
-                                 callback: $callback<U, $( $param, )* R>,
+        impl<'a, $($T: Copy + FfiType,)* R: FfiType>
+            $closure<'a, $($T,)* R>
+        {
+            /// Constructs a typed closure callable from C from a
+            /// Rust closure.
+            pub fn new<Callback>(callback: &'a Callback) -> Self
+                where Callback: Fn($( $T, )*) -> R + 'a
+            {
+                Self::new_with_cif($cif::reify(), callback)
+            }
+        }
+
+        impl<'a, $( $T, )* R> $closure<'a, $( $T, )* R> {
+            /// Gets the C code pointer that is used to invoke the
+            /// closure.
+            pub fn code_ptr(&self) -> &extern "C" fn($( $T, )*) -> R {
+                unsafe {
+                    ::std::mem::transmute(self.untyped.code_ptr())
+                }
+            }
+
+            /// Constructs a typed closure callable from C from a CIF
+            /// describing the calling convention for the resulting
+            /// function, a callback for the function to call, and
+            /// userdata to pass to the callback.
+            pub fn from_parts<U>(cif: $cif<$( $T, )* R>,
+                                 callback: $callback<U, $( $T, )* R>,
                                  userdata: &'a U) -> Self
             {
                 let callback: middle::Callback<U, R>
@@ -73,18 +103,15 @@ macro_rules! define_closure_types {
                     _marker: PhantomData,
                 }
             }
-
-            pub fn code_ptr(&self) -> &extern "C" fn($( $param, )*) -> R {
-                unsafe {
-                    ::std::mem::transmute(self.untyped.code_ptr())
-                }
-            }
         }
 
-        impl<'a, $( $param: Copy, )* R> $closure<'a, $( $param, )* R> {
-            pub fn new_with_cif<Callback>(cif: $cif<$( $param, )* R>,
+        impl<'a, $( $T: Copy, )* R> $closure<'a, $( $T, )* R> {
+            /// Constructs a typed closure callable from C from a CIF
+            /// describing the calling convention for the resulting
+            /// function and the Rust closure to call.
+            pub fn new_with_cif<Callback>(cif: $cif<$( $T, )* R>,
                                           callback: &'a Callback) -> Self
-                where Callback: Fn($( $param, )*) -> R + 'a
+                where Callback: Fn($( $T, )*) -> R + 'a
             {
                 Self::from_parts(cif,
                                  Self::static_callback,
@@ -95,33 +122,49 @@ macro_rules! define_closure_types {
             extern "C" fn static_callback<Callback>
                 (_cif:     &::low::ffi_cif,
                  result:   &mut R,
-                 &($( &$param, )*):
-                           &($( &$param, )*),
+                 &($( &$T, )*):
+                           &($( &$T, )*),
                  userdata: &Callback)
-              where Callback: Fn($( $param, )*) -> R + 'a
+              where Callback: Fn($( $T, )*) -> R + 'a
             {
-                *result = userdata($( $param, )*);
+                *result = userdata($( $T, )*);
             }
         }
 
-        impl<'a, $($param: Copy + FfiType,)* R: FfiType>
-            $closure<'a, $($param,)* R>
+        /// An immutable typed closure with the given argument and
+        /// result types.
+        pub struct $closure_mut<'a, $( $T, )* R> {
+            untyped: middle::Closure<'a>,
+            _marker: PhantomData<fn($( $T, )*) -> R>,
+        }
+
+        impl<'a, $($T: Copy + FfiType,)* R: FfiType>
+            $closure_mut<'a, $($T,)* R>
         {
-            pub fn new<Callback>(callback: &'a Callback) -> Self
-                where Callback: Fn($( $param, )*) -> R + 'a
+            /// Constructs a typed closure callable from C from a
+            /// Rust closure.
+            pub fn new<Callback>(callback: &'a mut Callback) -> Self
+                where Callback: FnMut($( $T, )*) -> R + 'a
             {
                 Self::new_with_cif($cif::reify(), callback)
             }
         }
 
-        pub struct $closure_mut<'a, $( $param, )* R> {
-            untyped: middle::Closure<'a>,
-            _marker: PhantomData<fn($( $param, )*) -> R>,
-        }
+        impl<'a, $( $T, )* R> $closure_mut<'a, $( $T, )* R> {
+            /// Gets the C code pointer that is used to invoke the
+            /// closure.
+            pub fn code_ptr(&self) -> &extern "C" fn($( $T, )*) -> R {
+                unsafe {
+                    ::std::mem::transmute(self.untyped.code_ptr())
+                }
+            }
 
-        impl<'a, $( $param, )* R> $closure_mut<'a, $( $param, )* R> {
-            pub fn from_parts<U>(cif:      $cif<$( $param, )* R>,
-                                 callback: $callback_mut<U, $( $param, )* R>,
+            /// Constructs a typed closure callable from C from a CIF
+            /// describing the calling convention for the resulting
+            /// function, a callback for the function to call, and
+            /// userdata to pass to the callback.
+            pub fn from_parts<U>(cif:      $cif<$( $T, )* R>,
+                                 callback: $callback_mut<U, $( $T, )* R>,
                                  userdata: &'a mut U) -> Self
             {
                 let callback: middle::Callback<U, R>
@@ -135,18 +178,15 @@ macro_rules! define_closure_types {
                     _marker: PhantomData,
                 }
             }
-
-            pub fn code_ptr(&self) -> &extern "C" fn($( $param, )*) -> R {
-                unsafe {
-                    ::std::mem::transmute(self.untyped.code_ptr())
-                }
-            }
         }
 
-        impl<'a, $( $param: Copy, )* R> $closure_mut<'a, $( $param, )* R> {
-            pub fn new_with_cif<Callback>(cif: $cif<$( $param, )* R>,
+        impl<'a, $( $T: Copy, )* R> $closure_mut<'a, $( $T, )* R> {
+            /// Constructs a typed closure callable from C from a CIF
+            /// describing the calling convention for the resulting
+            /// function and the Rust closure to call.
+            pub fn new_with_cif<Callback>(cif: $cif<$( $T, )* R>,
                                           callback: &'a mut Callback) -> Self
-                where Callback: FnMut($( $param, )*) -> R + 'a
+                where Callback: FnMut($( $T, )*) -> R + 'a
             {
                 Self::from_parts(cif,
                                  Self::static_callback,
@@ -157,22 +197,12 @@ macro_rules! define_closure_types {
             extern "C" fn static_callback<Callback>
                 (_cif:     &::low::ffi_cif,
                  result:   &mut R,
-                 &($( &$param, )*):
-                           &($( &$param, )*),
+                 &($( &$T, )*):
+                           &($( &$T, )*),
                  userdata: &mut Callback)
-              where Callback: FnMut($( $param, )*) -> R + 'a
+              where Callback: FnMut($( $T, )*) -> R + 'a
             {
-                *result = userdata($( $param, )*);
-            }
-        }
-
-        impl<'a, $($param: Copy + FfiType,)* R: FfiType>
-            $closure_mut<'a, $($param,)* R>
-        {
-            pub fn new<Callback>(callback: &'a mut Callback) -> Self
-                where Callback: FnMut($( $param, )*) -> R + 'a
-            {
-                Self::new_with_cif($cif::reify(), callback)
+                *result = userdata($( $T, )*);
             }
         }
     }
