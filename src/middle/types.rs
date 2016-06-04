@@ -5,8 +5,6 @@ use libc;
 
 use low;
 
-pub mod typed;
-
 // Internally we represent types and type arrays using raw pointers,
 // since this is what libffi understands. Below we wrap them with
 // types that implement Drop and Clone.

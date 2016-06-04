@@ -1,19 +1,23 @@
 use std::marker::PhantomData;
 
-use types as untyped;
+use middle::types as untyped;
 
 #[derive(Clone, Debug)]
 pub struct Type<T> {
     untyped: untyped::Type,
-    phantom: PhantomData<T>,
+    _marker: PhantomData<*mut T>,
 }
 
 impl<T> Type<T> {
     fn make(untyped: untyped::Type) -> Self {
         Type {
             untyped: untyped,
-            phantom: Default::default(),
+            _marker: PhantomData,
         }
+    }
+
+    pub fn into_untyped(self) -> untyped::Type {
+        self.untyped
     }
 }
 
@@ -53,8 +57,8 @@ impl<T> FfiType for *const T {
 macro_rules! declare_type_array {
     ( $typename:ident<$( $param:ident ),*> ) => {
         pub struct $typename<$( $param ),*> {
-            untyped: untyped::TypeArray,
-            phantom: PhantomData<($( $param, )*)>,
+            _untyped: untyped::TypeArray,
+            _marker: PhantomData<($( *mut $param, )*)>,
         }
     }
 }

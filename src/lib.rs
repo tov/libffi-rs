@@ -14,5 +14,6 @@ pub mod low;
 /// Middle layer providing a somewhat safer (but still quite unsafe) API.
 pub mod middle;
 
-/// Representations of C types and arrays of thereof.
-pub mod types;
+/// High layer providing somewhat automatic marshalling of Rust closures
+/// as C function pointers.
+pub mod high;

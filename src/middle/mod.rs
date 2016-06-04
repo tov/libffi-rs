@@ -1,7 +1,8 @@
 //! The main idea is to wrap types `ffi_cif` and `ffi_closure` as `Cif` and
 //! `Closure`, respectively, so that the resources are managed properly.
 //! Calling a function via a CIF or closure is still unsafe.
-pub use types::*;
+pub mod types;
+use self::types::*;
 
 use low;
 use std::mem;
@@ -103,14 +104,16 @@ impl Drop for Closure {
     }
 }
 
+pub use low::Callback;
+
 impl Closure {
     /// Creates a new closure. The CIF describes the calling convention
     /// for the resulting C function. When called, the C function will
     /// call `callback`, passing along its arguments and the captures
     /// `userdata`.
-    pub fn new<U, R>(cif:  Cif,
-                     callback: low::Callback<U, R>,
-                     userdata: *const U) -> Self
+    pub fn new<U, R>(cif:      Cif,
+                     callback: Callback<U, R>,
+                     userdata: &U) -> Self
     {
         let cif = Box::new(cif);
         let (alloc, code) = low::closure_alloc();
@@ -141,13 +144,12 @@ impl Closure {
 mod test {
     use low;
     use super::*;
+    use super::types::*;
     use std::mem;
     use std::os::raw::c_void;
 
     #[test]
     fn call() {
-        use types::*;
-
         let args = vec![Type::sint64(), Type::sint64()];
         let cif  = Cif::new(args, Type::sint64());
         let f    = |m: i64, n: i64| -> i64 {
@@ -165,7 +167,6 @@ mod test {
 
     #[test]
     fn closure() {
-        use types::*;
         let cif  = Cif::new(vec![Type::uint64()], Type::uint64());
         let env: u64 = 5;
         let closure = Closure::new(cif, callback, &env);
@@ -190,7 +191,6 @@ mod test {
 
     #[test]
     fn rust_lambda() {
-        use types::*;
         let cif = Cif::new(vec![Type::uint64(), Type::uint64()],
                            Type::uint64());
         let env = |x: u64, y: u64| x + y;
