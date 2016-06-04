@@ -4,7 +4,7 @@ hard: test
 build:
 	clear
 	cargo build
-	cargo doc
+	cargo doc --no-deps
 
 run:
 	clear
