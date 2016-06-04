@@ -1,9 +1,4 @@
 TODO:
 
- - custom complex number types
- - high-level / fully-typed APIs
- - many more tests
-
-QUESTIONS:
-
- - Do we need separate ClosureN and ClosureMutN?
+ - many more tests and examples
+ - custom complex number types? but Rust doesn't support complex numbers
