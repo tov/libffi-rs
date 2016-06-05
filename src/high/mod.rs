@@ -102,7 +102,7 @@ macro_rules! define_closure_types {
             _marker: PhantomData<fn($( $T, )*) -> R>,
         }
 
-        impl<'a, $($T: Copy + FfiType,)* R: FfiType>
+        impl<'a, $($T: Clone + FfiType,)* R: FfiType>
             $closure<'a, $($T,)* R>
         {
             /// Constructs a typed closure callable from C from a
@@ -144,7 +144,7 @@ macro_rules! define_closure_types {
             }
         }
 
-        impl<'a, $( $T: Copy, )* R> $closure<'a, $( $T, )* R> {
+        impl<'a, $( $T: Clone, )* R> $closure<'a, $( $T, )* R> {
             /// Constructs a typed closure callable from C from a CIF
             /// describing the calling convention for the resulting
             /// function and the Rust closure to call.
@@ -161,13 +161,13 @@ macro_rules! define_closure_types {
             extern "C" fn static_callback<Callback>
                 (_cif:     &::low::ffi_cif,
                  result:   &mut R,
-                 &($( &$T, )*):
+                 &($( $T, )*):
                            &($( &$T, )*),
                  userdata: &Callback)
               where Callback: Fn($( $T, )*) -> R + 'a
             {
                 unsafe {
-                    ptr::write(result, userdata($( $T, )*));
+                    ptr::write(result, userdata($( $T.clone(), )*));
                 }
             }
         }
@@ -179,7 +179,7 @@ macro_rules! define_closure_types {
             _marker: PhantomData<fn($( $T, )*) -> R>,
         }
 
-        impl<'a, $($T: Copy + FfiType,)* R: FfiType>
+        impl<'a, $($T: Clone + FfiType,)* R: FfiType>
             $closure_mut<'a, $($T,)* R>
         {
             /// Constructs a typed closure callable from C from a
@@ -221,7 +221,7 @@ macro_rules! define_closure_types {
             }
         }
 
-        impl<'a, $( $T: Copy, )* R> $closure_mut<'a, $( $T, )* R> {
+        impl<'a, $( $T: Clone, )* R> $closure_mut<'a, $( $T, )* R> {
             /// Constructs a typed closure callable from C from a CIF
             /// describing the calling convention for the resulting
             /// function and the Rust closure to call.
@@ -238,13 +238,13 @@ macro_rules! define_closure_types {
             extern "C" fn static_callback<Callback>
                 (_cif:     &::low::ffi_cif,
                  result:   &mut R,
-                 &($( &$T, )*):
+                 &($( $T, )*):
                            &($( &$T, )*),
                  userdata: &mut Callback)
               where Callback: FnMut($( $T, )*) -> R + 'a
             {
                 unsafe {
-                    ptr::write(result, userdata($( $T, )*));
+                    ptr::write(result, userdata($( $T.clone(), )*));
                 }
             }
         }
