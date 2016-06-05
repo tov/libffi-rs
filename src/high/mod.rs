@@ -72,6 +72,13 @@ macro_rules! define_closure_types {
             }
         }
 
+        // We use tuples of pointers to describe the arguments, and we
+        // extract them by pattern matching. This assumes that a tuple
+        // of pointers will be laid out packed and in order. This seems
+        // to hold true right now, and I can’t think of a reason why it
+        // wouldn’t be that way, but technically it may be undefined
+        // behavior.
+
         /// The type of function that gets called from an immutable
         /// typed closure.
         pub type $callback<U, $( $T, )* R>
