@@ -172,52 +172,88 @@ impl Type {
     }
 
     /// Returns the unsigned 8-bit numeric type.
-    pub fn uint8() -> Self {
+    pub fn u8() -> Self {
         Type(unsafe { Unique::new(&mut low::ffi_type_uint8) })
     }
 
     /// Returns the signed 8-bit numeric type.
-    pub fn sint8() -> Self {
+    pub fn i8() -> Self {
         Type(unsafe { Unique::new(&mut low::ffi_type_sint8) })
     }
 
     /// Returns the unsigned 16-bit numeric type.
-    pub fn uint16() -> Self {
+    pub fn u16() -> Self {
         Type(unsafe { Unique::new(&mut low::ffi_type_uint16) })
     }
 
     /// Returns the signed 16-bit numeric type.
-    pub fn sint16() -> Self {
+    pub fn i16() -> Self {
         Type(unsafe { Unique::new(&mut low::ffi_type_sint16) })
     }
 
     /// Returns the unsigned 32-bit numeric type.
-    pub fn uint32() -> Self {
+    pub fn u32() -> Self {
         Type(unsafe { Unique::new(&mut low::ffi_type_uint32) })
     }
 
     /// Returns the signed 32-bit numeric type.
-    pub fn sint32() -> Self {
+    pub fn i32() -> Self {
         Type(unsafe { Unique::new(&mut low::ffi_type_sint32) })
     }
 
     /// Returns the unsigned 64-bit numeric type.
-    pub fn uint64() -> Self {
+    pub fn u64() -> Self {
         Type(unsafe { Unique::new(&mut low::ffi_type_uint64) })
     }
 
     /// Returns the signed 64-bit numeric type.
-    pub fn sint64() -> Self {
+    pub fn i64() -> Self {
         Type(unsafe { Unique::new(&mut low::ffi_type_sint64) })
     }
 
+    /// Returns the C equivalent of Rust `usize` (`u16`).
+    #[cfg(target_pointer_width = "16")]
+    pub fn usize() -> Self {
+        Self::u16()
+    }
+
+    /// Returns the C equivalent of Rust `isize` (`i16`).
+    #[cfg(target_pointer_width = "16")]
+    pub fn isize() -> Self {
+        Self::i16()
+    }
+
+    /// Returns the C equivalent of Rust `usize` (`u32`).
+    #[cfg(target_pointer_width = "32")]
+    pub fn usize() -> Self {
+        Self::u32()
+    }
+
+    /// Returns the C equivalent of Rust `isize` (`i32`).
+    #[cfg(target_pointer_width = "32")]
+    pub fn isize() -> Self {
+        Self::i32()
+    }
+
+    /// Returns the C equivalent of Rust `usize` (`u64`).
+    #[cfg(target_pointer_width = "64")]
+    pub fn usize() -> Self {
+        Self::u64()
+    }
+
+    /// Returns the C equivalent of Rust `isize` (`i64`).
+    #[cfg(target_pointer_width = "64")]
+    pub fn isize() -> Self {
+        Self::i64()
+    }
+
     /// Returns the C `float` (32-bit floating point) type.
-    pub fn float() -> Self {
+    pub fn f32() -> Self {
         Type(unsafe { Unique::new(&mut low::ffi_type_float) })
     }
 
     /// Returns the C `double` (64-bit floating point) type.
-    pub fn double() -> Self {
+    pub fn f64() -> Self {
         Type(unsafe { Unique::new(&mut low::ffi_type_double) })
     }
 
@@ -232,12 +268,12 @@ impl Type {
     }
 
     /// Returns the C `_Complex float` type.
-    pub fn complex_float() -> Self {
+    pub fn c32() -> Self {
         Type(unsafe { Unique::new(&mut low::ffi_type_complex_float) })
     }
 
     /// Returns the C `_Complex double` type.
-    pub fn complex_double() -> Self {
+    pub fn c64() -> Self {
         Type(unsafe { Unique::new(&mut low::ffi_type_complex_double) })
     }
 
@@ -290,27 +326,27 @@ mod test {
     use super::*;
 
     #[test]
-    fn create_uint64() {
-        Type::uint64();
+    fn create_u64() {
+        Type::u64();
     }
 
     #[test]
-    fn clone_uint64() {
-        Type::uint64().clone().clone();
+    fn clone_u64() {
+        Type::u64().clone().clone();
     }
 
     #[test]
     fn create_struct() {
-        Type::structure(vec![Type::sint64(),
-                             Type::sint64(),
-                             Type::uint64()]);
+        Type::structure(vec![Type::i64(),
+                             Type::i64(),
+                             Type::u64()]);
     }
 
     #[test]
     fn clone_struct() {
-        Type::structure(vec![Type::sint64(),
-                             Type::sint64(),
-                             Type::uint64()]).clone().clone();
+        Type::structure(vec![Type::i64(),
+                             Type::i64(),
+                             Type::u64()]).clone().clone();
     }
 
 }
