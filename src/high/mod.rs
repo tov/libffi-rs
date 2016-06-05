@@ -30,7 +30,7 @@
 //! Note that in the above example, `closure` is an ordinary C function
 //! pointer of type `extern "C" fn(u64) -> u64`.
 use std::marker::PhantomData;
-use std::mem;
+use std::{mem, ptr};
 
 use middle;
 
@@ -159,7 +159,9 @@ macro_rules! define_closure_types {
                  userdata: &Callback)
               where Callback: Fn($( $T, )*) -> R + 'a
             {
-                *result = userdata($( $T, )*);
+                unsafe {
+                    ptr::write(result, userdata($( $T, )*));
+                }
             }
         }
 
@@ -234,7 +236,9 @@ macro_rules! define_closure_types {
                  userdata: &mut Callback)
               where Callback: FnMut($( $T, )*) -> R + 'a
             {
-                *result = userdata($( $T, )*);
+                unsafe {
+                    ptr::write(result, userdata($( $T, )*));
+                }
             }
         }
     }
