@@ -1,6 +1,8 @@
 //! Representations of C types and arrays thereof.
 
-use std::{mem, ptr};
+use std::fmt;
+use std::mem;
+use std::ptr::{Unique, self};
 use libc;
 
 use low;
@@ -17,14 +19,25 @@ type TypeArray_ = *mut Type_;
 type Owned<T>      = T;
 
 /// Represents a single C type.
-#[derive(Debug)]
-pub struct Type(Type_);
+pub struct Type(Unique<low::ffi_type>);
 
 /// Represents a sequence of C types, which can be used to construct
 /// a struct type or as the arguments when creating a
 /// [CIF](../middle/struct.Cif.html).
-#[derive(Debug)]
-pub struct TypeArray(TypeArray_);
+pub struct TypeArray(Unique<*mut low::ffi_type>);
+
+impl fmt::Debug for Type {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_fmt(format_args!("Type({:?})", *self.0))
+    }
+}
+
+impl fmt::Debug for TypeArray {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_fmt(format_args!("TypeArray({:?})", *self.0))
+    }
+}
+
 
 /// Computes the length of a raw `TypeArray_` by searching for the
 /// null terminator.
@@ -54,7 +67,7 @@ unsafe fn ffi_type_array_create(elements: Vec<Type>)
     let size = elements.len();
     let new  = ffi_type_array_create_empty(size);
     for i in 0 .. size {
-        *new.offset(i as isize) = elements[i].0;
+        *new.offset(i as isize) = *elements[i].0;
     }
 
     for t in elements {
@@ -127,25 +140,27 @@ unsafe fn ffi_type_destroy(victim: Owned<Type_>) {
 
 impl Drop for Type {
     fn drop(&mut self) {
-        unsafe { ffi_type_destroy(self.0) }
+        unsafe { ffi_type_destroy(self.0.get_mut()) }
     }
 }
 
 impl Drop for TypeArray {
     fn drop(&mut self) {
-        unsafe { ffi_type_array_destroy(self.0) }
+        unsafe { ffi_type_array_destroy(self.0.get_mut()) }
     }
 }
 
 impl Clone for Type {
     fn clone(&self) -> Self {
-        unsafe { Type(ffi_type_clone(self.0)) }
+        unsafe { Type(Unique::new(ffi_type_clone(*self.0))) }
     }
 }
 
 impl Clone for TypeArray {
     fn clone(&self) -> Self {
-        unsafe { TypeArray(ffi_type_array_clone(self.0)) }
+        unsafe {
+            TypeArray(Unique::new(ffi_type_array_clone(*self.0)))
+        }
     }
 }
 
@@ -153,120 +168,120 @@ impl Type {
     /// Returns the representation of the C `void` type. This is only
     /// used for the return type of a Cif.
     pub fn void() -> Self {
-        Type(unsafe { &mut low::ffi_type_void })
+        Type(unsafe { Unique::new(&mut low::ffi_type_void) })
     }
 
     /// Returns the unsigned 8-bit numeric type.
     pub fn uint8() -> Self {
-        Type(unsafe { &mut low::ffi_type_uint8 })
+        Type(unsafe { Unique::new(&mut low::ffi_type_uint8) })
     }
 
     /// Returns the signed 8-bit numeric type.
     pub fn sint8() -> Self {
-        Type(unsafe { &mut low::ffi_type_sint8 })
+        Type(unsafe { Unique::new(&mut low::ffi_type_sint8) })
     }
 
     /// Returns the unsigned 16-bit numeric type.
     pub fn uint16() -> Self {
-        Type(unsafe { &mut low::ffi_type_uint16 })
+        Type(unsafe { Unique::new(&mut low::ffi_type_uint16) })
     }
 
     /// Returns the signed 16-bit numeric type.
     pub fn sint16() -> Self {
-        Type(unsafe { &mut low::ffi_type_sint16 })
+        Type(unsafe { Unique::new(&mut low::ffi_type_sint16) })
     }
 
     /// Returns the unsigned 32-bit numeric type.
     pub fn uint32() -> Self {
-        Type(unsafe { &mut low::ffi_type_uint32 })
+        Type(unsafe { Unique::new(&mut low::ffi_type_uint32) })
     }
 
     /// Returns the signed 32-bit numeric type.
     pub fn sint32() -> Self {
-        Type(unsafe { &mut low::ffi_type_sint32 })
+        Type(unsafe { Unique::new(&mut low::ffi_type_sint32) })
     }
 
     /// Returns the unsigned 64-bit numeric type.
     pub fn uint64() -> Self {
-        Type(unsafe { &mut low::ffi_type_uint64 })
+        Type(unsafe { Unique::new(&mut low::ffi_type_uint64) })
     }
 
     /// Returns the signed 64-bit numeric type.
     pub fn sint64() -> Self {
-        Type(unsafe { &mut low::ffi_type_sint64 })
+        Type(unsafe { Unique::new(&mut low::ffi_type_sint64) })
     }
 
     /// Returns the C `float` (32-bit floating point) type.
     pub fn float() -> Self {
-        Type(unsafe { &mut low::ffi_type_float })
+        Type(unsafe { Unique::new(&mut low::ffi_type_float) })
     }
 
     /// Returns the C `double` (64-bit floating point) type.
     pub fn double() -> Self {
-        Type(unsafe { &mut low::ffi_type_double })
+        Type(unsafe { Unique::new(&mut low::ffi_type_double) })
     }
 
     /// Returns the C `void*` type, for passing any kind of pointer.
     pub fn pointer() -> Self {
-        Type(unsafe { &mut low::ffi_type_pointer })
+        Type(unsafe { Unique::new(&mut low::ffi_type_pointer) })
     }
 
     /// Returns the C `long double` (extended-precision floating point) type.
     pub fn longdouble() -> Self {
-        Type(unsafe { &mut low::ffi_type_longdouble })
+        Type(unsafe { Unique::new(&mut low::ffi_type_longdouble) })
     }
 
     /// Returns the C `_Complex float` type.
     pub fn complex_float() -> Self {
-        Type(unsafe { &mut low::ffi_type_complex_float })
+        Type(unsafe { Unique::new(&mut low::ffi_type_complex_float) })
     }
 
     /// Returns the C `_Complex double` type.
     pub fn complex_double() -> Self {
-        Type(unsafe { &mut low::ffi_type_complex_double })
+        Type(unsafe { Unique::new(&mut low::ffi_type_complex_double) })
     }
 
     /// Returns the C `_Complex long double` type.
     pub fn complex_longdouble() -> Self {
-        Type(unsafe { &mut low::ffi_type_complex_longdouble })
+        Type(unsafe { Unique::new(&mut low::ffi_type_complex_longdouble) })
     }
 
     /// Constructs a structure type whose fields have the given types.
     pub fn structure(fields: Vec<Type>) -> Self {
         unsafe {
-            Type(ffi_type_struct_create(fields))
+            Type(Unique::new(ffi_type_struct_create(fields)))
         }
     }
 
     /// Constructs a structure type whose fields have the given types.
     pub fn structure_from_array(fields: TypeArray) -> Self {
         unsafe {
-            Type(ffi_type_struct_create_raw(fields.0))
+            Type(Unique::new(ffi_type_struct_create_raw(*fields.0)))
         }
     }
 
     /// Gets a raw pointer to the underlying
     /// [`ffi_type`](../low/struct.ffi_type.html).
     pub fn as_raw_ptr(&self) -> *mut low::ffi_type {
-        self.0
+        *self.0
     }
 }
 
 impl TypeArray {
     /// Constructs an array the given `Type`s.
     pub fn new(elements: Vec<Type>) -> Self {
-        unsafe { TypeArray(ffi_type_array_create(elements)) }
+        unsafe { TypeArray(Unique::new(ffi_type_array_create(elements))) }
     }
 
     /// The length of this array of `Type`s.
     pub fn len(&self) -> usize {
-        unsafe { ffi_type_array_len(self.0) }
+        unsafe { ffi_type_array_len(*self.0) }
     }
 
     /// Gets a raw pointer to the underlying C array of
     /// [`ffi_type`](../low/struct.ffi_type.html)s.
     pub fn as_raw_ptr(&self) -> *mut *mut low::ffi_type {
-        self.0
+        *self.0
     }
 }
 

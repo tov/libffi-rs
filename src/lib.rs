@@ -1,3 +1,4 @@
+#![feature(unique)]
 //! Rust bindings for [libffi](https://sourceware.org/libffi/).
 //!
 //! # Purpose
