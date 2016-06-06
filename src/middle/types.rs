@@ -54,7 +54,8 @@ unsafe fn ffi_type_array_len(mut array: TypeArray_) -> usize {
 unsafe fn ffi_type_array_create_empty(len: usize) -> Owned<TypeArray_> {
     let array = libc::malloc((len + 1) * mem::size_of::<Type_>())
                     as TypeArray_;
-    assert!(!array.is_null());
+    assert!(!array.is_null(),
+            "ffi_type_array_create_empty: out of memory");
     *array.offset(len as isize) = ptr::null::<low::ffi_type>() as Type_;
     array
 }
@@ -82,7 +83,8 @@ unsafe fn ffi_type_struct_create_raw(elements: Owned<TypeArray_>)
     -> Owned<Type_>
 {
     let new = libc::malloc(mem::size_of::<low::ffi_type>()) as Type_;
-    assert!(!new.is_null());
+    assert!(!new.is_null(),
+            "ffi_type_struct_create_raw: out of memory");
 
     (*new).size      = 0;
     (*new).alignment = 0;
