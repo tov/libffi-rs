@@ -59,8 +59,9 @@ macro_rules! define_closure_types {
             /// and result types.
             #[allow(non_snake_case)]
             pub fn new($( $T: Type<$T>, )* result: Type<R>) -> Self {
-                let cif = middle::Cif::new(vec![$( $T.into_untyped() ),*],
-                                           result.into_untyped());
+                let cif = middle::Cif::new(
+                    vec![$( $T.into_untyped() ),*].into_iter(),
+                    result.into_untyped());
                 $cif { untyped: cif, _marker: PhantomData }
             }
 

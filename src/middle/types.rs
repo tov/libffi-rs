@@ -38,7 +38,6 @@ impl fmt::Debug for TypeArray {
     }
 }
 
-
 /// Computes the length of a raw `TypeArray_` by searching for the
 /// null terminator.
 unsafe fn ffi_type_array_len(mut array: TypeArray_) -> usize {
@@ -62,17 +61,13 @@ unsafe fn ffi_type_array_create_empty(len: usize) -> Owned<TypeArray_> {
 
 /// Creates a null-terminated array of Type_. Takes ownership of
 /// the elements.
-unsafe fn ffi_type_array_create(elements: Vec<Type>)
-    -> Owned<TypeArray_>
+unsafe fn ffi_type_array_create<I>(elements: I) -> Owned<TypeArray_>
+    where I: ExactSizeIterator<Item=Type>
 {
     let size = elements.len();
     let new  = ffi_type_array_create_empty(size);
-    for i in 0 .. size {
-        *new.offset(i as isize) = *elements[i].0;
-    }
-
-    for t in elements {
-        mem::forget(t);
+    for (i, element) in elements.enumerate() {
+        *new.offset(i as isize) = *element.0;
     }
 
     new
@@ -96,7 +91,9 @@ unsafe fn ffi_type_struct_create_raw(elements: Owned<TypeArray_>)
 
 /// Creates a struct ffi_type with the given elements. Takes ownership
 /// of the elements.
-unsafe fn ffi_type_struct_create(elements: Vec<Type>) -> Owned<Type_> {
+unsafe fn ffi_type_struct_create<I>(elements: I) -> Owned<Type_>
+    where I: ExactSizeIterator<Item=Type>
+{
     ffi_type_struct_create_raw(ffi_type_array_create(elements))
 }
 
@@ -285,7 +282,9 @@ impl Type {
     }
 
     /// Constructs a structure type whose fields have the given types.
-    pub fn structure(fields: Vec<Type>) -> Self {
+    pub fn structure<I>(fields: I) -> Self
+        where I: ExactSizeIterator<Item=Type>
+    {
         unsafe {
             Type(Unique::new(ffi_type_struct_create(fields)))
         }
@@ -307,7 +306,9 @@ impl Type {
 
 impl TypeArray {
     /// Constructs an array the given `Type`s.
-    pub fn new(elements: Vec<Type>) -> Self {
+    pub fn new<I>(elements: I) -> Self
+        where I: ExactSizeIterator<Item=Type>
+    {
         unsafe { TypeArray(Unique::new(ffi_type_array_create(elements))) }
     }
 
@@ -341,14 +342,14 @@ mod test {
     fn create_struct() {
         Type::structure(vec![Type::i64(),
                              Type::i64(),
-                             Type::u64()]);
+                             Type::u64()].into_iter());
     }
 
     #[test]
     fn clone_struct() {
         Type::structure(vec![Type::i64(),
                              Type::i64(),
-                             Type::u64()]).clone().clone();
+                             Type::u64()].into_iter()).clone().clone();
     }
 
 }

@@ -28,7 +28,7 @@ impl<T> Type<T> {
 ///
 /// In particular, for any type `T` that implements `CType`, we can
 /// get a `Type<T>` for describing that type.
-pub trait CType : Sized {
+pub unsafe trait CType : Sized {
     /// Creates or retrieves a `Type<T>` for any type `T: CType`.
     ///
     /// We can use this to assemble a CIF to set up a call using type
@@ -38,7 +38,7 @@ pub trait CType : Sized {
 
 macro_rules! impl_ffi_type {
     ($type_:ty, $cons:ident) => {
-        impl CType for $type_ {
+        unsafe impl CType for $type_ {
             fn reify() -> Type<Self> {
                 Type::make(untyped::Type::$cons())
             }
@@ -88,10 +88,10 @@ pub type c_c64 = [f64; 2];
 impl_ffi_type!(c_c32, c32);
 impl_ffi_type!(c_c64, c64);
 
-impl<T> CType for *const T {
+unsafe impl<T> CType for *const T {
     fn reify() -> Type<Self> { Type::make(untyped::Type::pointer()) }
 }
 
-impl<T> CType for *mut T {
+unsafe impl<T> CType for *mut T {
     fn reify() -> Type<Self> { Type::make(untyped::Type::pointer()) }
 }
