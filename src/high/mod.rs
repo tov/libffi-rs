@@ -64,11 +64,11 @@ macro_rules! define_closure_types {
             }
         }
 
-        impl<$( $T: FfiType, )* R: FfiType> $cif<$( $T, )* R> {
+        impl<$( $T: CType, )* R: CType> $cif<$( $T, )* R> {
             /// Creates a new statically-typed CIF by reifying the
             /// argument types as `Type<T>`s.
             pub fn reify() -> Self {
-                Self::new($( $T::get_type(), )* R::get_type())
+                Self::new($( $T::reify(), )* R::reify())
             }
         }
 
@@ -102,7 +102,7 @@ macro_rules! define_closure_types {
             _marker: PhantomData<fn($( $T, )*) -> R>,
         }
 
-        impl<'a, $($T: Clone + FfiType,)* R: FfiType>
+        impl<'a, $($T: Clone + CType,)* R: CType>
             $closure<'a, $($T,)* R>
         {
             /// Constructs a typed closure callable from C from a
@@ -179,7 +179,7 @@ macro_rules! define_closure_types {
             _marker: PhantomData<fn($( $T, )*) -> R>,
         }
 
-        impl<'a, $($T: Clone + FfiType,)* R: FfiType>
+        impl<'a, $($T: Clone + CType,)* R: CType>
             $closure_mut<'a, $($T,)* R>
         {
             /// Constructs a typed closure callable from C from a
@@ -288,7 +288,7 @@ mod test {
         let x: u64 = 1;
         let f = |y: u64, z: u64| x + y + z;
 
-        let type_   = u64::get_type();
+        let type_   = u64::reify();
         let cif     = Cif2::new(type_.clone(), type_.clone(), type_.clone());
         let closure = Closure2::new_with_cif(cif, &f);
 
@@ -300,7 +300,7 @@ mod test {
         let mut x: u64 = 0;
         let mut f = |y: u64| { x += y; x };
 
-        let type_   = u64::get_type();
+        let type_   = u64::reify();
         let cif     = Cif1::new(type_.clone(), type_.clone());
         let closure = ClosureMut1::new_with_cif(cif, &mut f);
 
