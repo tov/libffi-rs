@@ -38,7 +38,7 @@ pub unsafe trait CType : Sized {
 
 macro_rules! impl_ffi_type {
     ($type_:ty, $cons:ident) => {
-        unsafe impl CType for $type_ {
+        unsafe impl<> CType for $type_ {
             fn reify() -> Type<Self> {
                 Type::make(untyped::Type::$cons())
             }

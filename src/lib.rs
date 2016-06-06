@@ -1,30 +1,36 @@
 #![feature(unique)]
+
 //! Rust bindings for [libffi](https://sourceware.org/libffi/).
 //!
-//! # Warning
+//! The C libffi library provides two main facilities: assembling calls
+//! to functions dynamically, and creating closures that can be called
+//! as ordinary C functions. In Rust, the latter means that we can turn
+//! a Rust lambda (or any object implementing `Fn`/`FnMut`) into an
+//! ordinary C function pointer that we can pass as a callback to C.
+
+//! The easiest way to use this library is via the
+//! [`high`](high/index.html) layer module, but more flexibility (and
+//! less checking) is provided by the [`middle`](middle/index.html) and
+//! [`low`](low/index.html) layers.
+
+//! # Usage/Warning
 //!
 //! This library is experimental/unstable and shouldn’t be used for
-//! anything yet. You probably can’t even build it as-is, but if it does
-//! something you need then we should talk.
+//! anything yet. If it does something you need or want to play with
+//! then we should talk.
 //!
-//! # Purpose
+//! It’s [on crates.io](https://crates.io/crates/libffi), so you can be
+//! used by adding `libffi` to the dependencies in your project’s
+//! `Cargo.toml`:
 //!
-//! Libffi provides two main facilities:
+//! ```toml
+//! [dependencies]
+//! libffi = "0.1"
+//! ```
 //!
-//!   - Assembling *calls* to functions dynamically.
-//!   - Creating *closures* that can be called as ordinary C functions.
-//!
-//! The former is useful mostly for implementing FFIs for untyped
-//! languages; this library provides some support in the
-//! [`middle`](middle/index.html) and [`low`](low/index.html) layers,
-//! but I’m not sure how useful it is. The latter can be used to
-//! interface between higher-order languages and C by making closures
-//! from the higher-order language callable as C function pointers. In
-//! Rust, this means that we can now, for example, pass a lambda as a
-//! callback to a C function.
-//!
-//! Most users are likely interested in the [`high`](high/index.html)
-//! layer, which provides the easiest interface to the closure facility.
+//! However, to actually use it, you need to install [Rust
+//! bindgen](https://crates.io/crates/bindgen) (0.18.0) and [C
+//! libffi](https://sourceware.org/libffi/) (3.2.1) manually first.
 //!
 //! # Organization
 //!
