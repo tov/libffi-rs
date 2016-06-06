@@ -2,15 +2,15 @@
 use super::types::*;
 
 #[derive(Clone, Debug)]
-pub struct Cif {
+pub struct Builder {
     args: Vec<Type>,
     res: Type,
     abi: super::FfiAbi,
 }
 
-impl Cif {
+impl Builder {
     pub fn new() -> Self {
-        Cif {
+        Builder {
             args: vec![],
             res: Type::void(),
             abi: super::FFI_DEFAULT_ABI,
@@ -37,7 +37,7 @@ impl Cif {
         self
     }
 
-    pub fn build(self) -> super::Cif {
+    pub fn into_cif(self) -> super::Cif {
         let mut result = super::Cif::new(self.args, self.res);
         result.set_abi(self.abi);
         result
@@ -49,7 +49,7 @@ impl Cif {
         userdata: &'a U)
         -> super::Closure<'a>
     {
-        super::Closure::new(self.build(), callback, userdata)
+        super::Closure::new(self.into_cif(), callback, userdata)
     }
 
     pub fn into_closure_mut<'a, U, R>(
@@ -58,7 +58,7 @@ impl Cif {
         userdata: &'a mut U)
         -> super::Closure<'a>
     {
-        super::Closure::new_mut(self.build(), callback, userdata)
+        super::Closure::new_mut(self.into_cif(), callback, userdata)
     }
 }
 
