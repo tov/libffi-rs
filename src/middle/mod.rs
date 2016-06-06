@@ -19,6 +19,8 @@ pub use low::{Callback, CallbackMut, CodePtr,
 mod types;
 pub use self::types::Type;
 
+pub mod builders;
+
 /// Contains an untyped pointer to a function argument.
 ///
 /// When calling a function via a [CIF](struct.Cif.html), each argument
