@@ -52,6 +52,31 @@ impl_ffi_type!(usize);
 impl_ffi_type!(isize);
 impl_ffi_type!((), void);
 
+/// Laid out the same as C11 `float complex` and C++11
+/// `std::complex<float>`.
+///
+/// # Warning
+///
+/// This type does not obey the ABI, and as such should not be passed by
+/// value to or from a C or C++ function. Passing it via a pointer or
+/// via libffi-rs is okay.
+#[allow(non_camel_case_types)]
+pub type c_c32 = [f32; 2];
+
+/// Laid out the same as C11 `double complex` and C++11
+/// `std::complex<double>`.
+///
+/// # Warning
+///
+/// This type does not obey the ABI, and as such should not be passed by
+/// value to or from a C or C++ function. Passing it via a pointer or
+/// via libffi-rs is okay.
+#[allow(non_camel_case_types)]
+pub type c_c64 = [f64; 2];
+
+impl_ffi_type!(c_c32, c32);
+impl_ffi_type!(c_c64, c64);
+
 impl<T> FfiType for *const T {
     fn get_type() -> Type<Self> { Type::make(untyped::Type::pointer()) }
 }
