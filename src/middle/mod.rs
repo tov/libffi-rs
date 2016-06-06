@@ -7,19 +7,11 @@ use std::os::raw::c_void;
 use std::marker::PhantomData;
 
 use low;
-pub use low::{Callback, CallbackMut, CodePtr};
+pub use low::{Callback, CallbackMut, CodePtr,
+              ffi_abi as FfiAbi, FFI_DEFAULT_ABI};
 
 pub mod types;
 use self::types::*;
-
-/// A CIF (“Call InterFace”) describing the calling convention and types
-/// for calling a function.
-#[derive(Clone, Debug)]
-pub struct Cif {
-    cif:    low::ffi_cif,
-    args:   TypeArray,
-    result: Type,
-}
 
 /// When calling a function via a CIF, each argument must be passed
 /// as a C `void*`. Wrapping the argument in the `Arg` struct
@@ -41,11 +33,25 @@ pub fn arg<T>(r: &T) -> Arg {
     Arg::new(r)
 }
 
+/// A CIF (“Call InterFace”) describing the calling convention and types
+/// for calling a function.
+#[derive(Clone, Debug)]
+pub struct Cif {
+    cif:    low::ffi_cif,
+    args:   TypeArray,
+    result: Type,
+}
+
 impl Cif {
     /// Creates a new CIF for the given argument and result types,
     /// using the default calling convention.
     pub fn new(args: Vec<Type>, result: Type) -> Self {
         Self::from_type_array(TypeArray::new(args), result)
+    }
+
+    /// Sets the CIF to use the given calling convention.
+    pub fn set_abi(&mut self, abi: FfiAbi) {
+        self.cif.abi = abi;
     }
 
     /// Creates a new CIF for the given argument and result types,

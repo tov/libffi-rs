@@ -33,6 +33,7 @@ use std::marker::PhantomData;
 use std::{mem, ptr};
 
 use middle;
+pub use middle::{FfiAbi, FFI_DEFAULT_ABI};
 
 /// Representations of C types for the high layer.
 pub mod types;
@@ -61,6 +62,11 @@ macro_rules! define_closure_types {
                 let cif = middle::Cif::new(vec![$( $T.into_untyped() ),*],
                                            result.into_untyped());
                 $cif { untyped: cif, _marker: PhantomData }
+            }
+
+            /// Sets the CIF to use the given calling convention.
+            pub fn set_abi(&mut self, abi: FfiAbi) {
+                self.untyped.set_abi(abi);
             }
         }
 
