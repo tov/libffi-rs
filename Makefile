@@ -13,13 +13,13 @@ test:
 	clear
 	cargo test
 
-HOST = login.eecs.northwestern.edu
-PATH = public_html/code/libffi-rs
+REMOTE_HOST = login.eecs.northwestern.edu
+REMOTE_PATH = public_html/code/libffi-rs
 
 upload-doc:
 	make doc
-	rsync -avz --delete target/doc $(HOST):$(PATH)
-	ssh $(HOST) chmod -R a+rX $(PATH)
+	rsync -avz --delete target/doc $(REMOTE_HOST):$(REMOTE_PATH)
+	ssh $(REMOTE_HOST) chmod -R a+rX $(REMOTE_PATH)
 
 release:
 	make upload-doc
