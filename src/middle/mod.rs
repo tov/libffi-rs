@@ -103,14 +103,14 @@ impl Cif {
 /// Represents a closure, which captures a `void*` (user data) and
 /// passes it to a callback when the code pointer (obtained via
 /// [`code_ptr`](struct.Closure.html#method.code_ptr) is invoked.
-pub struct Closure<'a> {
+pub struct Closure<'a, R> {
     _cif:    Box<Cif>,
     alloc:   *mut ::low::ffi_closure,
     code:    CodePtr,
-    _marker: PhantomData<&'a ()>,
+    _marker: PhantomData<(&'a (), fn() -> R)>
 }
 
-impl<'a> Drop for Closure<'a> {
+impl<'a, R> Drop for Closure<'a, R> {
     fn drop(&mut self) {
         unsafe {
             low::closure_free(self.alloc);
@@ -118,14 +118,14 @@ impl<'a> Drop for Closure<'a> {
     }
 }
 
-impl<'a> Closure<'a> {
+impl<'a, R> Closure<'a, R> {
     /// Creates a new closure. The CIF describes the calling convention
     /// for the resulting C function. When called, the C function will
     /// call `callback`, passing along its arguments and the captured
     /// `userdata`.
-    pub fn new<U, R>(cif:      Cif,
-                     callback: Callback<U, R>,
-                     userdata: &'a U) -> Self
+    pub fn new<U>(cif:      Cif,
+                  callback: Callback<U, R>,
+                  userdata: &'a U) -> Self
     {
         let cif = Box::new(cif);
         let (alloc, code) = low::closure_alloc();
@@ -150,9 +150,9 @@ impl<'a> Closure<'a> {
     /// for the resulting C function. When called, the C function will
     /// call `callback`, passing along its arguments and the captured
     /// `userdata`.
-    pub fn new_mut<U, R>(cif:      Cif,
-                         callback: CallbackMut<U, R>,
-                         userdata: &'a mut U) -> Self
+    pub fn new_mut<U>(cif:      Cif,
+                      callback: CallbackMut<U, R>,
+                      userdata: &'a mut U) -> Self
     {
         let cif = Box::new(cif);
         let (alloc, code) = low::closure_alloc();
@@ -175,8 +175,11 @@ impl<'a> Closure<'a> {
 
     /// Obtains the callable code pointer for a closure. The result
     /// needs to be transmuted to the correct type before it can be called.
-    pub fn code_ptr(&self) -> &unsafe extern "C" fn() {
-        self.code.as_fun()
+    pub fn code_ptr(&self) -> &unsafe extern "C" fn() -> R {
+        use std::mem;
+        unsafe {
+            mem::transmute(self.code.as_fun())
+        }
     }
 }
 

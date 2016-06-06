@@ -104,7 +104,7 @@ macro_rules! define_closure_types {
         /// A mutable typed closure with the given argument and result
         /// types.
         pub struct $closure<'a, $( $T, )* R> {
-            untyped: middle::Closure<'a>,
+            untyped: middle::Closure<'a, R>,
             _marker: PhantomData<fn($( $T, )*) -> R>,
         }
 
@@ -181,7 +181,7 @@ macro_rules! define_closure_types {
         /// An immutable typed closure with the given argument and
         /// result types.
         pub struct $closure_mut<'a, $( $T, )* R> {
-            untyped: middle::Closure<'a>,
+            untyped: middle::Closure<'a, R>,
             _marker: PhantomData<fn($( $T, )*) -> R>,
         }
 
