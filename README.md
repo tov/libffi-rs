@@ -18,7 +18,7 @@ This library is experimental/unstable and shouldn’t be used for
 anything yet. If it does something you need or want to play with
 then we should talk.
 
-It’s [on crates.io](https://crates.io/crates/libffi), so you can be
+It’s [on crates.io](https://crates.io/crates/libffi), so it can be
 used by adding `libffi` to the dependencies in your project’s
 `Cargo.toml`:
 
