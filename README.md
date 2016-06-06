@@ -12,7 +12,7 @@ The easiest way to use this library is via the `high` layer module, but
 more flexibility (and less checking) is provided by the `middle` and
 `low` layers.
 
-# Usage/Warning
+## Usage/Warning
 
 This library is experimental/unstable and shouldn’t be used for
 anything yet. If it does something you need or want to play with
@@ -31,7 +31,7 @@ However, to actually use it, you need to install [Rust
 bindgen](https://crates.io/crates/bindgen) (0.18.0) and [C
 libffi](https://sourceware.org/libffi/) (3.2.1) manually first.
 
-# Example
+## Example
 
 In this example, we convert a Rust lambda containing a free variable
 into an ordinary C code pointer. The type of `fun` below is
