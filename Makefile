@@ -1,6 +1,9 @@
 default: build
 hard: test
 
+# My system seems to want this. How can we make it portable?
+export DYLD_LIBRARY_PATH=/Library/Developer/CommandLineTools/usr/lib
+
 build:
 	clear
 	cargo build

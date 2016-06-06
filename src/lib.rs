@@ -28,7 +28,7 @@
 //! libffi = "0.1"
 //! ```
 //!
-//! However, to actually use it, you need to install [Rust
+//! However, to actually build it, you need to install [Rust
 //! bindgen](https://crates.io/crates/bindgen) (0.18.0) and [C
 //! libffi](https://sourceware.org/libffi/) (3.2.1) manually first.
 //!
