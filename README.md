@@ -48,7 +48,7 @@ isn’t).
 
 In this example, we convert a Rust lambda containing a free variable
 into an ordinary C code pointer. The type of `fun` below is
-`extern "C" fn(u64, u64) -> u64`.
+`&extern "C" fn(u64, u64) -> u64`.
 
 ```rust
 use libffi::high::Closure2;
