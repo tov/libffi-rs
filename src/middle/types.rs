@@ -168,47 +168,47 @@ impl Type {
     /// Returns the representation of the C `void` type. This is only
     /// used for the return type of a Cif.
     pub fn void() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_void) })
+        Type(unsafe { Unique::new(&mut low::types::void) })
     }
 
     /// Returns the unsigned 8-bit numeric type.
     pub fn u8() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_uint8) })
+        Type(unsafe { Unique::new(&mut low::types::uint8) })
     }
 
     /// Returns the signed 8-bit numeric type.
     pub fn i8() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_sint8) })
+        Type(unsafe { Unique::new(&mut low::types::sint8) })
     }
 
     /// Returns the unsigned 16-bit numeric type.
     pub fn u16() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_uint16) })
+        Type(unsafe { Unique::new(&mut low::types::uint16) })
     }
 
     /// Returns the signed 16-bit numeric type.
     pub fn i16() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_sint16) })
+        Type(unsafe { Unique::new(&mut low::types::sint16) })
     }
 
     /// Returns the unsigned 32-bit numeric type.
     pub fn u32() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_uint32) })
+        Type(unsafe { Unique::new(&mut low::types::uint32) })
     }
 
     /// Returns the signed 32-bit numeric type.
     pub fn i32() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_sint32) })
+        Type(unsafe { Unique::new(&mut low::types::sint32) })
     }
 
     /// Returns the unsigned 64-bit numeric type.
     pub fn u64() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_uint64) })
+        Type(unsafe { Unique::new(&mut low::types::uint64) })
     }
 
     /// Returns the signed 64-bit numeric type.
     pub fn i64() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_sint64) })
+        Type(unsafe { Unique::new(&mut low::types::sint64) })
     }
 
     /// Returns the C equivalent of Rust `usize` (`u16`).
@@ -249,37 +249,37 @@ impl Type {
 
     /// Returns the C `float` (32-bit floating point) type.
     pub fn f32() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_float) })
+        Type(unsafe { Unique::new(&mut low::types::float) })
     }
 
     /// Returns the C `double` (64-bit floating point) type.
     pub fn f64() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_double) })
+        Type(unsafe { Unique::new(&mut low::types::double) })
     }
 
     /// Returns the C `void*` type, for passing any kind of pointer.
     pub fn pointer() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_pointer) })
+        Type(unsafe { Unique::new(&mut low::types::pointer) })
     }
 
     /// Returns the C `long double` (extended-precision floating point) type.
     pub fn longdouble() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_longdouble) })
+        Type(unsafe { Unique::new(&mut low::types::longdouble) })
     }
 
     /// Returns the C `_Complex float` type.
     pub fn c32() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_complex_float) })
+        Type(unsafe { Unique::new(&mut low::types::complex_float) })
     }
 
     /// Returns the C `_Complex double` type.
     pub fn c64() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_complex_double) })
+        Type(unsafe { Unique::new(&mut low::types::complex_double) })
     }
 
     /// Returns the C `_Complex long double` type.
     pub fn complex_longdouble() -> Self {
-        Type(unsafe { Unique::new(&mut low::ffi_type_complex_longdouble) })
+        Type(unsafe { Unique::new(&mut low::types::complex_longdouble) })
     }
 
     /// Constructs a structure type whose fields have the given types.
