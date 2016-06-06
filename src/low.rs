@@ -193,9 +193,29 @@ pub mod type_tag {
 
 /// Initalizes a CIF (Call InterFace) with the given ABI and types.
 ///
-/// Note that the CIF retains references to `rtype` and `atypes`, so if
-/// they are no longer live when the CIF is used then the result is
+/// We need to initialize a CIF before we can use it to call a function
+/// or create a closure. This function lets us specify the calling
+/// convention to use and the argument and result types. For varargs
+/// CIF initialization, see [prep_cif_var](fn.prep_cif_var.html).
+///
+///
+/// # Safety
+///
+/// The CIF `cif` retains references to `rtype` and `atypes`, so if
+/// they are no longer live when the CIF is used then the behavior is
 /// undefined.
+///
+/// # Arguments
+///
+/// - `cif` — the CIF to initialize
+/// - `abi` — the calling convention to use
+/// - `nargs` — the number of arguments
+/// - `rtype` — the result type
+/// - `atypes` — the argument types (length must be at least `nargs`)
+///
+/// # Result
+///
+/// `Ok(())` for success or `Err(e)` for failure.
 ///
 /// # Example
 ///
@@ -228,9 +248,31 @@ pub unsafe fn prep_cif(cif: *mut ffi_cif,
 
 /// Initalizes a CIF (Call InterFace) for a varargs function.
 ///
-/// Note that the CIF retains references to `rtype` and `atypes`, so if
-/// they are no longer live when the CIF is used then the result is
+/// We need to initialize a CIF before we can use it to call a function
+/// or create a closure. This function lets us specify the calling
+/// convention to use and the argument and result types. For non-varargs
+/// CIF initialization, see [prep_cif](fn.prep_cif.html).
+///
+/// # Safety
+///
+/// The CIF `cif` retains references to `rtype` and `atypes`, so if
+/// they are no longer live when the CIF is used then the behavior is
 /// undefined.
+///
+/// # Arguments
+///
+/// - `cif` — the CIF to initialize
+/// - `abi` — the calling convention to use
+/// - `nfixedargs` — the number of fixed arguments
+/// - `ntotalargs` — the total number of arguments, including fixed and
+///    var args
+/// - `rtype` — the result type
+/// - `atypes` — the argument types (length must be at least `nargs`)
+///
+/// # Result
+///
+/// `Ok(())` for success or `Err(e)` for failure.
+///
 pub unsafe fn prep_cif_var(cif: *mut ffi_cif,
                            abi: ffi_abi,
                            nfixedargs: usize,
@@ -248,8 +290,16 @@ pub unsafe fn prep_cif_var(cif: *mut ffi_cif,
 
 /// Calls a C function as specified by a CIF.
 ///
-/// C function `fun` is called with arguments `arg` using the using the
-/// calling convention and types specified by `cif`.
+/// # Arguments
+///
+/// * `cif` — describes the argument and result types and the calling
+///           convention
+/// * `fun` — the function to call
+/// * `args` — the arguments to pass to `fun`
+///
+/// # Result
+///
+/// The result of calling `fun` with `args`.
 ///
 /// # Example
 ///
@@ -289,8 +339,13 @@ pub unsafe fn call<R>(cif:  *mut ffi_cif,
 /// Allocates a closure.
 ///
 /// Returns a pair of the writable closure object and the function
-/// pointer for calling it. The latter lives until the former is freed
-/// using [`closure_free`](../fn.closure_free.html).
+/// pointer for calling it. The former acts as a handle to the closure,
+/// and is used to configure and free it. The latter is the code pointer
+/// used to invoke the closure. Before it can be invoked, it must be
+/// initialized with [`prep_closure`](fn.prep_closure.html) and
+/// [`prep_closure_mut`](fn.prep_closure_mut.html). The closure must be
+/// deallocated using [`closure_free`](fn.closure_free.html), after
+/// which point the code pointer should not be used.
 ///
 /// # Example
 ///
@@ -309,6 +364,9 @@ pub fn closure_alloc() -> (*mut ffi_closure, CodePtr) {
 }
 
 /// Frees a closure.
+///
+/// Closures allocated with [`closure_alloc`](fn.closure_alloc.html)
+/// must be deallocated with `closure_free`.
 ///
 /// # Example
 ///
@@ -356,12 +414,35 @@ pub type RawCallback
                            args:     *mut *mut c_void,
                            userdata: *mut c_void);
 
-/// Prepares a closure that calls the given callback function with the
-/// given user data.
+/// Initializes a closure with a callback function and userdata.
 ///
-/// Note that the closure retains a reference to CIF `cif`, so that must
-/// live as long as the closure refers to it or undefined behavior will
+/// After allocating a closure with
+/// [`closure_alloc`](fn.closure_alloc.html), it needs to be initialized
+/// with a function `callback` to call and a pointer `userdata` to pass
+/// to it. Invoking the closure’s code pointer will then pass the provided
+/// arguments and the user data pointer to the callback.
+///
+/// For mutable userdata use [`prep_closure_mut`](fn.prep_closure_mut.html).
+///
+/// # Safety
+///
+/// The closure retains a reference to CIF `cif`, so that must
+/// still be live when the closure is used lest undefined behavior
 /// result.
+///
+/// # Arguments
+///
+/// - `closure` — the closure to initialize
+/// - `cif` — the calling convention and types for calling the closure
+/// - `callback` — the function that the closure will invoke
+/// - `userdata` — the closed-over value, stored in the closure and
+///    passed to the callback upon invocation
+/// - `code` — the closure’s code pointer, *i.e.*, the second component
+///   returned by [`closure_alloc`](fn.closure_alloc.html).
+///
+/// # Result
+///
+/// `Ok(())` for success or `Err(e)` for failure.
 ///
 /// # Example
 ///
@@ -423,12 +504,36 @@ pub unsafe fn prep_closure<U, R>(closure:  *mut ffi_closure,
     status_to_result(status, ())
 }
 
-/// Prepares a mutable closure to call the given callback function with
-/// the given user data.
+/// Initializes a mutable closure with a callback function and (mutable)
+/// userdata.
 ///
-/// Note that the closure retains a reference to CIF `cif`, so that must
-/// live as long as the closure refers to it or undefined behavior will
+/// After allocating a closure with
+/// [`closure_alloc`](fn.closure_alloc.html), it needs to be initialized
+/// with a function `callback` to call and a pointer `userdata` to pass
+/// to it. Invoking the closure’s code pointer will then pass the provided
+/// arguments and the user data pointer to the callback.
+///
+/// For immutable userdata use [`prep_closure`](fn.prep_closure.html).
+///
+/// # Safety
+///
+/// The closure retains a reference to CIF `cif`, so that must
+/// still be live when the closure is used lest undefined behavior
 /// result.
+///
+/// # Arguments
+///
+/// - `closure` — the closure to initialize
+/// - `cif` — the calling convention and types for calling the closure
+/// - `callback` — the function that the closure will invoke
+/// - `userdata` — the closed-over value, stored in the closure and
+///    passed to the callback upon invocation
+/// - `code` — the closure’s code pointer, *i.e.*, the second component
+///   returned by [`closure_alloc`](fn.closure_alloc.html).
+///
+/// # Result
+///
+/// `Ok(())` for success or `Err(e)` for failure.
 ///
 /// # Example
 ///

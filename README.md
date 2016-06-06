@@ -1,6 +1,4 @@
-# libffi-rs
-
-Rust bindings for [libffi](https://sourceware.org/libffi/).
+# libffi-rs: Rust bindings for [libffi](https://sourceware.org/libffi/).
 
 The C libffi library provides two main facilities: assembling calls
 to functions dynamically, and creating closures that can be called
