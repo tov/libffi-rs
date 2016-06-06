@@ -1,10 +1,12 @@
 [package]
 name = "libffi"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Jesse A. Tov <jesse.tov@gmail.com>"]
 build = "build.rs"
 description = "Rust bindings for libffi"
 repository = "https://github.com/tov/libffi-rs"
+homepage = "https://github.com/tov/libffi-rs"
+documentation = "http://users.eecs.northwestern.edu/~jesse/code/libffi-rs/doc/libffi/"
 readme = "README.md"
 license = "MIT"
 

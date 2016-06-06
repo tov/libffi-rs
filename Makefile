@@ -4,25 +4,27 @@ hard: test
 build:
 	clear
 	cargo build
-	cargo doc --no-deps
+	make doc
 
-run:
-	clear
-	cargo run
+doc:
+	cargo doc --no-deps
 
 test:
 	clear
 	cargo test
 
+HOST = login.eecs.northwestern.edu
+PATH = public_html/code/libffi-rs
+
+upload-doc:
+	make doc
+	rsync -avz --delete target/doc $(HOST):$(PATH)
+	ssh $(HOST) chmod -R a+rX $(PATH)
+
+release:
+	make upload-doc
+	cargo publish
+
 clean:
 	cargo clean
-
-LIBFFI_CFLAGS = $$(pkg-config --cflags libffi)
-BINDGEN_ENV   = DYLD_LIBRARY_PATH=/Library/Developer/CommandLineTools/usr/lib
-
-src/ffi/bindgen.rs: src/c/include_ffi.h
-	$(BINDGEN_ENV) bindgen $(LIBFFI_CFLAGS) $< > $@
-
-clean:
-	cargo clean
-	$(RM) src/ffi/bindgen.rs
+	$(RM) src/raw.rs

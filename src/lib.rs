@@ -1,6 +1,12 @@
 #![feature(unique)]
 //! Rust bindings for [libffi](https://sourceware.org/libffi/).
 //!
+//! # Warning
+//!
+//! This library is experimental/unstable and shouldn’t be used for
+//! anything yet. You probably can’t even build it as-is, but if it does
+//! something you need then we should talk.
+//!
 //! # Purpose
 //!
 //! Libffi provides two main facilities:
