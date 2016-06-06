@@ -1,54 +1,120 @@
-//! Middle layer providing a somewhat safer (but still quite unsafe) API.
+//! Middle layer providing a somewhat safer (but still quite unsafe)
+//! API.
 //!
-//! The main idea is to wrap types `ffi_cif` and `ffi_closure` as `Cif` and
-//! `Closure`, respectively, so that the resources are managed properly.
-//! Calling a function via a CIF or closure is still unsafe.
-use std::os::raw::c_void;
-use std::marker::PhantomData;
+//! The main idea of the middle layer is to wrap types
+//! [`ffi_cif`](../raw/struct.ffi_cif.html) and
+//! [`ffi_closure`](../raw/struct.ffi_closure.html) as
+//! [`Cif`](struct.Cif.html) and [`Closure`](struct.Closure.html),
+//! respectively, so that their resources are managed properly. However,
+//! calling a function via a CIF or closure is still unsafe because
+//! argument types aren’t checked. See the [`high`](../high/index.html)
+//! layer for closures with type-checked arguments.
+//!
+use std::os::raw::c_void; use std::marker::PhantomData;
 
 use low;
 pub use low::{Callback, CallbackMut, CodePtr,
               ffi_abi as FfiAbi, FFI_DEFAULT_ABI};
 
 pub mod types;
-use self::types::*;
+pub use self::types::Type;
 
-/// When calling a function via a CIF, each argument must be passed
-/// as a C `void*`. Wrapping the argument in the `Arg` struct
-/// accomplishes the necessary coercion.
+/// Contains an untyped pointer to a function argument.
+///
+/// When calling a function via a [CIF](struct.Cif.html), each argument
+/// must be passed as a C `void*`. Wrapping the argument in the `Arg`
+/// struct accomplishes the necessary coercion.
 #[derive(Debug)]
 #[repr(C)]
 pub struct Arg(*mut c_void);
 
 impl Arg {
-    /// Coerces an argument reference into the `Arg` types.
+    /// Coerces an argument reference into the `Arg` type.
+    ///
+    /// This is used to wrap each argument pointer before passing them
+    /// to [`Cif::call`](struct.Cif.html#method.call).
     pub fn new<T>(r: &T) -> Self {
         Arg(r as *const T as *mut c_void)
     }
 }
 
-/// Coerces an argument reference into the `Arg` types. (This is the same
-/// as [`Arg::new`](struct.Arg.html#method.new)).
+/// Coerces an argument reference into the [`Arg`](struct.Arg.html)
+/// type.
+///
+/// This is used to wrap each argument pointer before passing them
+/// to [`Cif::call`](struct.Cif.html#method.call).
+/// (This is the same as [`Arg::new`](struct.Arg.html#method.new)).
 pub fn arg<T>(r: &T) -> Arg {
     Arg::new(r)
 }
 
-/// A CIF (“Call InterFace”) describing the calling convention and types
-/// for calling a function.
+/// Describes the calling convention and types for calling a function.
+///
+/// This is the `middle` layer’s wrapping of the `low` and `raw` layers’
+/// [`ffi_cif`](../raw/struct.ffi_cif.html). An initialized CIF contains
+/// references to an array of argument types and a result type, each of
+/// which may be allocated on the heap. `Cif` manages the memory of
+/// those referenced objects.
+///
+/// Construct with [`Cif::new`](#method.new) or
+/// [`Cif::from_type_array`](#method.from_type_array).
+///
+/// # Example
+///
+/// ```
+/// extern "C" fn add(x: f64, y: &f64) -> f64 {
+///     return x + y;
+/// }
+///
+/// use libffi::middle::*;
+///
+/// let args = vec![Type::f64(), Type::pointer()];
+/// let cif = Cif::new(args.into_iter(), Type::f64());
+///
+/// let n = unsafe { cif.call(CodePtr(add as _), &[arg(&5), arg(&&6)]) };
+/// assert_eq!(11, n);
+/// ```
 #[derive(Clone, Debug)]
 pub struct Cif {
     cif:    low::ffi_cif,
-    args:   TypeArray,
+    args:   types::TypeArray,
     result: Type,
 }
 
 impl Cif {
-    /// Creates a new CIF for the given argument and result types,
-    /// using the default calling convention.
+    /// Creates a new CIF for the given argument and result types.
+    ///
+    /// Takes ownership of the argument and result
+    /// [`Type`](types/struct.Type.html)s, because the resulting
+    /// `Cif` retains references to them.
+    /// Defaults to the platform’s default calling convention; this
+    /// can be adjusted using [`set_abi`](#method.set_abi).
     pub fn new<I>(args: I, result: Type) -> Self
         where I: ExactSizeIterator<Item=Type>
     {
-        Self::from_type_array(TypeArray::new(args), result)
+        Self::from_type_array(types::TypeArray::new(args), result)
+    }
+
+    /// Calls a function with the given arguments.
+    ///
+    /// In particular, this method invokes function `fun` passing it
+    /// arguments `args`, and returns the result.
+    ///
+    /// # Safety
+    ///
+    /// There is no checking that the calling convention and types
+    /// in the `Cif` match the actual calling convention and type of
+    /// `fun`.
+    pub unsafe fn call<R>(&self, fun: CodePtr, args: &[Arg]) -> R {
+        use std::mem;
+
+        assert!(self.cif.nargs as usize == args.len(),
+                "Cif::call: passed wrong number of arguments");
+
+        low::call::<R>(&self.cif as *const _ as *mut _,
+                       fun,
+                       mem::transmute::<*const Arg,
+                                        *mut *mut c_void>(args.as_ptr()))
     }
 
     /// Sets the CIF to use the given calling convention.
@@ -56,9 +122,11 @@ impl Cif {
         self.cif.abi = abi;
     }
 
-    /// Creates a new CIF for the given argument and result types,
-    /// using the default calling convention.
-    pub fn from_type_array(args: TypeArray, result: Type) -> Self {
+    /// Creates a new CIF for the given argument and result types.
+    ///
+    /// This is just like [`Cif::new`](#method.new), except it takes a
+    /// `TypeArray` instead of an `ExactSizeIterator`.
+    pub fn from_type_array(args: types::TypeArray, result: Type) -> Self {
         let mut cif: low::ffi_cif = Default::default();
 
         unsafe {
@@ -78,33 +146,22 @@ impl Cif {
         }
     }
 
-    /// Calls function `f` passing it the given arguments. Note that
-    /// the funtion pointer is passed as a `usize`, which tends to be
-    /// more convenient (and the types aren’t checked anyway).
-    pub unsafe fn call<R>(&self, f: CodePtr, values: &[Arg]) -> R {
-        use std::mem;
-
-        assert!(self.cif.nargs as usize == values.len(),
-                "Cif::call: passed wrong number of arguments");
-
-        low::call::<R>(&self.cif as *const _ as *mut _,
-                       f,
-                       mem::transmute::<*const Arg,
-                                        *mut *mut c_void>(values.as_ptr()))
-    }
-
     /// Gets a raw pointer to the underlying
-    /// [`ffi_cif`](../low/struct.ffi_cif.html). This can be used
-    /// for passing the CIF to functions from the [`low`](../low/index.html)
-    /// and [`raw`](../raw/index.html) modules.
+    /// [`ffi_cif`](../low/struct.ffi_cif.html).
+    ///
+    /// This can be used for passing a `middle::Cif` to functions from the
+    /// [`low`](../low/index.html) and [`raw`](../raw/index.html) modules.
     pub fn as_raw_ptr(&self) -> *mut low::ffi_cif {
         &self.cif as *const _ as *mut _
     }
 }
 
-/// Represents a closure, which captures a `void*` (user data) and
-/// passes it to a callback when the code pointer (obtained via
-/// [`code_ptr`](struct.Closure.html#method.code_ptr) is invoked.
+/// Represents a closure callable from C.
+///
+/// A libffi closure captures a `void*` (“userdata”) and passes it to a
+/// callback when the code pointer (obtained via
+/// [`code_ptr`](#method.code_ptr) is invoked.
+#[derive(Debug)]
 pub struct Closure<'a> {
     _cif:    Box<Cif>,
     alloc:   *mut ::low::ffi_closure,
@@ -186,7 +243,6 @@ impl<'a> Closure<'a> {
 mod test {
     use low;
     use super::*;
-    use super::types::*;
     use std::mem;
     use std::os::raw::c_void;
 
