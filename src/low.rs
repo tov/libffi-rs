@@ -191,99 +191,100 @@ pub mod type_tag {
     pub const COMPLEX: c_ushort = raw::ffi_type_enum::COMPLEX as c_ushort;
 }
 
-/// Initalizes a CIF (Call InterFace) with the given ABI and types.
-///
-/// Note that the CIF retains references to `rtype` and `atypes`, so if
-/// they are no longer live when the CIF is used then the result is
-/// undefined.
-///
-/// # Example
-///
-/// ```
-/// use libffi::low::*;
-///
-/// let mut args: [*mut ffi_type; 2] = unsafe {
-///     [ &mut types::sint32,
-///       &mut types::uint64 ]
-/// };
-/// let mut cif: ffi_cif = Default::default();
-///
-/// unsafe {
-///     prep_cif(&mut cif, FFI_DEFAULT_ABI, 2,
-///              &mut types::pointer, args.as_mut_ptr())
-/// }.unwrap();
-/// ```
-pub unsafe fn prep_cif(cif: *mut ffi_cif,
+impl ffi_cif {
+    /// Initalizes a CIF (Call InterFace) with the given ABI and types.
+    ///
+    /// Note that the CIF retains references to `rtype` and `atypes`, so if
+    /// they are no longer live when the CIF is used then the result is
+    /// undefined.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use libffi::low::*;
+    ///
+    /// let mut args: [*mut ffi_type; 2] = unsafe {
+    ///     [ &mut types::sint32,
+    ///       &mut types::uint64 ]
+    /// };
+    /// let mut cif: ffi_cif = Default::default();
+    ///
+    /// unsafe {
+    ///     cif.prep(FFI_DEFAULT_ABI, 2,
+    ///              &mut types::pointer, args.as_mut_ptr())
+    /// }.unwrap();
+    /// ```
+    pub unsafe fn prep(&mut self,
                        abi: ffi_abi,
                        nargs: usize,
                        rtype: *mut ffi_type,
                        atypes: *mut *mut ffi_type)
-                       -> Result<()>
-{
-    let status = raw::ffi_prep_cif(cif, abi,
-                                 nargs as c_uint,
-                                 rtype, atypes);
-    status_to_result(status, ())
-}
+                       -> Result<()> {
+        let status = raw::ffi_prep_cif(self, abi,
+                                       nargs as c_uint,
+                                       rtype, atypes);
+        status_to_result(status, ())
+    }
 
-/// Initalizes a CIF (Call InterFace) for a varargs function.
-///
-/// Note that the CIF retains references to `rtype` and `atypes`, so if
-/// they are no longer live when the CIF is used then the result is
-/// undefined.
-pub unsafe fn prep_cif_var(cif: *mut ffi_cif,
+    /// Initalizes a CIF (Call InterFace) for a varargs function.
+    ///
+    /// Note that the CIF retains references to `rtype` and `atypes`,
+    /// so if they are no longer live when the CIF is used then the
+    /// result is undefined.
+
+    pub unsafe fn prep_var(&mut self,
                            abi: ffi_abi,
                            nfixedargs: usize,
                            ntotalargs: usize,
                            rtype: *mut ffi_type,
                            atypes: *mut *mut ffi_type)
-                           -> Result<()>
-{
-    let status = raw::ffi_prep_cif_var(cif, abi,
-                                     nfixedargs as c_uint,
-                                     ntotalargs as c_uint,
-                                     rtype, atypes);
-    status_to_result(status, ())
-}
+                           -> Result<()> {
+        let status = raw::ffi_prep_cif_var(self, abi,
+                                           nfixedargs as c_uint,
+                                           ntotalargs as c_uint,
+                                           rtype, atypes);
+        status_to_result(status, ())
+    }
 
-/// Calls a C function as specified by a CIF.
-///
-/// C function `fun` is called with arguments `arg` using the using the
-/// calling convention and types specified by `cif`.
-///
-/// # Example
-///
-/// ```
-/// use std::os::raw::c_void;
-/// use libffi::low::*;
-///
-/// extern "C" fn c_function(a: u64, b: u64) -> u64 { a + b }
-///
-/// let result = unsafe {
-///     let mut args: Vec<*mut ffi_type> = vec![ &mut types::uint64,
-///                                              &mut types::uint64 ];
-///     let mut cif: ffi_cif = Default::default();
-///
-///     prep_cif(&mut cif, FFI_DEFAULT_ABI, 2,
-///              &mut types::uint64, args.as_mut_ptr()).unwrap();
-///
-///     call(&mut cif, CodePtr(c_function as _),
-///          vec![ &mut 4u64 as *mut _ as *mut c_void,
-///                &mut 5u64 as *mut _ as *mut c_void ].as_mut_ptr())
-/// };
-///
-/// assert_eq!(9, result);
-/// ```
-pub unsafe fn call<R>(cif:  *mut ffi_cif,
-                      fun:  CodePtr,
-                      args: *mut *mut c_void) -> R
-{
-    let mut result: R = mem::uninitialized();
-    raw::ffi_call(cif,
-                  Some(*fun.as_safe_fun()),
-                  &mut result as *mut R as *mut c_void,
-                  args);
-    result
+    /// Calls a C function as specified by a CIF.
+    ///
+    /// C function `fun` is called with arguments `arg` using the using the
+    /// calling convention and types specified by `cif`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use std::os::raw::c_void;
+    /// use libffi::low::*;
+    ///
+    /// extern "C" fn c_function(a: u64, b: u64) -> u64 { a + b }
+    ///
+    /// let result = unsafe {
+    ///     let mut args: Vec<*mut ffi_type> = vec![ &mut types::uint64,
+    ///                                              &mut types::uint64 ];
+    ///     let mut cif: ffi_cif = Default::default();
+    ///
+    ///     cif.prep(FFI_DEFAULT_ABI, 2,
+    ///              &mut types::uint64, args.as_mut_ptr()).unwrap();
+    ///
+    ///     cif.call(CodePtr(c_function as _),
+    ///              vec![ &mut 4u64 as *mut _ as *mut c_void,
+    ///                    &mut 5u64 as *mut _ as *mut c_void ].as_mut_ptr())
+    /// };
+    ///
+    /// assert_eq!(9, result);
+    /// ```
+    pub unsafe fn call<R>(&self,
+                          fun:  CodePtr,
+                          args: *mut *mut c_void) -> R
+    {
+        let mut result: R = mem::uninitialized();
+        raw::ffi_call(self as *const _ as *mut _,
+                      Some(*fun.as_safe_fun()),
+                      &mut result as *mut R as *mut c_void,
+                      args);
+        result
+    }
 }
 
 /// Allocates a closure.
@@ -356,137 +357,135 @@ pub type RawCallback
                            args:     *mut *mut c_void,
                            userdata: *mut c_void);
 
-/// Prepares a closure that calls the given callback function with the
-/// given user data.
-///
-/// Note that the closure retains a reference to CIF `cif`, so that must
-/// live as long as the closure refers to it or undefined behavior will
-/// result.
-///
-/// # Example
-///
-/// ```
-/// use libffi::low::*;
-///
-/// use std::mem;
-/// use std::os::raw::c_void;
-///
-/// unsafe extern "C" fn callback(_cif: &ffi_cif,
-///                               result: &mut u64,
-///                               args: *const *const c_void,
-///                               userdata: &u64)
-/// {
-///     let args: *const &u64 = mem::transmute(args);
-///     *result = **args + *userdata;
-/// }
-///
-/// fn twice(f: extern "C" fn(u64) -> u64, x: u64) -> u64 {
-///     f(f(x))
-/// }
-///
-/// unsafe {
-///     let mut cif: ffi_cif = Default::default();
-///     let mut args = [&mut types::uint64 as *mut _];
-///     let mut userdata: u64 = 5;
-///
-///     prep_cif(&mut cif, FFI_DEFAULT_ABI, 1, &mut types::uint64,
-///              args.as_mut_ptr()).unwrap();
-///
-///     let (closure, code) = closure_alloc();
-///     let add5: extern "C" fn(u64) -> u64 = mem::transmute(code);
-///
-///     prep_closure(closure,
-///                  &mut cif,
-///                  callback,
-///                  &mut userdata,
-///                  CodePtr(add5 as _)).unwrap();
-///
-///     assert_eq!(11, add5(6));
-///     assert_eq!(12, add5(7));
-///
-///     assert_eq!(22, twice(add5, 12));
-/// }
-/// ```
-pub unsafe fn prep_closure<U, R>(closure:  *mut ffi_closure,
-                                 cif:      *mut ffi_cif,
-                                 callback: Callback<U, R>,
-                                 userdata: *const U,
-                                 code:     CodePtr)
-    -> Result<()>
-{
-    let status = raw::ffi_prep_closure_loc
-        (closure,
-         cif,
-         Some(mem::transmute::<Callback<U, R>, RawCallback>(callback)),
-         userdata as *mut c_void,
-         code.as_mut_ptr());
-    status_to_result(status, ())
-}
+impl ffi_closure {
+    /// Prepares a closure that calls the given callback function with the
+    /// given user data.
+    ///
+    /// Note that the closure retains a reference to CIF `cif`, so that must
+    /// live as long as the closure refers to it or undefined behavior will
+    /// result.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use libffi::low::*;
+    ///
+    /// use std::mem;
+    /// use std::os::raw::c_void;
+    ///
+    /// unsafe extern "C" fn callback(_cif: &ffi_cif,
+    ///                               result: &mut u64,
+    ///                               args: *const *const c_void,
+    ///                               userdata: &u64)
+    /// {
+    ///     let args: *const &u64 = mem::transmute(args);
+    ///     *result = **args + *userdata;
+    /// }
+    ///
+    /// fn twice(f: extern "C" fn(u64) -> u64, x: u64) -> u64 {
+    ///     f(f(x))
+    /// }
+    ///
+    /// unsafe {
+    ///     let mut cif: ffi_cif = Default::default();
+    ///     let mut args = [&mut types::uint64 as *mut _];
+    ///     let mut userdata: u64 = 5;
+    ///
+    ///     cif.prep(FFI_DEFAULT_ABI, 1, &mut types::uint64,
+    ///              args.as_mut_ptr()).unwrap();
+    ///
+    ///     let (closure, code) = closure_alloc();
+    ///     let add5: extern "C" fn(u64) -> u64 = mem::transmute(code);
+    ///
+    ///     (*closure).prep(&mut cif,
+    ///                     callback,
+    ///                     &mut userdata,
+    ///                     CodePtr(add5 as _)).unwrap();
+    ///
+    ///     assert_eq!(11, add5(6));
+    ///     assert_eq!(12, add5(7));
+    ///
+    ///     assert_eq!(22, twice(add5, 12));
+    /// }
+    /// ```
+    pub unsafe fn prep<U, R>(&mut self,
+                             cif:      *mut ffi_cif,
+                             callback: Callback<U, R>,
+                             userdata: *const U,
+                             code:     CodePtr)
+                             -> Result<()> {
+        let status = raw::ffi_prep_closure_loc
+            (self,
+             cif,
+             Some(mem::transmute::<Callback<U, R>, RawCallback>(callback)),
+             userdata as *mut c_void,
+             code.as_mut_ptr());
+        status_to_result(status, ())
+    }
 
-/// Prepares a mutable closure to call the given callback function with
-/// the given user data.
-///
-/// Note that the closure retains a reference to CIF `cif`, so that must
-/// live as long as the closure refers to it or undefined behavior will
-/// result.
-///
-/// # Example
-///
-/// ```
-/// use libffi::low::*;
-///
-/// use std::mem;
-/// use std::os::raw::c_void;
-///
-/// unsafe extern "C" fn callback(_cif: &ffi_cif,
-///                               result: &mut u64,
-///                               args: *const *const c_void,
-///                               userdata: &mut u64)
-/// {
-///     let args: *const &u64 = mem::transmute(args);
-///     *result = *userdata;
-///     *userdata += **args;
-/// }
-///
-/// fn twice(f: extern "C" fn(u64) -> u64, x: u64) -> u64 {
-///     f(f(x))
-/// }
-///
-/// unsafe {
-///     let mut cif: ffi_cif = Default::default();
-///     let mut args = [&mut types::uint64 as *mut _];
-///     let mut userdata: u64 = 5;
-///
-///     prep_cif(&mut cif, FFI_DEFAULT_ABI, 1, &mut types::uint64,
-///              args.as_mut_ptr()).unwrap();
-///
-///     let (closure, code) = closure_alloc();
-///     let add5: extern "C" fn(u64) -> u64 = mem::transmute(code);
-///
-///     prep_closure_mut(closure,
-///                      &mut cif,
-///                      callback,
-///                      &mut userdata,
-///                      CodePtr(add5 as _)).unwrap();
-///
-///     assert_eq!(5, add5(6));
-///     assert_eq!(11, add5(7));
-///
-///     assert_eq!(19, twice(add5, 1));
-/// }
-/// ```
-pub unsafe fn prep_closure_mut<U, R>(closure:  *mut ffi_closure,
-                                     cif:      *mut ffi_cif,
-                                     callback: CallbackMut<U, R>,
-                                     userdata: *mut U,
-                                     code:     CodePtr)
-    -> Result<()>
-{
-    let status = raw::ffi_prep_closure_loc
-        (closure,
-         cif,
-         Some(mem::transmute::<CallbackMut<U, R>, RawCallback>(callback)),
-         userdata as *mut c_void,
-         code.as_mut_ptr());
-    status_to_result(status, ())
+    /// Prepares a mutable closure to call the given callback function with
+    /// the given user data.
+    ///
+    /// Note that the closure retains a reference to CIF `cif`, so that must
+    /// live as long as the closure refers to it or undefined behavior will
+    /// result.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use libffi::low::*;
+    ///
+    /// use std::mem;
+    /// use std::os::raw::c_void;
+    ///
+    /// unsafe extern "C" fn callback(_cif: &ffi_cif,
+    ///                               result: &mut u64,
+    ///                               args: *const *const c_void,
+    ///                               userdata: &mut u64)
+    /// {
+    ///     let args: *const &u64 = mem::transmute(args);
+    ///     *result = *userdata;
+    ///     *userdata += **args;
+    /// }
+    ///
+    /// fn twice(f: extern "C" fn(u64) -> u64, x: u64) -> u64 {
+    ///     f(f(x))
+    /// }
+    ///
+    /// unsafe {
+    ///     let mut cif: ffi_cif = Default::default();
+    ///     let mut args = [&mut types::uint64 as *mut _];
+    ///     let mut userdata: u64 = 5;
+    ///
+    ///     cif.prep(FFI_DEFAULT_ABI, 1, &mut types::uint64,
+    ///              args.as_mut_ptr()).unwrap();
+    ///
+    ///     let (closure, code) = closure_alloc();
+    ///     let add5: extern "C" fn(u64) -> u64 = mem::transmute(code);
+    ///
+    ///     (*closure).prep_mut(&mut cif,
+    ///                         callback,
+    ///                         &mut userdata,
+    ///                         CodePtr(add5 as _)).unwrap();
+    ///
+    ///     assert_eq!(5, add5(6));
+    ///     assert_eq!(11, add5(7));
+    ///
+    ///     assert_eq!(19, twice(add5, 1));
+    /// }
+    /// ```
+    pub unsafe fn prep_mut<U, R>(&mut self,
+                                 cif:      *mut ffi_cif,
+                                 callback: CallbackMut<U, R>,
+                                 userdata: *mut U,
+                                 code:     CodePtr)
+                                 -> Result<()> {
+        let status = raw::ffi_prep_closure_loc
+            (self,
+             cif,
+             Some(mem::transmute::<CallbackMut<U, R>, RawCallback>(callback)),
+             userdata as *mut c_void,
+             code.as_mut_ptr());
+        status_to_result(status, ())
+    }
 }

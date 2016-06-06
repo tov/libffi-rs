@@ -1,8 +1,13 @@
-//! Middle layer providing a somewhat safer (but still quite unsafe) API.
+//! Middle layer providing a somewhat safer (but still quite unsafe)
+//! API.
 //!
-//! The main idea is to wrap types `ffi_cif` and `ffi_closure` as `Cif` and
-//! `Closure`, respectively, so that the resources are managed properly.
-//! Calling a function via a CIF or closure is still unsafe.
+//! The main idea is to wrap types
+//! [`ffi_cif`](../raw/struct.ffi_cif.html) and
+//! [`ffi_closure`](../raw/struct.ffi_closure.html) as
+//! [`Cif`](struct.Cif.html) and [`Closure`](struct.Closure.html),
+//! respectively, so that the resources are managed properly. Calling a
+//! function via a CIF or closure is still unsafe.
+
 use std::os::raw::c_void;
 use std::marker::PhantomData;
 
@@ -54,11 +59,10 @@ impl Cif {
         let mut cif: low::ffi_cif = Default::default();
 
         unsafe {
-            low::prep_cif(&mut cif,
-                          low::FFI_DEFAULT_ABI,
-                          args.len(),
-                          result.as_raw_ptr(),
-                          args.as_raw_ptr())
+            cif.prep(low::FFI_DEFAULT_ABI,
+                     args.len(),
+                     result.as_raw_ptr(),
+                     args.as_raw_ptr())
         }.expect("low::prep_cif");
 
         // Note that cif retains references to args and result,
@@ -78,10 +82,10 @@ impl Cif {
 
         assert!(self.cif.nargs as usize == values.len());
 
-        low::call::<R>(&self.cif as *const _ as *mut _,
-                       f,
-                       mem::transmute::<*const Arg,
-                                        *mut *mut c_void>(values.as_ptr()))
+        self.cif.call::<R>(f,
+                           mem::transmute::<
+                               *const Arg,
+                               *mut *mut c_void>(values.as_ptr()))
     }
 
     /// Gets a raw pointer to the underlying
@@ -124,11 +128,10 @@ impl<'a> Closure<'a> {
         let (alloc, code) = low::closure_alloc();
 
         unsafe {
-            low::prep_closure(alloc,
-                              cif.as_raw_ptr(),
-                              callback,
-                              userdata as *const U,
-                              code).unwrap();
+            (*alloc).prep(cif.as_raw_ptr(),
+                          callback,
+                          userdata as *const U,
+                          code).unwrap();
         }
 
         Closure {
@@ -151,11 +154,10 @@ impl<'a> Closure<'a> {
         let (alloc, code) = low::closure_alloc();
 
         unsafe {
-            low::prep_closure_mut(alloc,
-                                  cif.as_raw_ptr(),
-                                  callback,
-                                  userdata as *mut U,
-                                  code).unwrap();
+            (*alloc).prep_mut(cif.as_raw_ptr(),
+                              callback,
+                              userdata as *mut U,
+                              code).unwrap();
         }
 
         Closure {
