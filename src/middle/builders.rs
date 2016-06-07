@@ -38,7 +38,7 @@ impl Builder {
     }
 
     pub fn into_cif(self) -> super::Cif {
-        let mut result = super::Cif::new(self.args, self.res);
+        let mut result = super::Cif::new(self.args.into_iter(), self.res);
         result.set_abi(self.abi);
         result
     }
