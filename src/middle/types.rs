@@ -1,4 +1,9 @@
 //! Representations of C types and arrays thereof.
+//!
+//! These are used to describe the types of the arguments and results of
+//! functions. When we construct a CIF (“Call InterFace”), we provide a
+//! sequence of argument types and a result type, and libffi uses this
+//! to figure out how to set up a call to a function with those types.
 
 use std::fmt;
 use std::mem;
@@ -19,11 +24,35 @@ type TypeArray_ = *mut Type_;
 type Owned<T>      = T;
 
 /// Represents a single C type.
+///
+/// # Example
+///
+/// Suppose we have a C struct:
+///
+/// ```c
+/// struct my_struct {
+///     uint16_t f1;
+///     uint64_t f2;
+/// };
+/// ```
+///
+/// To pass the struct by value via libffi, we need to construct a
+/// `Type` object describing its layout:
+///
+/// ```
+/// use libffi::middle::Type;
+///
+/// let my_struct = Type::structure(vec![
+///     Type::u64(),
+///     Type::u16(),
+/// ].into_iter());
+/// ```
 pub struct Type(Unique<low::ffi_type>);
 
-/// Represents a sequence of C types, which can be used to construct
-/// a struct type or as the arguments when creating a
-/// [CIF](../middle/struct.Cif.html).
+/// Represents a sequence of C types.
+///
+/// This can be used to construct a struct type or as the arguments
+/// when creating a [`Cif`](../middle/struct.Cif.html).
 pub struct TypeArray(Unique<*mut low::ffi_type>);
 
 impl fmt::Debug for Type {
@@ -164,8 +193,10 @@ impl Clone for TypeArray {
 }
 
 impl Type {
-    /// Returns the representation of the C `void` type. This is only
-    /// used for the return type of a Cif.
+    /// Returns the representation of the C `void` type.
+    ///
+    /// This is used only for the return type of a CIF, not for an
+    /// argument or struct member.
     pub fn void() -> Self {
         Type(unsafe { Unique::new(&mut low::types::void) })
     }
@@ -298,7 +329,11 @@ impl Type {
     }
 
     /// Gets a raw pointer to the underlying
-    /// [`ffi_type`](../low/struct.ffi_type.html).
+    /// [`ffi_type`](../../low/struct.ffi_type.html).
+    ///
+    /// This method may be useful for interacting with the
+    /// [`low`](../../low/index.html) and
+    /// [`raw`](../../raw/index.html) layers.
     pub fn as_raw_ptr(&self) -> *mut low::ffi_type {
         *self.0
     }
@@ -318,7 +353,13 @@ impl TypeArray {
     }
 
     /// Gets a raw pointer to the underlying C array of
-    /// [`ffi_type`](../low/struct.ffi_type.html)s.
+    /// [`ffi_type`](../../low/struct.ffi_type.html)s.
+    ///
+    /// The C array is null-terminated.
+    ///
+    /// This method may be useful for interacting with the
+    /// [`low`](../../low/index.html) and
+    /// [`raw`](../../raw/index.html) layers.
     pub fn as_raw_ptr(&self) -> *mut *mut low::ffi_type {
         *self.0
     }

@@ -160,7 +160,48 @@ impl Cif {
 ///
 /// A libffi closure captures a `void*` (“userdata”) and passes it to a
 /// callback when the code pointer (obtained via
-/// [`code_ptr`](#method.code_ptr) is invoked.
+/// [`code_ptr`](#method.code_ptr)) is invoked.
+///
+/// Construct with [`Closure::new`](#method.new) and
+/// [`Closure::new_mut`](#method.new_mut).
+///
+/// # Example
+///
+/// ```
+/// use std::mem;
+/// use std::os::raw::c_void;
+///
+/// use libffi::middle::*;
+/// use libffi::low;
+///
+/// unsafe extern "C" fn lambda_callback<F: Fn(u64, u64) -> u64>(
+///     _cif: &low::ffi_cif,
+///     result: &mut u64,
+///     args: *const *const c_void,
+///     userdata: &F)
+/// {
+///     let args: *const &u64 = mem::transmute(args);
+///     let arg1 = **args.offset(0);
+///     let arg2 = **args.offset(1);
+///
+///     *result = userdata(arg1, arg2);
+/// }
+///
+/// fn rust_lambda() {
+///     let cif = Cif::new(vec![Type::u64(), Type::u64()].into_iter(),
+///                        Type::u64());
+///     let lambda = |x: u64, y: u64| x + y;
+///     let closure = Closure::new(cif, lambda_callback, &lambda);
+///
+///     unsafe {
+///         let fun: &unsafe extern "C" fn(u64, u64) -> u64
+///             = mem::transmute(closure.code_ptr());
+///
+///         assert_eq!(11, fun(5, 6));
+///         assert_eq!(12, fun(5, 7));
+///     }
+/// }
+/// ```
 #[derive(Debug)]
 pub struct Closure<'a> {
     _cif:    Box<Cif>,
@@ -178,10 +219,19 @@ impl<'a> Drop for Closure<'a> {
 }
 
 impl<'a> Closure<'a> {
-    /// Creates a new closure. The CIF describes the calling convention
-    /// for the resulting C function. When called, the C function will
-    /// call `callback`, passing along its arguments and the captured
-    /// `userdata`.
+    /// Creates a new closure with immutable userdata.
+    ///
+    /// # Arguments
+    ///
+    /// - `cif` — describes the calling convention and argument and
+    ///   result types
+    /// - `callback` — the function to call when the closure is invoked
+    /// - `userdata` — the pointer to pass to `callback` along with the
+    ///   arguments when the closure is called
+    ///
+    /// # Result
+    ///
+    /// The new closure.
     pub fn new<U, R>(cif:      Cif,
                      callback: Callback<U, R>,
                      userdata: &'a U) -> Self
@@ -205,10 +255,19 @@ impl<'a> Closure<'a> {
         }
     }
 
-    /// Creates a new mutable closure. The CIF describes the calling convention
-    /// for the resulting C function. When called, the C function will
-    /// call `callback`, passing along its arguments and the captured
-    /// `userdata`.
+    /// Creates a new closure with mutable userdata.
+    ///
+    /// # Arguments
+    ///
+    /// - `cif` — describes the calling convention and argument and
+    ///   result types
+    /// - `callback` — the function to call when the closure is invoked
+    /// - `userdata` — the pointer to pass to `callback` along with the
+    ///   arguments when the closure is called
+    ///
+    /// # Result
+    ///
+    /// The new closure.
     pub fn new_mut<U, R>(cif:      Cif,
                          callback: CallbackMut<U, R>,
                          userdata: &'a mut U) -> Self
@@ -232,8 +291,13 @@ impl<'a> Closure<'a> {
         }
     }
 
-    /// Obtains the callable code pointer for a closure. The result
-    /// needs to be transmuted to the correct type before it can be called.
+    /// Obtains the callable code pointer for a closure.
+    ///
+    /// # Safety
+    ///
+    /// The result needs to be transmuted to the correct type before
+    /// it can be called. If the type is wrong then undefined behavior
+    /// will result.
     pub fn code_ptr(&self) -> &unsafe extern "C" fn() {
         self.code.as_fun()
     }
