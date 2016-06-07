@@ -38,7 +38,8 @@ fn status_to_result<R>(status: raw::ffi_status, good: R) -> Result<R> {
 ///
 /// This is used to make the API a bit easier to understand, and as a
 /// simple type lint. As a `repr(C)` struct of one element, it should
-/// be safe to transmute between `CodePtr` and `*mut c_void`.
+/// be safe to transmute between `CodePtr` and `*mut c_void`, or between
+/// collections thereof.
 #[derive(Clone, Copy, Debug, Hash)]
 #[repr(C)]
 pub struct CodePtr(pub *mut c_void);
@@ -59,22 +60,6 @@ impl CodePtr {
     /// libffi) for untyped callback arguments.
     pub fn from_ptr(fun: *const c_void) -> Self {
         CodePtr(fun as *mut c_void)
-    }
-
-    /// Gets the code pointer typed as a `const void*`.
-    ///
-    /// This is the other common type used in APIs (or at least in
-    /// libffi) for untyped callback arguments.
-    pub fn as_ptr(&self) -> *const c_void {
-        self.0
-    }
-
-    /// Gets the code pointer typed as a `void*`.
-    ///
-    /// This is the other common type used in APIs (or at least in
-    /// libffi) for untyped callback arguments.
-    pub fn as_mut_ptr(&self) -> *mut c_void {
-        self.0
     }
 
     /// Gets the code pointer typed as a C function pointer.
@@ -111,6 +96,22 @@ impl CodePtr {
     /// cast before it is called.
     pub unsafe fn as_safe_fun(&self) -> &extern "C" fn() {
         mem::transmute::<&*mut c_void, &extern "C" fn()>(&self.0)
+    }
+
+    /// Gets the code pointer typed as a `const void*`.
+    ///
+    /// This is the other common type used in APIs (or at least in
+    /// libffi) for untyped callback arguments.
+    pub fn as_ptr(&self) -> *const c_void {
+        self.0
+    }
+
+    /// Gets the code pointer typed as a `void*`.
+    ///
+    /// This is the other common type used in APIs (or at least in
+    /// libffi) for untyped callback arguments.
+    pub fn as_mut_ptr(&self) -> *mut c_void {
+        self.0
     }
 }
 
