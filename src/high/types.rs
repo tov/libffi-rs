@@ -70,14 +70,21 @@ impl_ffi_type!(usize);
 impl_ffi_type!(isize);
 impl_ffi_type!((), void);
 
+// Why is the complex stuff even here? It doesn’t work yet because
+// libffi doesn’t support it, so it should probably go away and come
+// back when it’s actually useful. Also, the definitions for c_c32 and
+// c_c64 should come from elsewhere (the num package?), but that
+// elsewhere doesn’t seem to exist yet.
+
 /// Laid out the same as C11 `float complex` and C++11
 /// `std::complex<float>`.
 ///
 /// # Warning
 ///
 /// This type does not obey the ABI, and as such should not be passed by
-/// value to or from a C or C++ function. Passing it via a pointer or
-/// via libffi-rs is okay.
+/// value to or from a C or C++ function. Passing it via a pointer is
+/// okay. Theoretically, passing it via libffi is okay, but libffi
+/// doesn’t have complex support on most platforms yet.
 #[allow(non_camel_case_types)]
 pub type c_c32 = [f32; 2];
 
@@ -87,8 +94,9 @@ pub type c_c32 = [f32; 2];
 /// # Warning
 ///
 /// This type does not obey the ABI, and as such should not be passed by
-/// value to or from a C or C++ function. Passing it via a pointer or
-/// via libffi-rs is okay.
+/// value to or from a C or C++ function. Passing it via a pointer is
+/// okay. Theoretically, passing it via libffi is okay, but libffi
+/// doesn’t have complex support on most platforms yet.
 #[allow(non_camel_case_types)]
 pub type c_c64 = [f64; 2];
 

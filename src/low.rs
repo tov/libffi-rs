@@ -15,9 +15,9 @@ use raw;
 /// The two kinds of errors reported by libffi.
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
-    /// Given a bad type representation.
+    /// Given a bad or unsupported type representation.
     BadTypedef,
-    /// Given a bad or unrecognized ABI.
+    /// Given a bad or unsupported ABI.
     BadAbi,
 }
 
