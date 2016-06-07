@@ -1,6 +1,9 @@
 /// Builders for types in the [middle] layer.
 use super::types::*;
 
+/// Provides a builder-style API for constructing CIFs and closures.
+///
+/// Construct a builder using [`Builder::new`](#method.new).
 #[derive(Clone, Debug)]
 pub struct Builder {
     args: Vec<Type>,
@@ -9,6 +12,7 @@ pub struct Builder {
 }
 
 impl Builder {
+    /// Constructs a `Builder`.
     pub fn new() -> Self {
         Builder {
             args: vec![],
@@ -17,22 +21,26 @@ impl Builder {
         }
     }
 
-    pub fn arg(mut self, type_: Type) -> Self {
+    /// Adds a type to the argument type list.
+    pub fn arg(&mut self, type_: Type) -> &mut Self {
         self.args.push(type_);
         self
     }
 
-    pub fn args<I: Iterator<Item = Type>>(mut self, types: I) -> Self {
+    /// Adds several types to the argument type list.
+    pub fn args<I: Iterator<Item = Type>>(&mut self, types: I) -> &mut Self {
         self.args.extend(types);
         self
     }
 
-    pub fn res(mut self, type_: Type) -> Self {
+    /// Sets the result type.
+    pub fn res(&mut self, type_: Type) -> &mut Self {
         self.res = type_;
         self
     }
 
-    pub fn abi(mut self, abi: super::FfiAbi) -> Self {
+    /// Sets the calling convention.
+    pub fn abi(&mut self, abi: super::FfiAbi) -> &mut Self {
         self.abi = abi;
         self
     }
@@ -61,5 +69,3 @@ impl Builder {
         super::Closure::new_mut(self.into_cif(), callback, userdata)
     }
 }
-
-
