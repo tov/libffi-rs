@@ -1,5 +1,3 @@
-#![macro_use]
-
 //! Rust bindings for [libffi](https://sourceware.org/libffi/).
 //!
 //! The C libffi library provides two main facilities: assembling calls
@@ -80,7 +78,6 @@ extern crate libc;
 /// libffi documentation](libffi.txt).
 pub mod raw;
 
-#[macro_use]
 pub mod high;
 pub mod middle;
 pub mod low;
