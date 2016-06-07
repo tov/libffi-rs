@@ -3,7 +3,7 @@
 //!
 //! This module also re-exports types and constants necessary for using the
 //! library, so it should not be generally necessary to use the `raw` module.
-//! While this is a bit “Rustier” that [`raw`](../raw/index.html), I’ve
+//! While this is a bit “Rustier” than [`raw`](../raw/index.html), I’ve
 //! avoided drastic renaming in favor of hewing close to the libffi API.
 //! See [`middle`](../middle/index.html) for an easier-to-use approach.
 
