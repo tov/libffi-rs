@@ -48,6 +48,9 @@ pub use middle::{FfiAbi, FFI_DEFAULT_ABI};
 pub mod types;
 pub use self::types::{Type, CType};
 
+#[macro_use]
+pub mod call;
+
 macro_rules! define_closure_mod {
     (
         $module:ident

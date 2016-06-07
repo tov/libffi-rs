@@ -27,7 +27,7 @@ pub use self::builder::Builder;
 /// When calling a function via a [CIF](struct.Cif.html), each argument
 /// must be passed as a C `void*`. Wrapping the argument in the `Arg`
 /// struct accomplishes the necessary coercion.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 #[repr(C)]
 pub struct Arg(*mut c_void);
 

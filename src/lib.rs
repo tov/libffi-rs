@@ -1,4 +1,5 @@
 #![feature(unique)]
+#![macro_use]
 
 //! Rust bindings for [libffi](https://sourceware.org/libffi/).
 //!
@@ -80,6 +81,7 @@ extern crate libc;
 /// libffi documentation](libffi.txt).
 pub mod raw;
 
+#[macro_use]
 pub mod high;
 pub mod middle;
 pub mod low;
