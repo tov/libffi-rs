@@ -2,7 +2,7 @@
 
 use std::marker::PhantomData;
 
-use middle::types as untyped;
+use super::super::middle;
 
 /// Represents a C type statically associated with a Rust type.
 ///
@@ -12,12 +12,12 @@ use middle::types as untyped;
 /// [`CType`](trait.CType.html) trait.
 #[derive(Clone, Debug)]
 pub struct Type<T> {
-    untyped: untyped::Type,
+    untyped: middle::Type,
     _marker: PhantomData<*mut T>,
 }
 
 impl<T> Type<T> {
-    fn make(untyped: untyped::Type) -> Self {
+    fn make(untyped: middle::Type) -> Self {
         Type {
             untyped: untyped,
             _marker: PhantomData,
@@ -26,7 +26,7 @@ impl<T> Type<T> {
 
     /// Gets the underlying representation as used by the
     /// [`middle`](../../middle/index.html) layer.
-    pub fn into_untyped(self) -> untyped::Type {
+    pub fn into_middle(self) -> middle::Type {
         self.untyped
     }
 }
@@ -47,7 +47,7 @@ macro_rules! impl_ffi_type {
     ($type_:ty, $cons:ident) => {
         unsafe impl<> CType for $type_ {
             fn reify() -> Type<Self> {
-                Type::make(untyped::Type::$cons())
+                Type::make(middle::Type::$cons())
             }
         }
     };
@@ -104,9 +104,9 @@ impl_ffi_type!(c_c32, c32);
 impl_ffi_type!(c_c64, c64);
 
 unsafe impl<T> CType for *const T {
-    fn reify() -> Type<Self> { Type::make(untyped::Type::pointer()) }
+    fn reify() -> Type<Self> { Type::make(middle::Type::pointer()) }
 }
 
 unsafe impl<T> CType for *mut T {
-    fn reify() -> Type<Self> { Type::make(untyped::Type::pointer()) }
+    fn reify() -> Type<Self> { Type::make(middle::Type::pointer()) }
 }
