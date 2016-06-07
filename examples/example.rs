@@ -1,6 +1,6 @@
 extern crate libffi;
 
-use libffi::middle::types::Type;
+use libffi::middle::Type;
 
 fn main() {
     Type::structure(vec![
