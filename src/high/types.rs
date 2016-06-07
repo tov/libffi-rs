@@ -38,7 +38,7 @@ impl<T> Type<T> {
 /// This trait is unsafe to implement because if the libffi type
 /// associated with a Rust type doesn’t match then we get
 /// undefined behavior.
-pub unsafe trait CType : Sized {
+pub unsafe trait CType : Copy {
     /// Creates or retrieves a `Type<T>` for any type `T: CType`.
     ///
     /// We can use the resulting object to assemble a CIF to set up
