@@ -160,7 +160,8 @@ impl Cif {
 ///
 /// A libffi closure captures a `void*` (“userdata”) and passes it to a
 /// callback when the code pointer (obtained via
-/// [`code_ptr`](#method.code_ptr)) is invoked.
+/// [`code_ptr`](#method.code_ptr)) is invoked. Lifetype parameter `'a`
+/// ensures that the closure does not outlive the userdata.
 ///
 /// Construct with [`Closure::new`](#method.new) and
 /// [`Closure::new_mut`](#method.new_mut).
