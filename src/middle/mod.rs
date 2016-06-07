@@ -167,6 +167,10 @@ impl Cif {
 ///
 /// # Example
 ///
+/// In this example we turn a Rust lambda into a C function. Note that
+/// the Rust closure value `lambda` is actually passed to the callback
+/// function as userdata, which then invokes it.
+///
 /// ```
 /// use std::mem;
 /// use std::os::raw::c_void;

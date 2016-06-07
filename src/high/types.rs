@@ -1,8 +1,15 @@
+//! Representations of C types for the high layer.
+
 use std::marker::PhantomData;
 
 use middle::types as untyped;
 
 /// Represents a C type statically associated with a Rust type.
+///
+/// In particular, the run-time value describes a particular C type,
+/// while the type parameter `T` is the equivalent Rust type.
+/// Instances of this type are created via the
+/// [`CType`](trait.CType.html) trait.
 #[derive(Clone, Debug)]
 pub struct Type<T> {
     untyped: untyped::Type,
@@ -17,8 +24,8 @@ impl<T> Type<T> {
         }
     }
 
-    /// Gets the underlying, untyped representation as used by the
-    /// `middle` layer.
+    /// Gets the underlying representation as used by the
+    /// [`middle`](../../middle/index.html) layer.
     pub fn into_untyped(self) -> untyped::Type {
         self.untyped
     }
@@ -31,8 +38,8 @@ impl<T> Type<T> {
 pub unsafe trait CType : Sized {
     /// Creates or retrieves a `Type<T>` for any type `T: CType`.
     ///
-    /// We can use this to assemble a CIF to set up a call using type
-    /// `T`.
+    /// We can use the resulting object to assemble a CIF to set up
+    /// a call that uses type `T`.
     fn reify() -> Type<Self>;
 }
 
