@@ -1,7 +1,10 @@
 # To do
 
-  - Make build process portable from my computer to other computers.
   - Many more tests and examples.
+
+  - Improve build process:
+      - Why can’t we make bindgen a Cargo dependency?
+      - Should we include a copy of libffi in the package?
 
   - ClosureOnce!
   - Do we need to use `std::thread::catch_panic` somewhere?
