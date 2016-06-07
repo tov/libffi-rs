@@ -16,8 +16,8 @@ use low;
 pub use low::{Callback, CallbackMut, CodePtr,
               ffi_abi as FfiAbi, FFI_DEFAULT_ABI};
 
-mod types_internal;
-pub use self::types_internal::Type;
+mod types;
+pub use self::types::Type;
 
 /// Contains an untyped pointer to a function argument.
 ///
@@ -77,7 +77,7 @@ pub fn arg<T>(r: &T) -> Arg {
 #[derive(Clone, Debug)]
 pub struct Cif {
     cif:    low::ffi_cif,
-    args:   types_internal::TypeArray,
+    args:   types::TypeArray,
     result: Type,
 }
 
@@ -92,7 +92,7 @@ impl Cif {
     pub fn new<I>(args: I, result: Type) -> Self
         where I: ExactSizeIterator<Item=Type>
     {
-        Self::from_type_array(types_internal::TypeArray::new(args), result)
+        Self::from_type_array(types::TypeArray::new(args), result)
     }
 
     /// Calls a function with the given arguments.
@@ -126,7 +126,7 @@ impl Cif {
     ///
     /// This is just like [`Cif::new`](#method.new), except it takes a
     /// `TypeArray` instead of an `ExactSizeIterator`.
-    fn from_type_array(args: types_internal::TypeArray, result: Type) -> Self {
+    fn from_type_array(args: types::TypeArray, result: Type) -> Self {
         let mut cif: low::ffi_cif = Default::default();
 
         unsafe {
