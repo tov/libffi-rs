@@ -11,6 +11,7 @@ build:
 
 doc:
 	cargo doc --no-deps
+	tr -d '\37' < /usr/local/share/info/libffi.info > target/doc/libffi/raw/libffi.txt
 
 test:
 	clear
