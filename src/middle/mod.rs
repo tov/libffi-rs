@@ -92,7 +92,25 @@ impl Cif {
     pub fn new<I>(args: I, result: Type) -> Self
         where I: ExactSizeIterator<Item=Type>
     {
-        Self::from_type_array(types::TypeArray::new(args), result)
+        let nargs = args.len();
+        let args = types::TypeArray::new(args);
+        let mut cif: low::ffi_cif = Default::default();
+
+        unsafe {
+            low::prep_cif(&mut cif,
+                          low::FFI_DEFAULT_ABI,
+                          nargs,
+                          result.as_raw_ptr(),
+                          args.as_raw_ptr())
+        }.expect("low::prep_cif");
+
+        // Note that cif retains references to args and result,
+        // which is why we hold onto them here.
+        Cif {
+            cif:    cif,
+            args:   args,
+            result: result,
+        }
     }
 
     /// Calls a function with the given arguments.
@@ -120,30 +138,6 @@ impl Cif {
     /// Sets the CIF to use the given calling convention.
     pub fn set_abi(&mut self, abi: FfiAbi) {
         self.cif.abi = abi;
-    }
-
-    /// Creates a new CIF for the given argument and result types.
-    ///
-    /// This is just like [`Cif::new`](#method.new), except it takes a
-    /// `TypeArray` instead of an `ExactSizeIterator`.
-    fn from_type_array(args: types::TypeArray, result: Type) -> Self {
-        let mut cif: low::ffi_cif = Default::default();
-
-        unsafe {
-            low::prep_cif(&mut cif,
-                          low::FFI_DEFAULT_ABI,
-                          args.len(),
-                          result.as_raw_ptr(),
-                          args.as_raw_ptr())
-        }.expect("low::prep_cif");
-
-        // Note that cif retains references to args and result,
-        // which is why we hold onto them here.
-        Cif {
-            cif:    cif,
-            args:   args,
-            result: result,
-        }
     }
 
     /// Gets a raw pointer to the underlying
