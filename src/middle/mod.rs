@@ -103,8 +103,8 @@ impl Cif {
     /// # Safety
     ///
     /// There is no checking that the calling convention and types
-    /// in the `Cif` match the actual calling convention and type of
-    /// `fun`.
+    /// in the `Cif` match the actual calling convention and types of
+    /// `fun`, nor that they match the types of `args`.
     pub unsafe fn call<R>(&self, fun: CodePtr, args: &[Arg]) -> R {
         use std::mem;
 
@@ -191,19 +191,17 @@ impl Cif {
 ///     *result = userdata(arg1, arg2);
 /// }
 ///
-/// fn rust_lambda() {
-///     let cif = Cif::new(vec![Type::u64(), Type::u64()].into_iter(),
-///                        Type::u64());
-///     let lambda = |x: u64, y: u64| x + y;
-///     let closure = Closure::new(cif, lambda_callback, &lambda);
+/// let cif = Cif::new(vec![Type::u64(), Type::u64()].into_iter(),
+///                    Type::u64());
+/// let lambda = |x: u64, y: u64| x + y;
+/// let closure = Closure::new(cif, lambda_callback, &lambda);
 ///
-///     unsafe {
-///         let fun: &unsafe extern "C" fn(u64, u64) -> u64
-///             = mem::transmute(closure.code_ptr());
+/// unsafe {
+///     let fun: &unsafe extern "C" fn(u64, u64) -> u64
+///         = mem::transmute(closure.code_ptr());
 ///
-///         assert_eq!(11, fun(5, 6));
-///         assert_eq!(12, fun(5, 7));
-///     }
+///     assert_eq!(11, fun(5, 6));
+///     assert_eq!(12, fun(5, 7));
 /// }
 /// ```
 #[derive(Debug)]
