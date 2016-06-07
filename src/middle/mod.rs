@@ -74,11 +74,28 @@ pub fn arg<T>(r: &T) -> Arg {
 /// let n = unsafe { cif.call(CodePtr(add as _), &[arg(&5), arg(&&6)]) };
 /// assert_eq!(11, n);
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Cif {
     cif:    low::ffi_cif,
     args:   types::TypeArray,
     result: Type,
+}
+
+// To clone a Cif we need to clone the types and then make sure the new
+// ffi_cif refers to the clones of the types.
+impl Clone for Cif {
+    fn clone(&self) -> Self {
+        let mut copy = Cif {
+            cif:    self.cif,
+            args:   self.args.clone(),
+            result: self.result.clone(),
+        };
+
+        copy.cif.arg_types = copy.args.as_raw_ptr();
+        copy.cif.rtype     = copy.result.as_raw_ptr();
+
+        copy
+    }
 }
 
 impl Cif {
