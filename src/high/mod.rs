@@ -306,7 +306,6 @@ define_closure_mod!(arity12 Cif12 Callback12 CallbackMut12 Closure12 ClosureMut1
 #[cfg(test)]
 mod test {
     use super::*;
-    use super::types::*;
 
     #[test]
     fn new_with_cif() {
