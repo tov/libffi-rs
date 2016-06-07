@@ -84,7 +84,7 @@ unsafe fn ffi_type_array_create_empty(len: usize) -> Owned<TypeArray_> {
                     as TypeArray_;
     assert!(!array.is_null(),
             "ffi_type_array_create_empty: out of memory");
-    *array.offset(len as isize) = ptr::null::<low::ffi_type>() as Type_;
+    *array.offset(len as isize) = ptr::null_mut::<low::ffi_type>() as Type_;
     array
 }
 

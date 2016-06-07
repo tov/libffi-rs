@@ -174,7 +174,7 @@ pub mod types {
 /// let mut elements = unsafe {
 ///     [ &mut types::uint16,
 ///       &mut types::uint64,
-///       ptr::null::<ffi_type>() as *mut _ ]
+///       ptr::null_mut::<ffi_type>() ]
 /// };
 ///
 /// let mut my_struct: ffi_type = Default::default();
