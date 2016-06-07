@@ -15,6 +15,45 @@ use super::types::*;
 /// [`into_cif`](#method.into_cif) or a closure with
 /// [`into_closure`](#method.into_closure) or
 /// [`into_closure_mut`](#method.into_closure_mut).
+///
+/// # Example
+///
+/// ```
+/// use std::mem;
+/// use std::os::raw::c_void;
+///
+/// use libffi::middle::*;
+/// use libffi::low;
+///
+/// unsafe extern "C" fn lambda_callback<F: Fn(u64, u64) -> u64>(
+///     _cif: &low::ffi_cif,
+///     result: &mut u64,
+///     args: *const *const c_void,
+///     userdata: &F)
+/// {
+///     let args: *const &u64 = mem::transmute(args);
+///     let arg1 = **args.offset(0);
+///     let arg2 = **args.offset(1);
+///
+///     *result = userdata(arg1, arg2);
+/// }
+///
+/// let lambda = |x: u64, y: u64| x + y;
+///
+/// let closure = Builder::new()
+///     .arg(Type::u64())
+///     .arg(Type::u64())
+///     .res(Type::u64())
+///     .into_closure(lambda_callback, &lambda);
+///
+/// unsafe {
+///     let fun: &unsafe extern "C" fn(u64, u64) -> u64
+///         = mem::transmute(closure.code_ptr());
+///
+///     assert_eq!(11, fun(5, 6));
+///     assert_eq!(12, fun(5, 7));
+/// }
+/// ```
 #[derive(Clone, Debug)]
 pub struct Builder {
     args: Vec<Type>,
@@ -33,25 +72,25 @@ impl Builder {
     }
 
     /// Adds a type to the argument type list.
-    pub fn arg(&mut self, type_: Type) -> &mut Self {
+    pub fn arg(mut self, type_: Type) -> Self {
         self.args.push(type_);
         self
     }
 
     /// Adds several types to the argument type list.
-    pub fn args<I: Iterator<Item = Type>>(&mut self, types: I) -> &mut Self {
+    pub fn args<I: Iterator<Item = Type>>(mut self, types: I) -> Self {
         self.args.extend(types);
         self
     }
 
     /// Sets the result type.
-    pub fn res(&mut self, type_: Type) -> &mut Self {
+    pub fn res(mut self, type_: Type) -> Self {
         self.res = type_;
         self
     }
 
     /// Sets the calling convention.
-    pub fn abi(&mut self, abi: super::FfiAbi) -> &mut Self {
+    pub fn abi(mut self, abi: super::FfiAbi) -> Self {
         self.abi = abi;
         self
     }
