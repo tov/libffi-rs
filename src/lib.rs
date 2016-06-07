@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "unique", feature(unique))]
+
 //! Rust bindings for [libffi](https://sourceware.org/libffi/).
 //!
 //! The C libffi library provides two main facilities: assembling calls
@@ -5,12 +7,12 @@
 //! as ordinary C functions. In Rust, the latter means that we can turn
 //! a Rust lambda (or any object implementing `Fn`/`FnMut`) into an
 //! ordinary C function pointer that we can pass as a callback to C.
-
+//!
 //! The easiest way to use this library is via the
 //! [`high`](high/index.html) layer module, but more flexibility (and
 //! less checking) is provided by the [`middle`](middle/index.html) and
 //! [`low`](low/index.html) layers.
-
+//!
 //! # Usage/Warning
 //!
 //! This library is experimental/unstable and shouldn’t be used for

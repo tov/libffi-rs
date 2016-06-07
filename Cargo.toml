@@ -10,6 +10,9 @@ documentation = "http://users.eecs.northwestern.edu/~jesse/code/libffi-rs/doc/li
 readme = "README.md"
 license = "MIT"
 
+[features]
+unique = []
+
 [dependencies]
 libc = "0.2.11"
 
