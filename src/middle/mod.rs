@@ -19,7 +19,8 @@ pub use low::{Callback, CallbackMut, CodePtr,
 mod types;
 pub use self::types::Type;
 
-pub mod builders;
+mod builder;
+pub use self::builder::Builder;
 
 /// Contains an untyped pointer to a function argument.
 ///
