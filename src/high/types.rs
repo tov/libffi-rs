@@ -35,6 +35,9 @@ impl<T> Type<T> {
 ///
 /// In particular, for any type `T` that implements `CType`, we can
 /// get a `Type<T>` for describing that type.
+/// This trait is unsafe to implement because if the libffi type
+/// associated with a Rust type doesn’t match then we get
+/// undefined behavior.
 pub unsafe trait CType : Sized {
     /// Creates or retrieves a `Type<T>` for any type `T: CType`.
     ///
