@@ -192,6 +192,30 @@ impl Clone for TypeArray {
     }
 }
 
+macro_rules! match_size_signed {
+    ( $name:ident ) => {
+        match mem::size_of::<libc::$name>() {
+            1 => Self::i8(),
+            2 => Self::i16(),
+            4 => Self::i32(),
+            8 => Self::i64(),
+            _  => panic!("Strange size for C type"),
+        }
+    }
+}
+
+macro_rules! match_size_unsigned {
+    ( $name:ident ) => {
+        match mem::size_of::<libc::$name>() {
+            1 => Self::u8(),
+            2 => Self::u16(),
+            4 => Self::u32(),
+            8 => Self::u64(),
+            _  => panic!("Strange size for C type"),
+        }
+    }
+}
+
 impl Type {
     /// Returns the representation of the C `void` type.
     ///
@@ -275,6 +299,56 @@ impl Type {
     #[cfg(target_pointer_width = "64")]
     pub fn isize() -> Self {
         Self::i64()
+    }
+
+    /// Returns the C `signed char` type.
+    pub fn c_schar() -> Self {
+        match_size_signed!(c_schar)
+    }
+
+    /// Returns the C `unsigned char` type.
+    pub fn c_uchar() -> Self {
+        match_size_unsigned!(c_uchar)
+    }
+
+    /// Returns the C `short` type.
+    pub fn c_short() -> Self {
+        match_size_signed!(c_short)
+    }
+
+    /// Returns the C `unsigned short` type.
+    pub fn c_ushort() -> Self {
+        match_size_unsigned!(c_ushort)
+    }
+
+    /// Returns the C `int` type.
+    pub fn c_int() -> Self {
+        match_size_signed!(c_int)
+    }
+
+    /// Returns the C `unsigned int` type.
+    pub fn c_uint() -> Self {
+        match_size_unsigned!(c_uint)
+    }
+
+    /// Returns the C `long` type.
+    pub fn c_long() -> Self {
+        match_size_signed!(c_long)
+    }
+
+    /// Returns the C `unsigned long` type.
+    pub fn c_ulong() -> Self {
+        match_size_unsigned!(c_ulong)
+    }
+
+    /// Returns the C `longlong` type.
+    pub fn c_longlong() -> Self {
+        match_size_signed!(c_longlong)
+    }
+
+    /// Returns the C `unsigned longlong` type.
+    pub fn c_ulonglong() -> Self {
+        match_size_unsigned!(c_ulonglong)
     }
 
     /// Returns the C `float` (32-bit floating point) type.
