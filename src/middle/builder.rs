@@ -1,0 +1,144 @@
+/// Builders for types in the [middle] layer.
+use super::types::*;
+
+/// Provides a builder-style API for constructing CIFs and closures.
+///
+/// To use a builder, first construct it using [`Builder::new`](#method.new).
+/// The default calling convention is `FFI_DEFAULT_ABI`, and the default
+/// function type is `extern "C" fn()` (or in C, `void(*)()`). Add
+/// argument types to the function type with the [`arg`](#method.arg)
+/// and [`args`](#method.args) methods. Set the result type with
+/// [`res`](#method.res). Change the calling convention, if necessary,
+/// with [`abi`](#method.abi).
+///
+/// Once the builder is configured, construct a `Cif` with
+/// [`into_cif`](#method.into_cif) or a closure with
+/// [`into_closure`](#method.into_closure) or
+/// [`into_closure_mut`](#method.into_closure_mut).
+///
+/// # Example
+///
+/// ```
+/// use std::mem;
+/// use std::os::raw::c_void;
+///
+/// use libffi::middle::*;
+/// use libffi::low;
+///
+/// unsafe extern "C" fn lambda_callback<F: Fn(u64, u64) -> u64>(
+///     _cif: &low::ffi_cif,
+///     result: &mut u64,
+///     args: *const *const c_void,
+///     userdata: &F)
+/// {
+///     let args: *const &u64 = mem::transmute(args);
+///     let arg1 = **args.offset(0);
+///     let arg2 = **args.offset(1);
+///
+///     *result = userdata(arg1, arg2);
+/// }
+///
+/// let lambda = |x: u64, y: u64| x + y;
+///
+/// let closure = Builder::new()
+///     .arg(Type::u64())
+///     .arg(Type::u64())
+///     .res(Type::u64())
+///     .into_closure(lambda_callback, &lambda);
+///
+/// unsafe {
+///     let fun: &unsafe extern "C" fn(u64, u64) -> u64
+///         = mem::transmute(closure.code_ptr());
+///
+///     assert_eq!(11, fun(5, 6));
+///     assert_eq!(12, fun(5, 7));
+/// }
+/// ```
+#[derive(Clone, Debug)]
+pub struct Builder {
+    args: Vec<Type>,
+    res: Type,
+    abi: super::FfiAbi,
+}
+
+impl Builder {
+    /// Constructs a `Builder`.
+    pub fn new() -> Self {
+        Builder {
+            args: vec![],
+            res: Type::void(),
+            abi: super::FFI_DEFAULT_ABI,
+        }
+    }
+
+    /// Adds a type to the argument type list.
+    pub fn arg(mut self, type_: Type) -> Self {
+        self.args.push(type_);
+        self
+    }
+
+    /// Adds several types to the argument type list.
+    pub fn args<I: Iterator<Item = Type>>(mut self, types: I) -> Self {
+        self.args.extend(types);
+        self
+    }
+
+    /// Sets the result type.
+    pub fn res(mut self, type_: Type) -> Self {
+        self.res = type_;
+        self
+    }
+
+    /// Sets the calling convention.
+    pub fn abi(mut self, abi: super::FfiAbi) -> Self {
+        self.abi = abi;
+        self
+    }
+
+    /// Builds a CIF.
+    pub fn into_cif(self) -> super::Cif {
+        let mut result = super::Cif::new(self.args.into_iter(), self.res);
+        result.set_abi(self.abi);
+        result
+    }
+
+    /// Builds an immutable closure.
+    ///
+    /// # Arguments
+    ///
+    /// - `callback` — the function to call when the closure is invoked
+    /// - `userdata` — the pointer to pass to `callback` along with the
+    ///   arguments when the closure is called
+    ///
+    /// # Result
+    ///
+    /// The new closure.
+    pub fn into_closure<'a, U, R>(
+        self,
+        callback: super::Callback<U, R>,
+        userdata: &'a U)
+        -> super::Closure<'a>
+    {
+        super::Closure::new(self.into_cif(), callback, userdata)
+    }
+
+    /// Builds a mutable closure.
+    ///
+    /// # Arguments
+    ///
+    /// - `callback` — the function to call when the closure is invoked
+    /// - `userdata` — the pointer to pass to `callback` along with the
+    ///   arguments when the closure is called
+    ///
+    /// # Result
+    ///
+    /// The new closure.
+    pub fn into_closure_mut<'a, U, R>(
+        self,
+        callback: super::CallbackMut<U, R>,
+        userdata: &'a mut U)
+        -> super::Closure<'a>
+    {
+        super::Closure::new_mut(self.into_cif(), callback, userdata)
+    }
+}
