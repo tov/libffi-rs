@@ -16,7 +16,8 @@ fn main() {
         command.arg(format!("-I{}", path.display()));
     }
 
-    let status = command.status().expect("bindgen");
+    let status = command.status()
+        .expect("Could not run bindgen. Do you have it installed?");
     assert!(status.success());
 
     for lib in &libffi.libs {
