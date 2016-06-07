@@ -1,4 +1,3 @@
-#![feature(unique)]
 #![macro_use]
 
 //! Rust bindings for [libffi](https://sourceware.org/libffi/).

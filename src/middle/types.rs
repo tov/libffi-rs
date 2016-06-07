@@ -7,10 +7,11 @@
 
 use std::fmt;
 use std::mem;
-use std::ptr::{Unique, self};
+use std::ptr;
 use libc;
 
 use low;
+use super::util::Unique;
 
 // Internally we represent types and type arrays using raw pointers,
 // since this is what libffi understands. Below we wrap them with
@@ -168,13 +169,13 @@ unsafe fn ffi_type_destroy(victim: Owned<Type_>) {
 
 impl Drop for Type {
     fn drop(&mut self) {
-        unsafe { ffi_type_destroy(self.0.get_mut()) }
+        unsafe { ffi_type_destroy(*self.0) }
     }
 }
 
 impl Drop for TypeArray {
     fn drop(&mut self) {
-        unsafe { ffi_type_array_destroy(self.0.get_mut()) }
+        unsafe { ffi_type_array_destroy(*self.0) }
     }
 }
 

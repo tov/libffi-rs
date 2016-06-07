@@ -318,7 +318,7 @@ pub unsafe fn prep_cif_var(cif: *mut ffi_cif,
 ///     prep_cif(&mut cif, FFI_DEFAULT_ABI, 2,
 ///              &mut types::uint64, args.as_mut_ptr()).unwrap();
 ///
-///     call(&mut cif, CodePtr(c_function as _),
+///     call(&mut cif, CodePtr(c_function as *mut _),
 ///          vec![ &mut 4u64 as *mut _ as *mut c_void,
 ///                &mut 5u64 as *mut _ as *mut c_void ].as_mut_ptr())
 /// };
@@ -481,7 +481,7 @@ pub type RawCallback
 ///                  &mut cif,
 ///                  callback,
 ///                  &mut userdata,
-///                  CodePtr(add5 as _)).unwrap();
+///                  CodePtr(add5 as *mut _)).unwrap();
 ///
 ///     assert_eq!(11, add5(6));
 ///     assert_eq!(12, add5(7));
@@ -573,7 +573,7 @@ pub unsafe fn prep_closure<U, R>(closure:  *mut ffi_closure,
 ///                      &mut cif,
 ///                      callback,
 ///                      &mut userdata,
-///                      CodePtr(add5 as _)).unwrap();
+///                      CodePtr(add5 as *mut _)).unwrap();
 ///
 ///     assert_eq!(5, add5(6));
 ///     assert_eq!(11, add5(7));

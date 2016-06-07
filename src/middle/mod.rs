@@ -16,6 +16,8 @@ use low;
 pub use low::{Callback, CallbackMut, CodePtr,
               ffi_abi as FfiAbi, FFI_DEFAULT_ABI};
 
+mod util;
+
 mod types;
 pub use self::types::Type;
 
@@ -74,7 +76,7 @@ pub fn arg<T>(r: &T) -> Arg {
 /// let args = vec![Type::f64(), Type::pointer()];
 /// let cif = Cif::new(args.into_iter(), Type::f64());
 ///
-/// let n = unsafe { cif.call(CodePtr(add as _), &[arg(&5), arg(&&6)]) };
+/// let n = unsafe { cif.call(CodePtr(add as *mut _), &[arg(&5), arg(&&6)]) };
 /// assert_eq!(11, n);
 /// ```
 #[derive(Debug)]

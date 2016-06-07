@@ -71,7 +71,7 @@ pub fn arg<T: super::CType>(arg: &T) -> Arg {
 /// use libffi::high::call::*;
 ///
 /// let result = unsafe {
-///     call::<f32>(CodePtr(hypot as _), &[arg(&3f32), arg(&4f32)])
+///     call::<f32>(CodePtr(hypot as *mut _), &[arg(&3f32), arg(&4f32)])
 /// };
 ///
 /// assert!((result - 5f32).abs() < 0.0001);
@@ -111,7 +111,7 @@ macro_rules! ffi_call {
     =>
     {
         $crate::high::call::call::<$ty>(
-            $crate::high::call::CodePtr($fun as _),
+            $crate::high::call::CodePtr($fun as *mut _),
             &[$($crate::high::call::arg(&$arg)),*])
     };
 
