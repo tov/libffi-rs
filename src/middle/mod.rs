@@ -168,9 +168,14 @@ impl Cif {
 ///
 /// # Example
 ///
-/// In this example we turn a Rust lambda into a C function. Note that
-/// the Rust closure value `lambda` is actually passed to the callback
-/// function as userdata, which then invokes it.
+/// In this example we turn a Rust lambda into a C function. We first
+/// define function `lambda_callback, which will be called by libffi
+/// when the closure is called. The callback function takes four
+/// arguments: a CIF describing its arguments, a pointer for where to
+/// store its result, a pointer to an array of pointers to its
+/// arguments, and a userdata pointer. In this ase, the Rust closure
+/// value `lambda` is passed as userdata to `lambda_callback`, which
+/// then invokes it.
 ///
 /// ```
 /// use std::mem;
