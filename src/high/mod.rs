@@ -21,6 +21,9 @@
 //! [`Cif2`](struct.Cif2.html)) and then creating the closure with
 //! [`Closure2::new_with_cif`](struct.Closure2.html#method.new_with_cif).
 //!
+//! See the [`call`](call/index.html) submodule for a simple interface
+//! to dynamic calls to C functions.
+//!
 //! # Example
 //!
 //! Here we use [`ClosureMut1`](struct.ClosureMut1.html), which is the type
@@ -50,6 +53,7 @@ pub use self::types::{Type, CType};
 
 #[macro_use]
 pub mod call;
+pub use self::call::*;
 
 macro_rules! define_closure_mod {
     (
