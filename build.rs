@@ -24,7 +24,7 @@ fn main() {
     }
 
     for path in &libffi.link_paths {
-        println!("cargo:rustc-link-search={}", path.to_str().unwrap());
+        println!("cargo:rustc-link-search={}", path.display());
     }
 }
 
