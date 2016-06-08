@@ -1,5 +1,4 @@
-use std::process::Command;
-
+extern crate bindgen;
 extern crate pkg_config;
 
 const C_IN:   &'static str = "include/include_ffi.h";
@@ -8,17 +7,14 @@ const RS_OUT: &'static str = "src/raw.rs";
 fn main() {
     let libffi = pkg_config::probe_library("libffi").expect("libffi");
 
-    let mut command = Command::new("bindgen");
-    command.arg(format!("--output={}", RS_OUT))
-           .arg(C_IN)
-           .arg("--");
+    let mut builder = bindgen::Builder::new();
+    builder.header(C_IN);
     for path in &libffi.include_paths {
-        command.arg(format!("-I{}", path.display()));
+        builder.clang_arg(format!("-I{}", path.display()));
     }
 
-    let status = command.status()
-        .expect("Could not run bindgen. Do you have it installed?");
-    assert!(status.success());
+    let bindings = builder.generate().expect("bindgen generation");
+    bindings.write_to_file(RS_OUT).expect("bindgen output");
 
     for lib in &libffi.libs {
         println!("cargo:rustc-link-lib={}", lib);
