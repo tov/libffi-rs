@@ -400,13 +400,6 @@ impl Type {
         }
     }
 
-    /// Constructs a structure type whose fields have the given types.
-    pub fn structure_from_array(fields: TypeArray) -> Self {
-        unsafe {
-            Type(Unique::new(ffi_type_struct_create_raw(*fields.0)))
-        }
-    }
-
     /// Gets a raw pointer to the underlying
     /// [`ffi_type`](../../low/struct.ffi_type.html).
     ///
@@ -424,11 +417,6 @@ impl TypeArray {
         where I: ExactSizeIterator<Item=Type>
     {
         unsafe { TypeArray(Unique::new(ffi_type_array_create(elements))) }
-    }
-
-    /// The length of this array of `Type`s.
-    pub fn len(&self) -> usize {
-        unsafe { ffi_type_array_len(*self.0) }
     }
 
     /// Gets a raw pointer to the underlying C array of
