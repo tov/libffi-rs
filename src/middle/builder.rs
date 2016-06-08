@@ -1,5 +1,6 @@
-/// Builders for types in the [middle] layer.
-use super::types::*;
+use std::any::Any;
+
+use super::types::Type;
 
 /// Provides a builder-style API for constructing CIFs and closures.
 ///
@@ -13,8 +14,9 @@ use super::types::*;
 ///
 /// Once the builder is configured, construct a `Cif` with
 /// [`into_cif`](#method.into_cif) or a closure with
-/// [`into_closure`](#method.into_closure) or
-/// [`into_closure_mut`](#method.into_closure_mut).
+/// [`into_closure`](#method.into_closure),
+/// [`into_closure_mut`](#method.into_closure_mut), or
+/// [`into_closure_once`](#method.into_closure_once).
 ///
 /// # Examples
 ///
@@ -140,5 +142,25 @@ impl Builder {
         -> super::Closure<'a>
     {
         super::Closure::new_mut(self.into_cif(), callback, userdata)
+    }
+
+    /// Builds a one-shot closure.
+    ///
+    /// # Arguments
+    ///
+    /// - `callback` — the function to call when the closure is invoked
+    /// - `userdata` — the object to pass to `callback` along with the
+    ///   arguments when the closure is called
+    ///
+    /// # Result
+    ///
+    /// The new closure.
+    pub fn into_closure_once<U: Any, R>(
+        self,
+        callback: super::CallbackOnce<U, R>,
+        userdata: U)
+        -> super::ClosureOnce
+    {
+        super::ClosureOnce::new(self.into_cif(), callback, userdata)
     }
 }

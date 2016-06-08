@@ -14,7 +14,7 @@ use low;
 
 #[cfg(feature = "unique")]
 use std::ptr::Unique;
-#[cfg(not(feature = "unique"))]
+#[cfg(not (feature = "unique"))]
 use super::util::Unique;
 
 // Internally we represent types and type arrays using raw pointers,
@@ -30,7 +30,7 @@ type Owned<T>      = T;
 
 /// Represents a single C type.
 ///
-/// # Examples
+/// # Example
 ///
 /// Suppose we have a C struct:
 ///
@@ -57,7 +57,7 @@ pub struct Type(Unique<low::ffi_type>);
 /// Represents a sequence of C types.
 ///
 /// This can be used to construct a struct type or as the arguments
-/// when creating a [`Cif`](../middle/struct.Cif.html).
+/// when creating a [`Cif`](struct.Cif.html).
 pub struct TypeArray(Unique<*mut low::ffi_type>);
 
 impl fmt::Debug for Type {
@@ -401,11 +401,11 @@ impl Type {
     }
 
     /// Gets a raw pointer to the underlying
-    /// [`ffi_type`](../../low/struct.ffi_type.html).
+    /// [`ffi_type`](../raw/struct._ffi_type.html).
     ///
     /// This method may be useful for interacting with the
-    /// [`low`](../../low/index.html) and
-    /// [`raw`](../../raw/index.html) layers.
+    /// [`low`](../low/index.html) and
+    /// [`raw`](../raw/index.html) layers.
     pub fn as_raw_ptr(&self) -> *mut low::ffi_type {
         *self.0
     }
@@ -420,13 +420,13 @@ impl TypeArray {
     }
 
     /// Gets a raw pointer to the underlying C array of
-    /// [`ffi_type`](../../low/struct.ffi_type.html)s.
+    /// [`ffi_type`](../raw/struct._ffi_type.html)s.
     ///
     /// The C array is null-terminated.
     ///
     /// This method may be useful for interacting with the
-    /// [`low`](../../low/index.html) and
-    /// [`raw`](../../raw/index.html) layers.
+    /// [`low`](../low/index.html) and
+    /// [`raw`](../raw/index.html) layers.
     pub fn as_raw_ptr(&self) -> *mut *mut low::ffi_type {
         *self.0
     }
