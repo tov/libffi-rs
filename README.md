@@ -10,11 +10,7 @@ The easiest way to use this library is via the `high` layer module, but
 more flexibility (and less checking) is provided by the `middle` and
 `low` layers.
 
-## Usage/Warning
-
-This library is experimental/unstable and shouldn’t be used for
-anything yet. If it does something you need or want to play with
-then we should talk.
+## Usage
 
 It’s [on crates.io](https://crates.io/crates/libffi), so it can be
 used by adding `libffi` to the dependencies in your project’s
@@ -25,9 +21,9 @@ used by adding `libffi` to the dependencies in your project’s
 libffi = "0.1"
 ```
 
-However, to actually build it, you need to install [Rust
-bindgen](https://crates.io/crates/bindgen) (0.18.0) and [C
-libffi](https://sourceware.org/libffi/) (3.2.1) manually first.
+It is necessary to have C [libffi](https://sourceware.org/libffi/)
+installed first. (We’ve tested with libffi
+version 3.2.1.)
 
 ## Example
 
