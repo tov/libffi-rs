@@ -68,6 +68,8 @@
 
 pub use middle::{FfiAbi, FFI_DEFAULT_ABI};
 
+mod new;
+
 pub mod types;
 pub use self::types::{Type, CType};
 
