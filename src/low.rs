@@ -153,7 +153,7 @@ pub mod types {
 /// and we use these values to indicate that that we are describing a
 /// struct or complex type.
 ///
-/// # Example
+/// # Examples
 ///
 /// Suppose we have the following C struct:
 ///
@@ -218,7 +218,7 @@ pub mod type_tag {
 ///
 /// `Ok(())` for success or `Err(e)` for failure.
 ///
-/// # Example
+/// # Examples
 ///
 /// ```
 /// use libffi::low::*;
@@ -302,7 +302,7 @@ pub unsafe fn prep_cif_var(cif: *mut ffi_cif,
 ///
 /// The result of calling `fun` with `args`.
 ///
-/// # Example
+/// # Examples
 ///
 /// ```
 /// use std::os::raw::c_void;
@@ -348,7 +348,7 @@ pub unsafe fn call<R>(cif:  *mut ffi_cif,
 /// deallocated using [`closure_free`](fn.closure_free.html), after
 /// which point the code pointer should not be used.
 ///
-/// # Example
+/// # Examples
 ///
 /// ```
 /// use libffi::low::*;
@@ -369,7 +369,7 @@ pub fn closure_alloc() -> (*mut ffi_closure, CodePtr) {
 /// Closures allocated with [`closure_alloc`](fn.closure_alloc.html)
 /// must be deallocated with `closure_free`.
 ///
-/// # Example
+/// # Examples
 ///
 /// ```
 /// use libffi::low::*;
@@ -445,7 +445,7 @@ pub type RawCallback
 ///
 /// `Ok(())` for success or `Err(e)` for failure.
 ///
-/// # Example
+/// # Examples
 ///
 /// ```
 /// use libffi::low::*;
@@ -536,7 +536,7 @@ pub unsafe fn prep_closure<U, R>(closure:  *mut ffi_closure,
 ///
 /// `Ok(())` for success or `Err(e)` for failure.
 ///
-/// # Example
+/// # Examples
 ///
 /// ```
 /// use libffi::low::*;

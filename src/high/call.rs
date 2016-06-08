@@ -3,7 +3,7 @@
 //! This API allows us to call a code pointer with an array of
 //! arguments, using libffi to set up the call.
 //!
-//! # Example
+//! # Examples
 //!
 //! ```
 //! extern "C" fn hypot(x: f32, y: f32) -> f32 {
@@ -61,7 +61,7 @@ pub fn arg<T: super::CType>(arg: &T) -> Arg {
 ///
 /// To reduce boilerplate, see [`ffi_call!`](../../macro.ffi_call!.html).
 ///
-/// # Example
+/// # Examples
 ///
 /// ```
 /// extern "C" fn hypot(x: f32, y: f32) -> f32 {
@@ -90,7 +90,7 @@ pub unsafe fn call<R: super::CType>(fun: CodePtr, args: &[Arg]) -> R {
 /// This macro provides sugar for `call::arg` and `call::call`. For more
 /// control, see [`high::call::call`](high/call/fn.call.html).
 ///
-/// # Example
+/// # Examples
 ///
 /// ```
 /// extern "C" fn hypot(x: f32, y: f32) -> f32 {

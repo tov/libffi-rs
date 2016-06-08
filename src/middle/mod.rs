@@ -67,7 +67,7 @@ pub fn arg<T>(r: &T) -> Arg {
 /// Construct with [`Cif::new`](#method.new) or
 /// [`Cif::from_type_array`](#method.from_type_array).
 ///
-/// # Example
+/// # Examples
 ///
 /// ```
 /// extern "C" fn add(x: f64, y: &f64) -> f64 {
@@ -185,7 +185,7 @@ impl Cif {
 /// Construct with [`Closure::new`](#method.new) and
 /// [`Closure::new_mut`](#method.new_mut).
 ///
-/// # Example
+/// # Examples
 ///
 /// In this example we turn a Rust lambda into a C function. We first
 /// define function `lambda_callback, which will be called by libffi

@@ -16,7 +16,7 @@ use super::types::*;
 /// [`into_closure`](#method.into_closure) or
 /// [`into_closure_mut`](#method.into_closure_mut).
 ///
-/// # Example
+/// # Examples
 ///
 /// ```
 /// use std::mem;

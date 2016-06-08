@@ -54,7 +54,7 @@
 //! layers (and it will be considered a bug to the extent that it
 //! isn’t).
 //!
-//! # Example
+//! # Examples
 //!
 //! In this example, we convert a Rust lambda containing a free variable
 //! into an ordinary C code pointer. The type of `fun` below is

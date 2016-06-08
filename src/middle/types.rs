@@ -14,7 +14,7 @@ use low;
 
 #[cfg(feature = "unique")]
 use std::ptr::Unique;
-#[cfg(not (feature = "unique"))]
+#[cfg(not(feature = "unique"))]
 use super::util::Unique;
 
 // Internally we represent types and type arrays using raw pointers,
@@ -30,7 +30,7 @@ type Owned<T>      = T;
 
 /// Represents a single C type.
 ///
-/// # Example
+/// # Examples
 ///
 /// Suppose we have a C struct:
 ///
