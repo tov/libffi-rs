@@ -9,8 +9,10 @@
 //! calling a function via a CIF or closure is still unsafe because
 //! argument types aren’t checked. See the [`high`](../high/index.html)
 //! layer for closures with type-checked arguments.
-//!
-use std::os::raw::c_void; use std::marker::PhantomData;
+
+use std::any::Any;
+use std::os::raw::c_void;
+use std::marker::PhantomData;
 
 use low;
 pub use low::{Callback, CallbackMut, CodePtr,
@@ -313,6 +315,86 @@ impl<'a> Closure<'a> {
             alloc:   alloc,
             code:    code,
             _marker: PhantomData,
+        }
+    }
+
+    /// Obtains the callable code pointer for a closure.
+    ///
+    /// # Safety
+    ///
+    /// The result needs to be transmuted to the correct type before
+    /// it can be called. If the type is wrong then undefined behavior
+    /// will result.
+    pub fn code_ptr(&self) -> &unsafe extern "C" fn() {
+        self.code.as_fun()
+    }
+}
+
+/// The type of callback invoked by a
+/// [`ClosureOnce`](struct.ClosureOnce.html).
+pub type CallbackOnce<U, R> = CallbackMut<Option<U>, R>;
+
+/// A closure that owns needs-drop data.
+///
+/// This allows the closure’s callback to take ownership of the data, in
+/// which case the userdata will be gone if called again.
+#[derive(Debug)]
+pub struct ClosureOnce {
+    alloc:     *mut ::low::ffi_closure,
+    code:      CodePtr,
+    _cif:      Box<Cif>,
+    _userdata: Box<Any>,
+}
+
+impl Drop for ClosureOnce {
+    fn drop(&mut self) {
+        unsafe {
+            low::closure_free(self.alloc);
+        }
+    }
+}
+
+impl ClosureOnce {
+    /// Creates a new closure with owned userdata.
+    ///
+    /// # Arguments
+    ///
+    /// - `cif` — describes the calling convention and argument and
+    ///   result types
+    /// - `callback` — the function to call when the closure is invoked
+    /// - `userdata` — the value to pass to `callback` along with the
+    ///   arguments when the closure is called
+    ///
+    /// # Result
+    ///
+    /// The new closure.
+    pub fn new<U: Any, R>(cif:      Cif,
+                          callback: CallbackOnce<U, R>,
+                          userdata: U)
+                          -> Self
+    {
+        let cif = Box::new(cif);
+        let userdata = Box::new(Some(userdata)) as Box<Any>;
+        let (alloc, code) = low::closure_alloc();
+
+        assert!(!alloc.is_null(), "closure_alloc: returned null");
+
+        {
+            let borrow = userdata.downcast_ref::<Option<U>>().unwrap();
+            unsafe {
+                low::prep_closure_mut(alloc,
+                                      cif.as_raw_ptr(),
+                                      callback,
+                                      borrow as *const _ as *mut _,
+                                      code).unwrap();
+            }
+        }
+
+        ClosureOnce {
+            alloc:     alloc,
+            code:      code,
+            _cif:      cif,
+            _userdata: userdata,
         }
     }
 

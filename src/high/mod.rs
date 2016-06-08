@@ -24,7 +24,7 @@
 //! See the [`call`](call/index.html) submodule for a simple interface
 //! to dynamic calls to C functions.
 //!
-//! # Example
+//! # Examples
 //!
 //! Here we use [`ClosureMut1`](struct.ClosureMut1.html), which is the type
 //! for creating mutable closures of one argument. We use it to turn a
@@ -46,6 +46,26 @@
 //!
 //! Note that in the above example, `counter` is an ordinary C function
 //! pointer of type `extern "C" fn(u64) -> u64`.
+//!
+//! Here’s an example using `ClosureOnce3` to create a closure that owns
+//! a vector:
+//!
+//! ```
+//! use libffi::high::ClosureOnce3;
+//!
+//! let v = vec![1, 2, 3, 4, 5];
+//! let mut f = move |x: usize, y: usize, z: usize| {
+//!     v[x] + v[y] + v[z]
+//! };
+//!
+//! let closure = ClosureOnce3::new(f);
+//! let call = closure.code_ptr();
+//!
+//! assert_eq!(12, call(2, 3, 4));
+//! ```
+//!
+//! Invoking the closure a second time will panic.
+
 pub use middle::{FfiAbi, FFI_DEFAULT_ABI};
 
 pub mod types;
@@ -57,15 +77,16 @@ pub use self::call::*;
 
 macro_rules! define_closure_mod {
     (
-        $module:ident
-        $cif:ident $callback:ident $callback_mut:ident
-                   $closure:ident  $closure_mut:ident ;
-                   $( $T:ident )*
+        $module:ident $cif:ident
+          $callback:ident $callback_mut:ident $callback_once:ident
+          $closure:ident $closure_mut:ident $closure_once:ident;
+        $( $T:ident )*
     )
         =>
     {
         /// CIF and closure types organized by function arity.
         pub mod $module {
+            use std::any::Any;
             use std::marker::PhantomData;
             use std::{mem, ptr};
 
@@ -124,9 +145,7 @@ macro_rules! define_closure_mod {
                 _marker: PhantomData<fn($( $T, )*) -> R>,
             }
 
-            impl<'a, $($T: CType,)* R: CType>
-                $closure<'a, $($T,)* R>
-            {
+            impl<'a, $($T: CType,)* R: CType> $closure<'a, $($T,)* R> {
                 /// Constructs a typed closure callable from C from a
                 /// Rust closure.
                 pub fn new<Callback>(callback: &'a Callback) -> Self
@@ -278,36 +297,150 @@ macro_rules! define_closure_mod {
                     }
                 }
             }
+
+            /// The type of function called from a one-shot, typed closure.
+            pub type $callback_once<U, $( $T, )* R>
+                = $callback_mut<Option<U>, $( $T, )* R>;
+
+            /// A one-shot, typed closure with the given argument and
+            /// result types.
+            pub struct $closure_once<$( $T, )* R> {
+                untyped: middle::ClosureOnce,
+                _marker: PhantomData<fn($( $T, )*) -> R>,
+            }
+
+            impl<$($T: CType,)* R: CType> $closure_once<$($T,)* R> {
+                /// Constructs a typed closure callable from C from a
+                /// Rust closure.
+                pub fn new<Callback>(callback: Callback) -> Self
+                    where Callback: FnOnce($( $T, )*) -> R + Any
+                {
+                    Self::new_with_cif($cif::reify(), callback)
+                }
+            }
+
+            impl<$( $T: Copy, )* R> $closure_once<$( $T, )* R> {
+                /// Constructs a one-shot closure callable from C from a CIF
+                /// describing the calling convention for the resulting
+                /// function and the Rust closure to call.
+                pub fn new_with_cif<Callback>(cif: $cif<$( $T, )* R>,
+                                              callback: Callback) -> Self
+                    where Callback: FnOnce($( $T, )*) -> R + Any
+                {
+                    Self::from_parts(cif,
+                                     Self::static_callback,
+                                     callback)
+                }
+
+                #[allow(non_snake_case)]
+                extern "C" fn static_callback<Callback>
+                    (_cif:     &::low::ffi_cif,
+                     result:   &mut R,
+                     &($( &$T, )*):
+                               &($( &$T, )*),
+                     userdata: &mut Option<Callback>)
+                  where Callback: FnOnce($( $T, )*) -> R
+                {
+                    if let Some(userdata) = userdata.take() {
+                        unsafe {
+                            ptr::write(result, userdata($( $T, )*));
+                        }
+                    } else {
+                        // It's definitely wrong to panic right before
+                        // we return to C.
+                        panic!("Userdata already used");
+                    }
+                }
+            }
+
+            impl<$( $T, )* R> $closure_once<$( $T, )* R> {
+                /// Gets the C code pointer that is used to invoke the
+                /// closure.
+                pub fn code_ptr(&self) -> &extern "C" fn($( $T, )*) -> R {
+                    unsafe {
+                        mem::transmute(self.untyped.code_ptr())
+                    }
+                }
+
+                /// Constructs a one-shot closure callable from C from a CIF
+                /// describing the calling convention for the resulting
+                /// function, a callback for the function to call, and
+                /// userdata to pass to the callback.
+                pub fn from_parts<U: Any>(
+                    cif:      $cif<$( $T, )* R>,
+                    callback: $callback_once<U, $( $T, )* R>,
+                    userdata: U)
+                    -> Self
+                {
+                    let callback: middle::CallbackOnce<U, R>
+                        = unsafe { mem::transmute(callback) };
+                    let closure
+                        = middle::ClosureOnce::new(cif.untyped,
+                                                   callback,
+                                                   userdata);
+                    $closure_once {
+                        untyped: closure,
+                        _marker: PhantomData,
+                    }
+                }
+            }
         }
+
         pub use self::$module::*;
     }
 }
 
-define_closure_mod!(arity0 Cif0 Callback0 CallbackMut0 Closure0 ClosureMut0;
-                   );
-define_closure_mod!(arity1 Cif1 Callback1 CallbackMut1 Closure1 ClosureMut1;
+define_closure_mod!(arity0 Cif0
+                    Callback0 CallbackMut0 CallbackOnce0
+                    Closure0 ClosureMut0 ClosureOnce0;
+                    );
+define_closure_mod!(arity1 Cif1
+                    Callback1 CallbackMut1 CallbackOnce1
+                    Closure1 ClosureMut1 ClosureOnce1;
                     A);
-define_closure_mod!(arity2 Cif2 Callback2 CallbackMut2 Closure2 ClosureMut2;
+define_closure_mod!(arity2 Cif2
+                    Callback2 CallbackMut2 CallbackOnce2
+                    Closure2 ClosureMut2 ClosureOnce2;
                     A B);
-define_closure_mod!(arity3 Cif3 Callback3 CallbackMut3 Closure3 ClosureMut3;
+define_closure_mod!(arity3 Cif3
+                    Callback3 CallbackMut3 CallbackOnce3
+                    Closure3 ClosureMut3 ClosureOnce3;
                     A B C);
-define_closure_mod!(arity4 Cif4 Callback4 CallbackMut4 Closure4 ClosureMut4;
+define_closure_mod!(arity4 Cif4
+                    Callback4 CallbackMut4 CallbackOnce4
+                    Closure4 ClosureMut4 ClosureOnce4;
                     A B C D);
-define_closure_mod!(arity5 Cif5 Callback5 CallbackMut5 Closure5 ClosureMut5;
+define_closure_mod!(arity5 Cif5
+                    Callback5 CallbackMut5 CallbackOnce5
+                    Closure5 ClosureMut5 ClosureOnce5;
                     A B C D E);
-define_closure_mod!(arity6 Cif6 Callback6 CallbackMut6 Closure6 ClosureMut6;
+define_closure_mod!(arity6 Cif6
+                    Callback6 CallbackMut6 CallbackOnce6
+                    Closure6 ClosureMut6 ClosureOnce6;
                     A B C D E F);
-define_closure_mod!(arity7 Cif7 Callback7 CallbackMut7 Closure7 ClosureMut7;
+define_closure_mod!(arity7 Cif7
+                    Callback7 CallbackMut7 CallbackOnce7
+                    Closure7 ClosureMut7 ClosureOnce7;
                     A B C D E F G);
-define_closure_mod!(arity8 Cif8 Callback8 CallbackMut8 Closure8 ClosureMut8;
+define_closure_mod!(arity8 Cif8
+                    Callback8 CallbackMut8 CallbackOnce8
+                    Closure8 ClosureMut8 ClosureOnce8;
                     A B C D E F G H);
-define_closure_mod!(arity9 Cif9 Callback9 CallbackMut9 Closure9 ClosureMut9;
+define_closure_mod!(arity9 Cif9
+                    Callback9 CallbackMut9 CallbackOnce9
+                    Closure9 ClosureMut9 ClosureOnce9;
                     A B C D E F G H I);
-define_closure_mod!(arity10 Cif10 Callback10 CallbackMut10 Closure10 ClosureMut10;
+define_closure_mod!(arity10 Cif10
+                    Callback10 CallbackMut10 CallbackOnce10
+                    Closure10 ClosureMut10 ClosureOnce10;
                     A B C D E F G H I J);
-define_closure_mod!(arity11 Cif11 Callback11 CallbackMut11 Closure11 ClosureMut11;
+define_closure_mod!(arity11 Cif11
+                    Callback11 CallbackMut11 CallbackOnce11
+                    Closure11 ClosureMut11 ClosureOnce11;
                     A B C D E F G H I J K);
-define_closure_mod!(arity12 Cif12 Callback12 CallbackMut12 Closure12 ClosureMut12;
+define_closure_mod!(arity12 Cif12
+                    Callback12 CallbackMut12 CallbackOnce12
+                    Closure12 ClosureMut12 ClosureOnce12;
                     A B C D E F G H I J K L);
 
 #[cfg(test)]
