@@ -1,12 +1,11 @@
 before_install:
-  - locate libffi
   - sudo apt-get -qq update
   - sudo apt-get install -y libffi
 language: rust
 rust:
   - stable
-  - beta
-  - nightly
+#  - beta
+#  - nightly
 matrix:
   allow_failures:
     - rust: nightly
