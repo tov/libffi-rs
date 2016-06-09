@@ -1,4 +1,4 @@
-# libffi-rs: Rust bindings for [libffi](https://sourceware.org/libffi/).
+# libffi-rs: Rust bindings for [libffi](https://sourceware.org/libffi/)
 
 [![Build Status](https://travis-ci.org/tov/libffi-rs.svg?branch=master)](https://travis-ci.org/tov/libffi-rs)
 
