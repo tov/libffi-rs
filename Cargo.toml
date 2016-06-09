@@ -6,7 +6,7 @@ build = "build.rs"
 description = "Rust bindings for libffi"
 repository = "https://github.com/tov/libffi-rs"
 homepage = "https://github.com/tov/libffi-rs"
-documentation = "http://users.eecs.northwestern.edu/~jesse/code/libffi-rs/doc/libffi/"
+documentation = "http://tov.github.io/libffi-rs/"
 readme = "README.md"
 license = "MIT"
 
