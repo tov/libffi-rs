@@ -11,19 +11,17 @@ build:
 
 doc:
 	cargo doc --no-deps
+	echo '<meta http-equiv="refresh" content="0;url=libffi/index.html">' > target/doc/index.html
 	tr -d '\37' < /usr/local/share/info/libffi.info > target/doc/libffi/raw/libffi.txt
 
 test:
 	clear
 	cargo test
 
-REMOTE_HOST = login.eecs.northwestern.edu
-REMOTE_PATH = public_html/code/libffi-rs
-
 upload-doc:
 	make doc
-	rsync -avz --delete target/doc $(REMOTE_HOST):$(REMOTE_PATH)
-	ssh $(REMOTE_HOST) chmod -R a+rX $(REMOTE_PATH)
+	ghp-import -n target/doc
+	git push -f https://github.com/tov/libffi-rs.git gh-pages
 
 release:
 	make upload-doc
