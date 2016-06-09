@@ -1,14 +1,12 @@
 before_install:
-  - wget ftp://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz
-  - tar zxf libffi-3.2.1.tar.gz
-  - cd libffi-3.2.1
-  - ./configure
-  - make && sudo make install
+  - ./install_libffi.sh
+
 language: rust
 rust:
   - stable
-#  - beta
-#  - nightly
+  - beta
+  - nightly
+
 matrix:
   allow_failures:
     - rust: nightly
