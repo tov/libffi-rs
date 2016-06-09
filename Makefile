@@ -11,7 +11,7 @@ build:
 
 doc:
 	cargo doc --no-deps
-	echo '<meta http-equiv="refresh" content="0;url=libffi/index.html">' > target/doc/index.html
+	echo '<meta http-equiv="refresh" content="0;url=libffi/">' > target/doc/index.html
 	tr -d '\37' < /usr/local/share/info/libffi.info > target/doc/libffi/raw/libffi.txt
 
 test:
