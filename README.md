@@ -1,6 +1,7 @@
 # libffi-rs: Rust bindings for [libffi](https://sourceware.org/libffi/)
 
 [![Build Status](https://travis-ci.org/tov/libffi-rs.svg?branch=master)](https://travis-ci.org/tov/libffi-rs)
+[![Crates.io](https://img.shields.io/crates/v/libffi.svg?maxAge=2592000)](https://crates.io/crates/libffi)
 
 The C libffi library provides two main facilities: assembling calls
 to functions dynamically, and creating closures that can be called
