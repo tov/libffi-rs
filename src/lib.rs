@@ -1,3 +1,4 @@
+#![deny(missing_docs)]
 #![cfg_attr(feature = "unique", feature(unique))]
 
 //! Rust bindings for [libffi](https://sourceware.org/libffi/).
@@ -74,6 +75,7 @@ extern crate libc;
 ///
 /// This module is generated and undocumented, but you can see the [C
 /// libffi documentation](libffi.txt).
+#[allow(missing_docs)]
 pub mod raw;
 
 pub mod high;
