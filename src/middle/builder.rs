@@ -63,6 +63,12 @@ pub struct Builder {
     abi: super::FfiAbi,
 }
 
+impl Default for Builder {
+    fn default() -> Self {
+        Builder::new()
+    }
+}
+
 impl Builder {
     /// Constructs a `Builder`.
     pub fn new() -> Self {
@@ -115,11 +121,11 @@ impl Builder {
     /// # Result
     ///
     /// The new closure.
-    pub fn into_closure<'a, U, R>(
+    pub fn into_closure<U, R>(
         self,
         callback: super::Callback<U, R>,
-        userdata: &'a U)
-        -> super::Closure<'a>
+        userdata: &U)
+        -> super::Closure
     {
         super::Closure::new(self.into_cif(), callback, userdata)
     }
@@ -135,11 +141,11 @@ impl Builder {
     /// # Result
     ///
     /// The new closure.
-    pub fn into_closure_mut<'a, U, R>(
+    pub fn into_closure_mut<U, R>(
         self,
         callback: super::CallbackMut<U, R>,
-        userdata: &'a mut U)
-        -> super::Closure<'a>
+        userdata: &mut U)
+        -> super::Closure
     {
         super::Closure::new_mut(self.into_cif(), callback, userdata)
     }

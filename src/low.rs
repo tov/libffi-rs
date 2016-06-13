@@ -16,9 +16,9 @@ use raw;
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
     /// Given a bad or unsupported type representation.
-    BadTypedef,
+    Typedef,
     /// Given a bad or unsupported ABI.
-    BadAbi,
+    Abi,
 }
 
 /// The `Result` type specialized for libffi `Error`s.
@@ -29,8 +29,8 @@ fn status_to_result<R>(status: raw::ffi_status, good: R) -> Result<R> {
     use raw::ffi_status::*;
     match status {
         FFI_OK => Ok(good),
-        FFI_BAD_TYPEDEF => Err(Error::BadTypedef),
-        FFI_BAD_ABI => Err(Error::BadAbi),
+        FFI_BAD_TYPEDEF => Err(Error::Typedef),
+        FFI_BAD_ABI => Err(Error::Abi),
     }
 }
 
@@ -192,12 +192,13 @@ pub mod type_tag {
     pub const COMPLEX: c_ushort = raw::ffi_type_enum::COMPLEX as c_ushort;
 }
 
-/// Initalizes a CIF (Call InterFace) with the given ABI and types.
+/// Initalizes a CIF (Call Interface) with the given ABI
+/// and types.
 ///
 /// We need to initialize a CIF before we can use it to call a function
 /// or create a closure. This function lets us specify the calling
 /// convention to use and the argument and result types. For varargs
-/// CIF initialization, see [prep_cif_var](fn.prep_cif_var.html).
+/// CIF initialization, see [`prep_cif_var`](fn.prep_cif_var.html).
 ///
 ///
 /// # Safety
@@ -247,12 +248,12 @@ pub unsafe fn prep_cif(cif: *mut ffi_cif,
     status_to_result(status, ())
 }
 
-/// Initalizes a CIF (Call InterFace) for a varargs function.
+/// Initalizes a CIF (Call Interface) for a varargs function.
 ///
 /// We need to initialize a CIF before we can use it to call a function
 /// or create a closure. This function lets us specify the calling
 /// convention to use and the argument and result types. For non-varargs
-/// CIF initialization, see [prep_cif](fn.prep_cif.html).
+/// CIF initialization, see [`prep_cif`](fn.prep_cif.html).
 ///
 /// # Safety
 ///

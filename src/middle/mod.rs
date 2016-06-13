@@ -188,7 +188,7 @@ impl Cif {
 /// # Examples
 ///
 /// In this example we turn a Rust lambda into a C function. We first
-/// define function `lambda_callback, which will be called by libffi
+/// define function `lambda_callback`, which will be called by libffi
 /// when the closure is called. The callback function takes four
 /// arguments: a CIF describing its arguments, a pointer for where to
 /// store its result, a pointer to an array of pointers to its

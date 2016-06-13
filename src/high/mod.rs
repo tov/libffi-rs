@@ -2,8 +2,10 @@
 //! as C function pointers.
 //!
 //! The main facility here is given by the structs
-//! <code>Closure<em>N</em></code> and
-//! <code>ClosureMut<em>N</em></code>, for natural numbers *`N`*
+//! <code>Closure<em>N</em></code>,
+//! <code>Closure<span></span>Mut<em>N</em></code>,
+//! and <code>Closure<span></span>Once<em>N</em></code>,
+//! for natural numbers *`N`*
 //! from `0` to `12` (as of
 //! now). These represent C closures of *`N`* arguments, which can be
 //! used to turn Rust lambdas (or in generally, anything that implements
@@ -85,6 +87,7 @@ macro_rules! define_closure_mod {
         =>
     {
         /// CIF and closure types organized by function arity.
+        #[cfg_attr(feature = "clippy", allow(too_many_arguments))]
         pub mod $module {
             use std::any::Any;
             use std::marker::PhantomData;

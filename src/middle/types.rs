@@ -1,9 +1,10 @@
 //! Representations of C types and arrays thereof.
 //!
 //! These are used to describe the types of the arguments and results of
-//! functions. When we construct a CIF (“Call InterFace”), we provide a
-//! sequence of argument types and a result type, and libffi uses this
-//! to figure out how to set up a call to a function with those types.
+//! functions. When we construct a CIF (“Call Inter<span></span>Face”),
+//! we provide a sequence of argument types and a result type, and
+//! libffi uses this to figure out how to set up a call to a function
+//! with those types.
 
 use std::fmt;
 use std::mem;
@@ -123,7 +124,7 @@ unsafe fn ffi_type_struct_create_raw(elements: Owned<TypeArray_>)
     new
 }
 
-/// Creates a struct ffi_type with the given elements. Takes ownership
+/// Creates a struct `ffi_type` with the given elements. Takes ownership
 /// of the elements.
 unsafe fn ffi_type_struct_create<I>(elements: I) -> Owned<Type_>
     where I: ExactSizeIterator<Item=Type>
@@ -152,7 +153,7 @@ unsafe fn ffi_type_clone(old: Type_) -> Owned<Type_> {
     }
 }
 
-/// Destroys a TypeArray_ and all of its elements.
+/// Destroys a `TypeArray_` and all of its elements.
 unsafe fn ffi_type_array_destroy(victim: Owned<TypeArray_>) {
     let mut current = victim;
     while !(*current).is_null() {
@@ -163,7 +164,7 @@ unsafe fn ffi_type_array_destroy(victim: Owned<TypeArray_>) {
     libc::free(victim as *mut libc::c_void);
 }
 
-/// Destroys a Type_ if it was dynamically allocated.
+/// Destroys a `Type_` if it was dynamically allocated.
 unsafe fn ffi_type_destroy(victim: Owned<Type_>) {
     if (*victim).type_ == low::type_tag::STRUCT {
         ffi_type_array_destroy((*victim).elements);
