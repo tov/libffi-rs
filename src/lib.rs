@@ -1,6 +1,3 @@
-#![deny(missing_docs)]
-#![cfg_attr(feature = "unique", feature(unique))]
-
 //! Rust bindings for [libffi](https://sourceware.org/libffi/).
 //!
 //! The C libffi library provides two main facilities: assembling calls
@@ -68,6 +65,13 @@
 //!
 //! assert_eq!(18, fun(6, 7));
 //! ```
+
+#![deny(missing_docs)]
+
+#![cfg_attr(feature = "unique", feature(unique))]
+
+#![cfg_attr(feature = "clippy", feature(plugin))]
+#![cfg_attr(feature = "clippy", plugin(clippy))]
 
 extern crate libc;
 
