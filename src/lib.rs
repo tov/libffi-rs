@@ -73,6 +73,7 @@
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 
+#[macro_use] extern crate abort_on_panic;
 extern crate libc;
 
 /// Unwrapped definitions imported from the C library (via bindgen).

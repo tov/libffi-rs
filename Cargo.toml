@@ -1,6 +1,6 @@
 [package]
 name = "libffi"
-version = "0.1.10"
+version = "0.1.11"
 authors = ["Jesse A. Tov <jesse.tov@gmail.com>"]
 build = "build.rs"
 description = "Rust bindings for libffi"
@@ -15,6 +15,7 @@ keywords = ["ffi", "libffi", "closure", "c"]
 unique = []
 
 [dependencies]
+abort_on_panic = "1.0.0"
 libc = "0.2.11"
 clippy = { version = "0", optional = true }
 

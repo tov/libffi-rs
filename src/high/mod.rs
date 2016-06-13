@@ -91,7 +91,8 @@ macro_rules! define_closure_mod {
         pub mod $module {
             use std::any::Any;
             use std::marker::PhantomData;
-            use std::{mem, ptr};
+            use std::{mem, process, ptr};
+            use std::io::{self, Write};
 
             use super::*;
             use middle;
@@ -345,13 +346,16 @@ macro_rules! define_closure_mod {
                   where Callback: FnOnce($( $T, )*) -> R
                 {
                     if let Some(userdata) = userdata.take() {
-                        unsafe {
-                            ptr::write(result, userdata($( $T, )*));
-                        }
+                        abort_on_panic!("Cannot panic inside FFI callback", {
+                            unsafe {
+                                ptr::write(result, userdata($( $T, )*));
+                            }
+                        });
                     } else {
-                        // It's definitely wrong to panic right before
-                        // we return to C.
-                        panic!("Userdata already used");
+                        // There is probably a better way to abort here.
+                        let _ =
+                            io::stderr().write(b"FnOnce closure already used");
+                        process::exit(2);
                     }
                 }
             }
