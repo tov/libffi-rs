@@ -7,7 +7,7 @@ const RS_OUT: &'static str = "src/raw.rs";
 fn main() {
     let libffi = pkg_config::probe_library("libffi").expect("libffi");
 
-    let mut builder = bindgen::Builder::new();
+    let mut builder = bindgen::Builder::default();
     builder.header(C_IN);
     for path in &libffi.include_paths {
         builder.clang_arg(format!("-I{}", path.display()));
