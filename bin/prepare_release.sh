@@ -11,10 +11,10 @@ if git status --porcelain | grep .; then
     exit 2
 fi
 
-find m4 -type f | sed 's@m4/@@' | while read file; do
-    sed "s/@VERSION@/$VERSION/" "m4/$file" > "$file"
+find m4 -type f | sed 's@process/@@' | while read file; do
+    sed "s/@VERSION@/$VERSION/" "process/$file" > "$file"
     git add "$file"
 done
 
-# git ci -m "Version: $VERSION"
-# git tag v$VERSION
+git ci -m "Version: $VERSION"
+git tag v$VERSION

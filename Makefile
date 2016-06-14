@@ -26,6 +26,7 @@ upload-doc:
 	git push -f https://github.com/tov/$(REPO).git gh-pages
 
 release:
+	bin/prepare_release.sh $(VERSION)
 	make upload-doc
 	cargo publish
 
