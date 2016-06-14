@@ -17,33 +17,31 @@ more flexibility (and less checking) is provided by the `middle` and
 
 ## Usage
 
-It’s [on crates.io](https://crates.io/crates/libffi), so it can be
-used by adding `libffi` to the dependencies in your project’s
-`Cargo.toml`:
+It’s [on crates.io](https://crates.io/crates/libffi-sys), but before you
+build it, make sure you have the dependencies installed first:
+
+  - An up-to-date version of C [libffi](https://sourceware.org/libffi/)
+    Version 3.2.1 is known to work. Earlier versions, such as the
+    versions that come with Mac OS and Fedora, are known not to; neither
+    will the version installed by Homebrew (3.0.13).
+
+  - [`pkg-config`](https://www.freedesktop.org/wiki/Software/pkg-config/),
+    which you probably already have if you’re on Linux. For Mac users,
+    the version installed by Homebrew is up to date. (I don’t know how
+    this works on Windows; contact me if you’d like to help figure it
+    out.)
+
+Then add
 
 ```toml
 [dependencies]
-libffi = "0.2"
+libffi = "0.3"
 ```
 
-It is necessary to have C [libffi](https://sourceware.org/libffi/)
-installed first. (We’ve tested with libffi
-version 3.2.1.)
-
-## Example
-
-In this example, we convert a Rust lambda containing a free variable
-into an ordinary C code pointer. The type of `fun` below is
-`extern "C" fn(u64, u64) -> u64`.
+to your `Cargo.toml` and
 
 ```rust
-use libffi::high::Closure2;
-
-let x = 5u64;
-let f = |y: u64, z: u64| x + y + z;
-
-let closure = Closure2::new(&f);
-let fun     = closure.code_ptr();
-
-assert_eq!(18, fun(6, 7));
+extern crate libffi;
 ```
+
+to your crate root.
