@@ -31,7 +31,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! libffi = "0.3.2"
+//! libffi = "@VERSION@"
 //! ```
 //!
 //! to your `Cargo.toml` and
