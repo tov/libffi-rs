@@ -378,18 +378,24 @@ impl Type {
     }
 
     /// Returns the C `_Complex float` type.
+    ///
+    /// This item is enabled by `#[cfg(feature = "complex")]`.
     #[cfg(feature = "complex")]
     pub fn c32() -> Self {
         Type(unsafe { Unique::new(&mut low::types::complex_float) })
     }
 
     /// Returns the C `_Complex double` type.
+    ///
+    /// This item is enabled by `#[cfg(feature = "complex")]`.
     #[cfg(feature = "complex")]
     pub fn c64() -> Self {
         Type(unsafe { Unique::new(&mut low::types::complex_double) })
     }
 
     /// Returns the C `_Complex long double` type.
+    ///
+    /// This item is enabled by `#[cfg(feature = "complex")]`.
     #[cfg(feature = "complex")]
     pub fn complex_longdouble() -> Self {
         Type(unsafe { Unique::new(&mut low::types::complex_longdouble) })

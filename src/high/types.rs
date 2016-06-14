@@ -82,6 +82,8 @@ impl_ffi_type!((), void);
 /// Laid out the same as C11 `float complex` and C++11
 /// `std::complex<float>`.
 ///
+/// This item is enabled by `#[cfg(feature = "complex")]`.
+///
 /// # Warning
 ///
 /// This type does not obey the ABI, and as such should not be passed by
@@ -95,6 +97,8 @@ pub type c_c32 = [f32; 2];
 /// Laid out the same as C11 `double complex` and C++11
 /// `std::complex<double>`.
 ///
+/// This item is enabled by `#[cfg(feature = "complex")]`.
+///
 /// # Warning
 ///
 /// This type does not obey the ABI, and as such should not be passed by
@@ -105,8 +109,10 @@ pub type c_c32 = [f32; 2];
 #[cfg(feature = "complex")]
 pub type c_c64 = [f64; 2];
 
+/// This item is enabled by `#[cfg(feature = "complex")]`.
 #[cfg(feature = "complex")]
 impl_ffi_type!(c_c32, c32);
+/// This item is enabled by `#[cfg(feature = "complex")]`.
 #[cfg(feature = "complex")]
 impl_ffi_type!(c_c64, c64);
 

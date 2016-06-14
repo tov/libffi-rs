@@ -190,6 +190,8 @@ pub mod type_tag {
     pub const STRUCT:  c_ushort = raw::ffi_type_enum::STRUCT as c_ushort;
 
     /// Indicates a complex number type.
+    ///
+    /// This item is enabled by `#[cfg(feature = "complex")]`.
     #[cfg(feature = "complex")]
     pub const COMPLEX: c_ushort = raw::ffi_type_enum::COMPLEX as c_ushort;
 }

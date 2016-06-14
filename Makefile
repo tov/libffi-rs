@@ -13,7 +13,7 @@ clippy:
 	rustup run nightly cargo build --features=clippy
 
 doc:
-	cargo doc --no-deps --features="complex"
+	cargo doc --no-deps -p libffi -p libffi-sys --features=complex
 	echo "<meta http-equiv='refresh' content='0;url=$(CRATE)/'>" > target/doc/index.html
 
 test:
