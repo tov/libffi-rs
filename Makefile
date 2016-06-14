@@ -4,9 +4,6 @@ hard: test
 CRATE = libffi
 REPO  = libffi-rs
 
-# My system seems to want this. How can we make it portable?
-export DYLD_LIBRARY_PATH=/Library/Developer/CommandLineTools/usr/lib
-
 build:
 	clear
 	cargo build
@@ -16,7 +13,7 @@ clippy:
 	rustup run nightly cargo build --features=clippy
 
 doc:
-	cargo doc --no-deps
+	cargo doc --no-deps --features="complex"
 	echo "<meta http-equiv='refresh' content='0;url=$(CRATE)/'>" > target/doc/index.html
 
 test:

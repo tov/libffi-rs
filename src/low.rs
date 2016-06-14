@@ -137,8 +137,9 @@ pub mod types {
                   ffi_type_float as float,
                   ffi_type_double as double,
                   ffi_type_pointer as pointer,
-                  ffi_type_longdouble as longdouble,
-                  ffi_type_complex_float as complex_float,
+                  ffi_type_longdouble as longdouble};
+    #[cfg(feature = "complex")]
+    pub use raw::{ffi_type_complex_float as complex_float,
                   ffi_type_complex_double as complex_double,
                   ffi_type_complex_longdouble as complex_longdouble};
 }
@@ -189,6 +190,7 @@ pub mod type_tag {
     pub const STRUCT:  c_ushort = raw::ffi_type_enum::STRUCT as c_ushort;
 
     /// Indicates a complex number type.
+    #[cfg(feature = "complex")]
     pub const COMPLEX: c_ushort = raw::ffi_type_enum::COMPLEX as c_ushort;
 }
 
