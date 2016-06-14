@@ -4,6 +4,11 @@ rust:
   - beta
   - nightly
 
+sudo: true
+
+before_install:
+  - ./install_libffi.sh
+
 matrix:
   allow_failures:
     - rust: nightly
