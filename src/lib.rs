@@ -19,7 +19,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! libffi = "0.1"
+//! libffi = "0.2"
 //! ```
 //!
 //! It is necessary to have C [libffi](https://sourceware.org/libffi/)

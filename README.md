@@ -23,7 +23,7 @@ used by adding `libffi` to the dependencies in your project’s
 
 ```toml
 [dependencies]
-libffi = "0.1"
+libffi = "0.2"
 ```
 
 It is necessary to have C [libffi](https://sourceware.org/libffi/)
@@ -47,16 +47,3 @@ let fun     = closure.code_ptr();
 
 assert_eq!(18, fun(6, 7));
 ```
-
-## Building
-
-I’m writing this section to document my build process.
-
-  - Installed pkg-config: brew install pkg-config
-
-  - Installed libffi 3.2.1 (rather than OS X system libffi, which is old)
-
-      - brew install autoconf automake
-
-  - Installed bindgen 0.18.0
-
