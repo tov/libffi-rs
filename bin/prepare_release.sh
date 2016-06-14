@@ -11,7 +11,7 @@ if git status --porcelain | grep .; then
     exit 2
 fi
 
-find m4 -type f | sed 's@process/@@' | while read file; do
+find process -type f | sed 's@process/@@' | while read file; do
     sed "s/@VERSION@/$VERSION/" "process/$file" > "$file"
     git add "$file"
 done
