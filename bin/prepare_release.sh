@@ -18,3 +18,4 @@ done
 
 git ci -m "Version: $VERSION"
 git tag v$VERSION
+git push --tags
