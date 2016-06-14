@@ -7,7 +7,7 @@ rust:
 sudo: true
 
 before_install:
-  - ./install_libffi.sh
+  - bin/install_libffi.sh
 
 matrix:
   allow_failures:
