@@ -15,7 +15,7 @@ unique = []
 complex = []
 
 [dependencies]
-libffi-sys = "0.3.2"
+libffi-sys = "0.3.4"
 abort_on_panic = "1.0.0"
 libc = "0.2.11"
 clippy = { version = "0", optional = true }
