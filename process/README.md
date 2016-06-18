@@ -11,10 +11,6 @@ as ordinary C functions. In Rust, the latter means that we can turn
 a Rust lambda (or any object implementing `Fn`/`FnMut`) into an
 ordinary C function pointer that we can pass as a callback to C.
 
-The easiest way to use this library is via the `high` layer module, but
-more flexibility (and less checking) is provided by the `middle` and
-`low` layers.
-
 ## Usage
 
 It’s [on crates.io](https://crates.io/crates/libffi), but before you
@@ -45,3 +41,21 @@ extern crate libffi;
 ```
 
 to your crate root.
+
+# Examples
+
+In this example, we convert a Rust lambda containing a free variable
+into an ordinary C code pointer. The type of `fun` below is
+`extern "C" fn(u64, u64) -> u64`.
+
+```
+use libffi::high::Closure2;
+
+let x = 5u64;
+let f = |y: u64, z: u64| x + y + z;
+
+let closure = Closure2::new(&f);
+let fun     = closure.code_ptr();
+
+assert_eq!(18, fun(6, 7));
+```
