@@ -13,25 +13,11 @@ ordinary C function pointer that we can pass as a callback to C.
 
 ## Usage
 
-It’s [on crates.io](https://crates.io/crates/libffi), but before you
-build it, make sure you have the dependencies installed first:
-
-  - An up-to-date version of C [libffi](https://sourceware.org/libffi/)
-    Version 3.2.1 is known to work. Earlier versions, such as the
-    versions that come with Mac OS and Fedora, are known not to; neither
-    will the version installed by Homebrew (3.0.13).
-
-  - [`pkg-config`](https://www.freedesktop.org/wiki/Software/pkg-config/),
-    which you probably already have if you’re on Linux. For Mac users,
-    the version installed by Homebrew is up to date. (I don’t know how
-    this works on Windows; contact me if you’d like to help figure it
-    out.)
-
-Then add
+It’s [on crates.io](https://crates.io/crates/libffi), so you can add
 
 ```toml
 [dependencies]
-libffi = "0.3.4"
+libffi = "0.4.0"
 ```
 
 to your `Cargo.toml` and
