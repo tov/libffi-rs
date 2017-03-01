@@ -68,7 +68,7 @@
 //!
 //! Invoking the closure a second time will panic.
 
-pub use middle::{FfiAbi, FFI_DEFAULT_ABI};
+pub use middle::{FfiAbi, ffi_abi_FFI_DEFAULT_ABI};
 
 pub mod types;
 pub use self::types::{Type, CType};

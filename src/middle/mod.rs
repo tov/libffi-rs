@@ -16,7 +16,7 @@ use std::marker::PhantomData;
 
 use low;
 pub use low::{Callback, CallbackMut, CodePtr,
-              ffi_abi as FfiAbi, FFI_DEFAULT_ABI};
+              ffi_abi as FfiAbi, ffi_abi_FFI_DEFAULT_ABI};
 
 #[cfg(not(feature = "unique"))]
 mod util;
@@ -123,7 +123,7 @@ impl Cif {
 
         unsafe {
             low::prep_cif(&mut cif,
-                          low::FFI_DEFAULT_ABI,
+                          low::ffi_abi_FFI_DEFAULT_ABI,
                           nargs,
                           result.as_raw_ptr(),
                           args.as_raw_ptr())
