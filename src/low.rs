@@ -115,7 +115,7 @@ impl CodePtr {
     }
 }
 
-pub use raw::{ffi_abi, FFI_DEFAULT_ABI, _ffi_type as ffi_type, ffi_status,
+pub use raw::{ffi_abi, ffi_abi_FFI_DEFAULT_ABI, _ffi_type as ffi_type, ffi_status,
               ffi_cif, ffi_closure};
 
 /// Re-exports the `ffi_type` objects used to describe the types of
@@ -235,7 +235,7 @@ pub mod type_tag {
 /// let mut cif: ffi_cif = Default::default();
 ///
 /// unsafe {
-///     prep_cif(&mut cif, FFI_DEFAULT_ABI, 2,
+///     prep_cif(&mut cif, ffi_abi_FFI_DEFAULT_ABI, 2,
 ///              &mut types::pointer, args.as_mut_ptr())
 /// }.unwrap();
 /// ```
@@ -320,7 +320,7 @@ pub unsafe fn prep_cif_var(cif: *mut ffi_cif,
 ///                                              &mut types::uint64 ];
 ///     let mut cif: ffi_cif = Default::default();
 ///
-///     prep_cif(&mut cif, FFI_DEFAULT_ABI, 2,
+///     prep_cif(&mut cif, ffi_abi_FFI_DEFAULT_ABI, 2,
 ///              &mut types::uint64, args.as_mut_ptr()).unwrap();
 ///
 ///     call(&mut cif, CodePtr(c_function as *mut _),
@@ -476,7 +476,7 @@ pub type RawCallback
 ///     let mut args = [&mut types::uint64 as *mut _];
 ///     let mut userdata: u64 = 5;
 ///
-///     prep_cif(&mut cif, FFI_DEFAULT_ABI, 1, &mut types::uint64,
+///     prep_cif(&mut cif, ffi_abi_FFI_DEFAULT_ABI, 1, &mut types::uint64,
 ///              args.as_mut_ptr()).unwrap();
 ///
 ///     let (closure, code) = closure_alloc();
@@ -568,7 +568,7 @@ pub unsafe fn prep_closure<U, R>(closure:  *mut ffi_closure,
 ///     let mut args = [&mut types::uint64 as *mut _];
 ///     let mut userdata: u64 = 5;
 ///
-///     prep_cif(&mut cif, FFI_DEFAULT_ABI, 1, &mut types::uint64,
+///     prep_cif(&mut cif, ffi_abi_FFI_DEFAULT_ABI, 1, &mut types::uint64,
 ///              args.as_mut_ptr()).unwrap();
 ///
 ///     let (closure, code) = closure_alloc();

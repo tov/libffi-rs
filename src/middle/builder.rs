@@ -5,7 +5,7 @@ use super::types::Type;
 /// Provides a builder-style API for constructing CIFs and closures.
 ///
 /// To use a builder, first construct it using [`Builder::new`](#method.new).
-/// The default calling convention is `FFI_DEFAULT_ABI`, and the default
+/// The default calling convention is `ffi_abi_FFI_DEFAULT_ABI`, and the default
 /// function type is `extern "C" fn()` (or in C, `void(*)()`). Add
 /// argument types to the function type with the [`arg`](#method.arg)
 /// and [`args`](#method.args) methods. Set the result type with
@@ -75,7 +75,7 @@ impl Builder {
         Builder {
             args: vec![],
             res: Type::void(),
-            abi: super::FFI_DEFAULT_ABI,
+            abi: super::ffi_abi_FFI_DEFAULT_ABI,
         }
     }
 
