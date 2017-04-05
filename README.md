@@ -17,7 +17,7 @@ It’s [on crates.io](https://crates.io/crates/libffi), so you can add
 
 ```toml
 [dependencies]
-libffi = "0.4.0"
+libffi = "0.5.0"
 ```
 
 to your `Cargo.toml` and
