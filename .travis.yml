@@ -14,3 +14,8 @@ matrix:
 notifications:
   email:
     on_success: never
+
+addons:
+  apt:
+    packages:
+      - texinfo
