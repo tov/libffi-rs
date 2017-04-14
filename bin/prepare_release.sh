@@ -29,4 +29,5 @@ git add "$VERSION_FILE"
 
 git ci -m "Version: $VERSION"
 git tag v$VERSION
+git push
 git push --tags
