@@ -211,9 +211,11 @@ macro_rules! define_closure_mod {
                      userdata: &Callback)
                   where Callback: Fn($( $T, )*) -> R + 'a
                 {
-                    unsafe {
-                        ptr::write(result, userdata($( $T, )*));
-                    }
+                    abort_on_panic!("Cannot panic inside FFI callback", {
+                        unsafe {
+                            ptr::write(result, userdata($( $T, )*));
+                        }
+                    });
                 }
             }
 
@@ -296,9 +298,11 @@ macro_rules! define_closure_mod {
                      userdata: &mut Callback)
                   where Callback: FnMut($( $T, )*) -> R + 'a
                 {
-                    unsafe {
-                        ptr::write(result, userdata($( $T, )*));
-                    }
+                    abort_on_panic!("Cannot panic inside FFI callback", {
+                        unsafe {
+                            ptr::write(result, userdata($( $T, )*));
+                        }
+                    });
                 }
             }
 
