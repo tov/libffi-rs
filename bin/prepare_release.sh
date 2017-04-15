@@ -25,7 +25,7 @@ echo "$VERSION" > "$VERSION_FILE"
 chmod a-w "$VERSION_FILE"
 git add "$VERSION_FILE"
 
-"$PROJ_ROOT"/bin/preprocess.sh
+"$PROJ_ROOT"/bin/change_version.sh "$VERSION"
 
 git ci -m "Version: $VERSION"
 git tag v$VERSION
