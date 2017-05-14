@@ -27,6 +27,7 @@ git add "$VERSION_FILE"
 
 "$PROJ_ROOT"/bin/change_version.sh "$VERSION"
 
+git add Cargo.toml src/lib.rs README.md
 git ci -m "Version: $VERSION"
 git tag v$VERSION
 git push
