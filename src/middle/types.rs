@@ -51,7 +51,7 @@ type Owned<T>      = T;
 /// let my_struct = Type::structure(vec![
 ///     Type::u64(),
 ///     Type::u16(),
-/// ].into_iter());
+/// ]);
 /// ```
 pub struct Type(Unique<low::ffi_type>);
 
@@ -186,15 +186,15 @@ impl Drop for TypeArray {
 
 impl Clone for Type {
     fn clone(&self) -> Self {
-        unsafe { Type(Unique::new(ffi_type_clone(*self.0))) }
+        Type(unsafe { Unique::new(ffi_type_clone(*self.0)) })
     }
 }
 
 impl Clone for TypeArray {
     fn clone(&self) -> Self {
-        unsafe {
-            TypeArray(Unique::new(ffi_type_array_clone(*self.0)))
-        }
+        TypeArray(unsafe {
+            Unique::new(ffi_type_array_clone(*self.0))
+        })
     }
 }
 
@@ -403,11 +403,12 @@ impl Type {
 
     /// Constructs a structure type whose fields have the given types.
     pub fn structure<I>(fields: I) -> Self
-        where I: ExactSizeIterator<Item=Type>
+        where I: IntoIterator<Item=Type>,
+              I::IntoIter: ExactSizeIterator<Item=Type>
     {
-        unsafe {
-            Type(Unique::new(ffi_type_struct_create(fields)))
-        }
+        Type(unsafe {
+            Unique::new(ffi_type_struct_create(fields.into_iter()))
+        })
     }
 
     /// Gets a raw pointer to the underlying
@@ -424,9 +425,12 @@ impl Type {
 impl TypeArray {
     /// Constructs an array the given `Type`s.
     pub fn new<I>(elements: I) -> Self
-        where I: ExactSizeIterator<Item=Type>
+        where I: IntoIterator<Item=Type>,
+              I::IntoIter: ExactSizeIterator<Item=Type>
     {
-        unsafe { TypeArray(Unique::new(ffi_type_array_create(elements))) }
+        TypeArray(unsafe {
+            Unique::new(ffi_type_array_create(elements.into_iter()))
+        })
     }
 
     /// Gets a raw pointer to the underlying C array of
@@ -460,14 +464,14 @@ mod test {
     fn create_struct() {
         Type::structure(vec![Type::i64(),
                              Type::i64(),
-                             Type::u64()].into_iter());
+                             Type::u64()]);
     }
 
     #[test]
     fn clone_struct() {
         Type::structure(vec![Type::i64(),
                              Type::i64(),
-                             Type::u64()].into_iter()).clone().clone();
+                             Type::u64()]).clone().clone();
     }
 
 }

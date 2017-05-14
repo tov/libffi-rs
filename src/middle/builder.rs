@@ -86,8 +86,10 @@ impl Builder {
     }
 
     /// Adds several types to the argument type list.
-    pub fn args<I: Iterator<Item = Type>>(mut self, types: I) -> Self {
-        self.args.extend(types);
+    pub fn args<I>(mut self, types: I) -> Self
+        where I: IntoIterator<Item=Type>
+    {
+        self.args.extend(types.into_iter());
         self
     }
 
@@ -105,7 +107,7 @@ impl Builder {
 
     /// Builds a CIF.
     pub fn into_cif(self) -> super::Cif {
-        let mut result = super::Cif::new(self.args.into_iter(), self.res);
+        let mut result = super::Cif::new(self.args, self.res);
         result.set_abi(self.abi);
         result
     }

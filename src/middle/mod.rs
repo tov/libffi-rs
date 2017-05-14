@@ -115,8 +115,10 @@ impl Cif {
     /// Defaults to the platform’s default calling convention; this
     /// can be adjusted using [`set_abi`](#method.set_abi).
     pub fn new<I>(args: I, result: Type) -> Self
-        where I: ExactSizeIterator<Item=Type>
+        where I: IntoIterator<Item=Type>,
+              I::IntoIter: ExactSizeIterator<Item=Type>
     {
+        let args = args.into_iter();
         let nargs = args.len();
         let args = types::TypeArray::new(args);
         let mut cif: low::ffi_cif = Default::default();
