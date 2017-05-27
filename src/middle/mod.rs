@@ -153,8 +153,8 @@ impl Cif {
     pub unsafe fn call<R>(&self, fun: CodePtr, args: &[Arg]) -> R {
         use std::mem;
 
-        assert!(self.cif.nargs as usize == args.len(),
-                "Cif::call: passed wrong number of arguments");
+        assert_eq!(self.cif.nargs as usize, args.len(),
+                   "Cif::call: passed wrong number of arguments");
 
         low::call::<R>(&self.cif as *const _ as *mut _,
                        fun,
