@@ -3,3 +3,4 @@ Cargo.lock
 src/raw.rs
 .idea
 *.iml
+cmake-build-*/
