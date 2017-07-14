@@ -21,7 +21,7 @@ so you can add
 
 ```toml
 [dependencies]
-libffi = "0.6.0"
+libffi = "0.6.1"
 ```
 
 to your `Cargo.toml` and
