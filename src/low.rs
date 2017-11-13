@@ -26,12 +26,11 @@ pub type Result<T> = ::std::result::Result<T, Error>;
 
 // Converts the raw status type to a `Result`.
 fn status_to_result<R>(status: raw::ffi_status, good: R) -> Result<R> {
-    use raw::ffi_status::*;
-    match status {
-        FFI_OK => Ok(good),
-        FFI_BAD_TYPEDEF => Err(Error::Typedef),
-        FFI_BAD_ABI => Err(Error::Abi),
-    }
+    if status == raw::ffi_status_FFI_OK { Ok(good) }
+    else if status == raw::ffi_status_FFI_BAD_TYPEDEF { Err(Error::Typedef) }
+    else if status == raw::ffi_status_FFI_BAD_ABI { Err(Error::Abi) }
+    // If we don't recognize the status, that is an ABI error:
+    else { Err(Error::Abi) }
 }
 
 /// Wraps a function pointer of unknown type.
@@ -187,13 +186,13 @@ pub mod type_tag {
     use std::os::raw::c_ushort;
 
     /// Indicates a structure type.
-    pub const STRUCT:  c_ushort = raw::ffi_type_enum::STRUCT as c_ushort;
+    pub const STRUCT:  c_ushort = raw::ffi_type_enum_STRUCT as c_ushort;
 
     /// Indicates a complex number type.
     ///
     /// This item is enabled by `#[cfg(feature = "complex")]`.
     #[cfg(feature = "complex")]
-    pub const COMPLEX: c_ushort = raw::ffi_type_enum::COMPLEX as c_ushort;
+    pub const COMPLEX: c_ushort = raw::ffi_type_enum_COMPLEX as c_ushort;
 }
 
 /// Initalizes a CIF (Call Interface) with the given ABI
