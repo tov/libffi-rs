@@ -32,6 +32,8 @@ extern crate libffi;
 
 to your crate root.
 
+This crate supports Rust version 1.20 and later.
+
 ### Examples
 
 In this example, we convert a Rust lambda containing a free variable

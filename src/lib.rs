@@ -32,6 +32,8 @@
 //!
 //! to your crate root.
 //!
+//! This crate supports Rust version 1.20 and later.
+//!
 //! # Organization
 //!
 //! This library is organized in four layers, each of which attempts to
