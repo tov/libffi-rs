@@ -1,3 +1,4 @@
+#![doc(html_root_url = "https://docs.rs/libffi/0.6.3")]
 //! Rust bindings for [libffi](https://sourceware.org/libffi/).
 //!
 //! The C libffi library provides two main facilities: assembling calls
