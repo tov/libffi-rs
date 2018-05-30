@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/libffi/0.6.3")]
+#![doc(html_root_url = "https://docs.rs/libffi/0.6.4")]
 //! Rust bindings for [libffi](https://sourceware.org/libffi/).
 //!
 //! The C libffi library provides two main facilities: assembling calls
@@ -22,7 +22,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! libffi = "0.6.3"
+//! libffi = "0.6.4"
 //! ```
 //!
 //! to your `Cargo.toml` and
