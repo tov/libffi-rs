@@ -13,9 +13,6 @@ use libc;
 
 use low;
 
-#[cfg(feature = "unique")]
-use std::ptr::Unique;
-#[cfg(not (feature = "unique"))]
 use super::util::Unique;
 
 // Internally we represent types and type arrays using raw pointers,

@@ -78,11 +78,6 @@
 
 #![deny(missing_docs)]
 
-#![cfg_attr(feature = "unique", feature(unique))]
-
-#![cfg_attr(feature = "clippy", feature(plugin))]
-#![cfg_attr(feature = "clippy", plugin(clippy))]
-
 #[macro_use] extern crate abort_on_panic;
 extern crate libc;
 extern crate libffi_sys;

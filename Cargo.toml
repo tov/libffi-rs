@@ -13,7 +13,6 @@ categories = ["development-tools::ffi"]
 travis-ci = { repository = "tov/libffi-rs" }
 
 [features]
-unique = []
 complex = []
 
 [dependencies]

@@ -18,7 +18,6 @@ use low;
 pub use low::{Callback, CallbackMut, CodePtr,
               ffi_abi as FfiAbi, ffi_abi_FFI_DEFAULT_ABI};
 
-#[cfg(not(feature = "unique"))]
 mod util;
 
 mod types;

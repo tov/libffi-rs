@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog] and this project adheres to
 
 ## [Unreleased]
 
+### Removed
+- Broken `"unique"` feature.
+
 ## [0.6.4] - 2018-05-30
 
 ### Added
