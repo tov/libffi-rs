@@ -33,7 +33,7 @@
 //!
 //! to your crate root.
 //!
-//! This crate supports Rust version 1.20 and later.
+//! This crate supports Rust version 1.31 and later.
 //!
 //! # Organization
 //!
