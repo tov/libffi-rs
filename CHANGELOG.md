@@ -16,10 +16,12 @@ The format is based on [Keep a Changelog] and this project adheres to
 ### Changed
 - Updated `abort_on_panic` dependency version to `"2.0.0"` from
   `"1.0.0"`.
+- Updated `libffi-sys` dependency version to `"0.7.0"` from
+  `"0.6.0"`.
 
 ### Added
 - Setting `doc(html_root_url)` for inter-crate docs linking.
-- Testing on Rust 1.20.0 now, as oldest supported version.
+- Testing on Rust 1.31.0 now, as oldest supported version.
 
 ## [0.6.3] - 2018-03-05
 
