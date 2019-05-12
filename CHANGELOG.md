@@ -13,7 +13,9 @@ The format is based on [Keep a Changelog] and this project adheres to
 ### Removed
 - Broken `"unique"` feature.
 
-## [0.6.4] - 2018-05-30
+### Changed
+- Updated `abort_on_panic` dependency version to `"2.0.0"` from
+  `"1.0.0"`.
 
 ### Added
 - Setting `doc(html_root_url)` for inter-crate docs linking.
