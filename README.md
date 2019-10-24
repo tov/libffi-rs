@@ -39,7 +39,7 @@ libffi = { version = "0.8.0", features = ["system"] }
 See [the `libffi-sys` documentation] for more information about how it
 finds C libffi.
 
-This crate supports Rust version 1.31 and later.
+This crate supports Rust version 1.32 and later.
 
 ### Examples
 
