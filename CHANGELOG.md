@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog] and this project adheres to
 
 ## [Unreleased]
 
+### Added
+- Added `system` Cargo feature, which passes the same feature to `libffi-sys`,
+  which causes it to use the system C libffi instead of building its own.
+
 ### Changed
 - Updated `libc` dependency version to `"0.2.65"` from
   `"0.2.11"`.

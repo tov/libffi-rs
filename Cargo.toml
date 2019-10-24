@@ -14,6 +14,7 @@ travis-ci = { repository = "tov/libffi-rs" }
 
 [features]
 complex = []
+system = ["libffi-sys/system"]
 
 [dependencies]
 libffi-sys = "0.8.0"

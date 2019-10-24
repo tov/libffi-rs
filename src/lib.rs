@@ -25,13 +25,18 @@
 //! libffi = "0.7.0"
 //! ```
 //!
-//! to your `Cargo.toml` and
+//! This crate depends on [the `libffi-sys` crate], which by default
+//! attempts to build its own version of the C libffi library. In order to
+//! use your system’s C libffi instead, enable this crate’s  `system`
+//! feature in your `Cargo.toml`:
 //!
-//! ```rust
-//! extern crate libffi;
+//! ```toml
+//! [features]
+//! libffi = { version = "0.8.0", features = ["system"] }
 //! ```
 //!
-//! to your crate root.
+//! See [the `libffi-sys` documentation] for more information about how it
+//! finds C libffi.
 //!
 //! This crate supports Rust version 1.31 and later.
 //!
@@ -75,6 +80,11 @@
 //!
 //! assert_eq!(18, fun(6, 7));
 //! ```
+//!
+//! [the `libffi-sys` crate]: https://crates.io/crates/libffi-sys/
+//!
+//! [the `libffi-sys` documentation]: https://docs.rs/libffi-sys/#usage
+//!
 
 #![deny(missing_docs)]
 
