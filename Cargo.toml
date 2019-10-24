@@ -12,11 +12,14 @@ categories = ["development-tools::ffi"]
 [badges]
 travis-ci = { repository = "tov/libffi-rs" }
 
-[features]
-complex = []
-system = ["libffi-sys/system"]
-
 [dependencies]
 libffi-sys = "0.8.0"
 abort_on_panic = "2.0.0"
 libc = "0.2.65"
+
+[features]
+complex = []
+system = ["libffi-sys/system"]
+
+[package.metadata.docs.rs]
+features = ["system"]
