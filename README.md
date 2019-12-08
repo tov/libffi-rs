@@ -15,9 +15,9 @@ ordinary C function pointer that we can pass as a callback to C.
 
 Building libffi will build lifbffi-sys, which will in turn build the
 libffi C library [from github](https://github.com/libffi/libffi), which
-requires that you have a working make, C compiler, automake, autoconf,
-and texinfo first. It’s [on crates.io](https://crates.io/crates/libffi),
-so you can add
+requires that you have a working make, C compiler, automake, and
+autoconf first. It’s [on crates.io](https://crates.io/crates/libffi), so
+you can add
 
 ```toml
 [dependencies]

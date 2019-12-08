@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+- Updated `libffi-sys` dependency version to `"0.9.0"` from
+  `"0.8.0"`.
+
 ## [0.8.0] - 2019-10-24
 
 ### Added
