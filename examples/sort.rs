@@ -1,7 +1,5 @@
 // Example calling out to libc qsort.
 
-extern crate libffi;
-
 use libffi::high::Closure2;
 
 mod c {

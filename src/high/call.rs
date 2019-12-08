@@ -10,17 +10,16 @@
 //!     (x * x + y * y).sqrt()
 //! }
 //!
-//! # #[macro_use] extern crate libffi;
-//! # fn main() {
+//! use libffi::ffi_call;
+//!
 //! let result = unsafe { ffi_call!{ hypot(3f32, 4f32) -> f32 } };
 //!
 //! assert!((result - 5f32).abs() < 0.0001);
-//! # }
 //! ```
 
 use std::marker::PhantomData;
 
-use middle;
+use crate::middle;
 pub use middle::CodePtr;
 
 /// Encapsulates an argument with its type information.
@@ -97,12 +96,11 @@ pub unsafe fn call<R: super::CType>(fun: CodePtr, args: &[Arg]) -> R {
 ///     (x * x + y * y).sqrt()
 /// }
 ///
-/// # #[macro_use] extern crate libffi;
-/// # fn main() {
+/// use libffi::ffi_call;
+///
 /// let result = unsafe { ffi_call!{ hypot(3f32, 4f32) -> f32 } };
 ///
 /// assert!((result - 5f32).abs() < 0.0001);
-/// # }
 /// ```
 #[macro_export]
 macro_rules! ffi_call {

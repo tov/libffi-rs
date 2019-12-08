@@ -14,17 +14,17 @@ use std::any::Any;
 use std::os::raw::c_void;
 use std::marker::PhantomData;
 
-use low;
-pub use low::{Callback, CallbackMut, CodePtr,
-              ffi_abi as FfiAbi, ffi_abi_FFI_DEFAULT_ABI};
+use crate::low;
+pub use crate::low::{Callback, CallbackMut, CodePtr,
+                     ffi_abi as FfiAbi, ffi_abi_FFI_DEFAULT_ABI};
 
 mod util;
 
 mod types;
-pub use self::types::Type;
+pub use types::Type;
 
 mod builder;
-pub use self::builder::Builder;
+pub use builder::Builder;
 
 /// Contains an untyped pointer to a function argument.
 ///
@@ -225,7 +225,7 @@ impl Cif {
 #[derive(Debug)]
 pub struct Closure<'a> {
     _cif:    Box<Cif>,
-    alloc:   *mut ::low::ffi_closure,
+    alloc:   *mut low::ffi_closure,
     code:    CodePtr,
     _marker: PhantomData<&'a ()>,
 }
@@ -346,7 +346,7 @@ pub type CallbackOnce<U, R> = CallbackMut<Option<U>, R>;
 /// which case the userdata will be gone if called again.
 #[derive(Debug)]
 pub struct ClosureOnce {
-    alloc:     *mut ::low::ffi_closure,
+    alloc:     *mut low::ffi_closure,
     code:      CodePtr,
     _cif:      Box<Cif>,
     _userdata: Box<Any>,
@@ -426,7 +426,7 @@ impl ClosureOnce {
 
 #[cfg(test)]
 mod test {
-    use low;
+    use crate::low;
     use super::*;
     use std::os::raw::c_void;
 

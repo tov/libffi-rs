@@ -1,5 +1,3 @@
-extern crate libffi;
-
 use libffi::middle::Type;
 
 fn main() {

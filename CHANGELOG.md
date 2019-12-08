@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog] and this project adheres to
 
 ### Changed
 - Updated `libffi-sys` dependency version to `"0.9.0"` from `"0.8.0"`.
+- Updated to Rust edition to 2018.
 
 ### Added
 - Methods `middle::Closure::instantiate_code_ptr` and

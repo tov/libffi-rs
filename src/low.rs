@@ -10,7 +10,7 @@
 use std::mem;
 use std::os::raw::{c_void, c_uint};
 
-use raw;
+use crate::raw;
 
 /// The two kinds of errors reported by libffi.
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
@@ -127,23 +127,28 @@ pub use raw::{ffi_abi, ffi_abi_FFI_DEFAULT_ABI, _ffi_type as ffi_type, ffi_statu
 /// removing the `ffi_type_` prefix. For example, `raw::ffi_type_void`
 /// becomes `low::types::void`.
 pub mod types {
-    pub use raw::{ffi_type_void as void,
-                  ffi_type_uint8 as uint8,
-                  ffi_type_sint8 as sint8,
-                  ffi_type_uint16 as uint16,
-                  ffi_type_sint16 as sint16,
-                  ffi_type_uint32 as uint32,
-                  ffi_type_sint32 as sint32,
-                  ffi_type_uint64 as uint64,
-                  ffi_type_sint64 as sint64,
-                  ffi_type_float as float,
-                  ffi_type_double as double,
-                  ffi_type_pointer as pointer,
-                  ffi_type_longdouble as longdouble};
+    pub use crate::raw::{
+        ffi_type_void as void,
+        ffi_type_uint8 as uint8,
+        ffi_type_sint8 as sint8,
+        ffi_type_uint16 as uint16,
+        ffi_type_sint16 as sint16,
+        ffi_type_uint32 as uint32,
+        ffi_type_sint32 as sint32,
+        ffi_type_uint64 as uint64,
+        ffi_type_sint64 as sint64,
+        ffi_type_float as float,
+        ffi_type_double as double,
+        ffi_type_pointer as pointer,
+        ffi_type_longdouble as longdouble
+    };
+
     #[cfg(feature = "complex")]
-    pub use raw::{ffi_type_complex_float as complex_float,
-                  ffi_type_complex_double as complex_double,
-                  ffi_type_complex_longdouble as complex_longdouble};
+    pub use crate::raw::{
+        ffi_type_complex_float as complex_float,
+        ffi_type_complex_double as complex_double,
+        ffi_type_complex_longdouble as complex_longdouble
+    };
 }
 
 /// Type tags used in constructing and inspecting `ffi_type`s.
@@ -185,7 +190,7 @@ pub mod types {
 /// my_struct.elements = elements.as_mut_ptr();
 /// ```
 pub mod type_tag {
-    use raw;
+    use crate::raw;
     use std::os::raw::c_ushort;
 
     /// Indicates a structure type.

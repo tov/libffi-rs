@@ -68,14 +68,15 @@
 //!
 //! Invoking the closure a second time will panic.
 
-pub use middle::{FfiAbi, ffi_abi_FFI_DEFAULT_ABI};
+use abort_on_panic::abort_on_panic;
+
+pub use crate::middle::{FfiAbi, ffi_abi_FFI_DEFAULT_ABI};
 
 pub mod types;
-pub use self::types::{Type, CType};
+pub use types::{Type, CType};
 
-#[macro_use]
 pub mod call;
-pub use self::call::*;
+pub use call::*;
 
 macro_rules! define_closure_mod {
     (
@@ -95,7 +96,7 @@ macro_rules! define_closure_mod {
             use std::io::{self, Write};
 
             use super::*;
-            use middle;
+            use crate::{low, middle};
 
             /// A typed CIF, which statically tracks argument and result types.
             pub struct $cif<$( $T, )* R> {
@@ -137,7 +138,7 @@ macro_rules! define_closure_mod {
 
             /// The type of function called from an immutable, typed closure.
             pub type $callback<U, $( $T, )* R>
-                = extern "C" fn(cif:      &::low::ffi_cif,
+                = extern "C" fn(cif:      &low::ffi_cif,
                                 result:   &mut R,
                                 args:     &($( &$T, )*),
                                 userdata: &U);
@@ -204,7 +205,7 @@ macro_rules! define_closure_mod {
 
                 #[allow(non_snake_case)]
                 extern "C" fn static_callback<Callback>
-                    (_cif:     &::low::ffi_cif,
+                    (_cif:     &low::ffi_cif,
                      result:   &mut R,
                      &($( &$T, )*):
                                &($( &$T, )*),
@@ -221,7 +222,7 @@ macro_rules! define_closure_mod {
 
             /// The type of function called from a mutable, typed closure.
             pub type $callback_mut<U, $( $T, )* R>
-                = extern "C" fn(cif:      &::low::ffi_cif,
+                = extern "C" fn(cif:      &low::ffi_cif,
                                 result:   &mut R,
                                 args:     &($( &$T, )*),
                                 userdata: &mut U);
@@ -291,7 +292,7 @@ macro_rules! define_closure_mod {
 
                 #[allow(non_snake_case)]
                 extern "C" fn static_callback<Callback>
-                    (_cif:     &::low::ffi_cif,
+                    (_cif:     &low::ffi_cif,
                      result:   &mut R,
                      &($( &$T, )*):
                                &($( &$T, )*),
@@ -342,7 +343,7 @@ macro_rules! define_closure_mod {
 
                 #[allow(non_snake_case)]
                 extern "C" fn static_callback<Callback>
-                    (_cif:     &::low::ffi_cif,
+                    (_cif:     &low::ffi_cif,
                      result:   &mut R,
                      &($( &$T, )*):
                                &($( &$T, )*),
@@ -397,7 +398,7 @@ macro_rules! define_closure_mod {
             }
         }
 
-        pub use self::$module::*;
+        pub use $module::*;
     }
 }
 
