@@ -268,38 +268,38 @@ impl Type {
         Type(unsafe { Unique::new(&mut low::types::sint64) })
     }
 
-    /// Returns the C equivalent of Rust `usize` (`u16`).
     #[cfg(target_pointer_width = "16")]
+    /// Returns the C equivalent of Rust `usize` (`u16`).
     pub fn usize() -> Self {
         Self::u16()
     }
 
-    /// Returns the C equivalent of Rust `isize` (`i16`).
     #[cfg(target_pointer_width = "16")]
+    /// Returns the C equivalent of Rust `isize` (`i16`).
     pub fn isize() -> Self {
         Self::i16()
     }
 
-    /// Returns the C equivalent of Rust `usize` (`u32`).
     #[cfg(target_pointer_width = "32")]
+    /// Returns the C equivalent of Rust `usize` (`u32`).
     pub fn usize() -> Self {
         Self::u32()
     }
 
-    /// Returns the C equivalent of Rust `isize` (`i32`).
     #[cfg(target_pointer_width = "32")]
+    /// Returns the C equivalent of Rust `isize` (`i32`).
     pub fn isize() -> Self {
         Self::i32()
     }
 
-    /// Returns the C equivalent of Rust `usize` (`u64`).
     #[cfg(target_pointer_width = "64")]
+    /// Returns the C equivalent of Rust `usize` (`u64`).
     pub fn usize() -> Self {
         Self::u64()
     }
 
-    /// Returns the C equivalent of Rust `isize` (`i64`).
     #[cfg(target_pointer_width = "64")]
+    /// Returns the C equivalent of Rust `isize` (`i64`).
     pub fn isize() -> Self {
         Self::i64()
     }
@@ -454,7 +454,7 @@ mod test {
 
     #[test]
     fn clone_u64() {
-        Type::u64().clone().clone();
+        let _ = Type::u64().clone().clone();
     }
 
     #[test]
@@ -466,9 +466,9 @@ mod test {
 
     #[test]
     fn clone_struct() {
-        Type::structure(vec![Type::i64(),
-                             Type::i64(),
-                             Type::u64()]).clone().clone();
+        let _ = Type::structure(vec![Type::i64(),
+                                     Type::i64(),
+                                     Type::u64()]).clone().clone();
     }
 
 }

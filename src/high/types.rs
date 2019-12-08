@@ -109,10 +109,9 @@ pub type c_c32 = [f32; 2];
 #[cfg(feature = "complex")]
 pub type c_c64 = [f64; 2];
 
-/// This item is enabled by `#[cfg(feature = "complex")]`.
 #[cfg(feature = "complex")]
 impl_ffi_type!(c_c32, c32);
-/// This item is enabled by `#[cfg(feature = "complex")]`.
+
 #[cfg(feature = "complex")]
 impl_ffi_type!(c_c64, c64);
 
