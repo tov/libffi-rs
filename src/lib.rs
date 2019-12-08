@@ -87,7 +87,6 @@
 //!
 
 #![deny(missing_docs)]
-#![deny(warnings)]
 
 /// Raw definitions imported from the C library (via bindgen).
 ///
