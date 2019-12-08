@@ -10,13 +10,14 @@ The format is based on [Keep a Changelog] and this project adheres to
 
 ## [Unreleased]
 
-### Changed
-- Updated `libffi-sys` dependency version to `"0.9.0"` from `"0.8.0"`.
-- Updated to Rust edition to 2018.
-
 ### Added
 - Methods `middle::Closure::instantiate_code_ptr` and
   `middle::ClosureOnce::instantiate_code_ptr`.
+
+### Changed
+- Updated `libffi-sys` dependency version to `"0.9.0"` from `"0.8.0"`.
+- Updated to Rust edition to 2018.
+- Updated oldest supported rustc version to 1.36.0.
 
 ## [0.8.0] - 2019-10-24
 
