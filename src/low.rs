@@ -341,12 +341,12 @@ pub unsafe fn call<R>(cif:  *mut ffi_cif,
                       fun:  CodePtr,
                       args: *mut *mut c_void) -> R
 {
-    let mut result: R = mem::uninitialized();
+    let mut result = mem::MaybeUninit::<R>::uninit();
     raw::ffi_call(cif,
                   Some(*fun.as_safe_fun()),
-                  &mut result as *mut R as *mut c_void,
+                  result.as_mut_ptr() as *mut c_void,
                   args);
-    result
+    result.assume_init()
 }
 
 /// Allocates a closure.
@@ -369,10 +369,10 @@ pub unsafe fn call<R>(cif:  *mut ffi_cif,
 /// ```
 pub fn closure_alloc() -> (*mut ffi_closure, CodePtr) {
     unsafe {
-        let mut code_pointer: *mut c_void = mem::uninitialized();
+        let mut code_pointer = mem::MaybeUninit::<*mut c_void>::uninit();
         let closure = raw::ffi_closure_alloc(mem::size_of::<ffi_closure>(),
-                                             &mut code_pointer);
-        (closure as *mut ffi_closure, CodePtr::from_ptr(code_pointer))
+                                             code_pointer.as_mut_ptr());
+        (closure as *mut ffi_closure, CodePtr::from_ptr(code_pointer.assume_init()))
     }
 }
 
