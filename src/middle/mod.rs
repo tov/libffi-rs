@@ -132,11 +132,7 @@ impl Cif {
 
         // Note that cif retains references to args and result,
         // which is why we hold onto them here.
-        Cif {
-            cif:    cif,
-            args:   args,
-            result: result,
-        }
+        Cif { cif, args, result }
     }
 
     /// Calls a function with the given arguments.
@@ -150,15 +146,12 @@ impl Cif {
     /// in the `Cif` match the actual calling convention and types of
     /// `fun`, nor that they match the types of `args`.
     pub unsafe fn call<R>(&self, fun: CodePtr, args: &[Arg]) -> R {
-        use std::mem;
-
         assert_eq!(self.cif.nargs as usize, args.len(),
                    "Cif::call: passed wrong number of arguments");
 
         low::call::<R>(&self.cif as *const _ as *mut _,
                        fun,
-                       mem::transmute::<*const Arg,
-                                        *mut *mut c_void>(args.as_ptr()))
+                       args.as_ptr() as *mut *mut c_void)
     }
 
     /// Sets the CIF to use the given calling convention.
@@ -210,7 +203,7 @@ impl Cif {
 ///     args: *const *const c_void,
 ///     userdata: &F)
 /// {
-///     let args: *const &u64 = mem::transmute(args);
+///     let args = args as *const &u64;
 ///     let arg1 = **args.offset(0);
 ///     let arg2 = **args.offset(1);
 ///
@@ -222,13 +215,12 @@ impl Cif {
 /// let lambda = |x: u64, y: u64| x + y;
 /// let closure = Closure::new(cif, lambda_callback, &lambda);
 ///
-/// unsafe {
-///     let fun: &unsafe extern "C" fn(u64, u64) -> u64
-///         = mem::transmute(closure.code_ptr());
+/// let fun: &extern "C" fn(u64, u64) -> u64 = unsafe {
+///     closure.instantiate_code_ptr()
+/// };
 ///
-///     assert_eq!(11, fun(5, 6));
-///     assert_eq!(12, fun(5, 7));
-/// }
+/// assert_eq!(11, fun(5, 6));
+/// assert_eq!(12, fun(5, 7));
 /// ```
 #[derive(Debug)]
 pub struct Closure<'a> {
@@ -277,8 +269,8 @@ impl<'a> Closure<'a> {
 
         Closure {
             _cif:    cif,
-            alloc:   alloc,
-            code:    code,
+            alloc,
+            code,
             _marker: PhantomData,
         }
     }
@@ -313,8 +305,8 @@ impl<'a> Closure<'a> {
 
         Closure {
             _cif:    cif,
-            alloc:   alloc,
-            code:    code,
+            alloc,
+            code,
             _marker: PhantomData,
         }
     }
@@ -387,29 +379,24 @@ impl ClosureOnce {
                           userdata: U)
                           -> Self
     {
-        let cif = Box::new(cif);
-        let userdata = Box::new(Some(userdata)) as Box<Any>;
+        let _cif = Box::new(cif);
+        let _userdata = Box::new(Some(userdata)) as Box<Any>;
         let (alloc, code) = low::closure_alloc();
 
         assert!(!alloc.is_null(), "closure_alloc: returned null");
 
         {
-            let borrow = userdata.downcast_ref::<Option<U>>().unwrap();
+            let borrow = _userdata.downcast_ref::<Option<U>>().unwrap();
             unsafe {
                 low::prep_closure_mut(alloc,
-                                      cif.as_raw_ptr(),
+                                      _cif.as_raw_ptr(),
                                       callback,
                                       borrow as *const _ as *mut _,
                                       code).unwrap();
             }
         }
 
-        ClosureOnce {
-            alloc:     alloc,
-            code:      code,
-            _cif:      cif,
-            _userdata: userdata,
-        }
+        ClosureOnce { alloc, code, _cif, _userdata }
     }
 
     /// Obtains the callable code pointer for a closure.
@@ -441,7 +428,6 @@ impl ClosureOnce {
 mod test {
     use low;
     use super::*;
-    use std::mem;
     use std::os::raw::c_void;
 
     #[test]
@@ -459,7 +445,7 @@ mod test {
     }
 
     extern "C" fn add_it(n: i64, m: i64) -> i64 {
-        return n + m;
+        n + m
     }
 
     #[test]
@@ -468,13 +454,12 @@ mod test {
         let env: u64 = 5;
         let closure = Closure::new(cif, callback, &env);
 
-        unsafe {
-            let fun: &unsafe extern "C" fn(u64) -> u64
-                = mem::transmute(closure.code_ptr());
+        let fun: &extern "C" fn(u64) -> u64 = unsafe {
+            closure.instantiate_code_ptr()
+        };
 
-            assert_eq!(11, fun(6));
-            assert_eq!(12, fun(7));
-        }
+        assert_eq!(11, fun(6));
+        assert_eq!(12, fun(7));
     }
 
     unsafe extern "C" fn callback(_cif: &low::ffi_cif,
@@ -482,7 +467,7 @@ mod test {
                                   args: *const *const c_void,
                                   userdata: &u64)
     {
-        let args: *const &u64 = mem::transmute(args);
+        let args = args as *const &u64;
         *result = **args + *userdata;
     }
 
@@ -493,12 +478,11 @@ mod test {
         let env = |x: u64, y: u64| x + y;
         let closure = Closure::new(cif, callback2, &env);
 
-        unsafe {
-            let fun: &unsafe extern "C" fn (u64, u64) -> u64
-                = mem::transmute(closure.code_ptr());
+        let fun: &extern "C" fn(u64, u64) -> u64 = unsafe {
+            closure.instantiate_code_ptr()
+        };
 
-            assert_eq!(11, fun(5, 6));
-        }
+        assert_eq!(11, fun(5, 6));
     }
 
     unsafe extern "C" fn callback2<F: Fn(u64, u64) -> u64>
@@ -507,7 +491,7 @@ mod test {
          args: *const *const c_void,
          userdata: &F)
     {
-        let args: *const &u64 = mem::transmute(args);
+        let args = args as *const &u64;
         let arg1 = **args.offset(0);
         let arg2 = **args.offset(1);
 

@@ -87,7 +87,7 @@ unsafe fn ffi_type_array_create_empty(len: usize) -> Owned<TypeArray_> {
                     as TypeArray_;
     assert!(!array.is_null(),
             "ffi_type_array_create_empty: out of memory");
-    *array.offset(len as isize) = ptr::null_mut::<low::ffi_type>() as Type_;
+    *array.add(len) = ptr::null_mut::<low::ffi_type>() as Type_;
     array
 }
 
@@ -99,7 +99,7 @@ unsafe fn ffi_type_array_create<I>(elements: I) -> Owned<TypeArray_>
     let size = elements.len();
     let new  = ffi_type_array_create_empty(size);
     for (i, element) in elements.enumerate() {
-        *new.offset(i as isize) = *element.0;
+        *new.add(i) = *element.0;
     }
 
     new
@@ -135,7 +135,7 @@ unsafe fn ffi_type_array_clone(old: TypeArray_) -> Owned<TypeArray_> {
     let new  = ffi_type_array_create_empty(size);
 
     for i in 0 .. size {
-        *new.offset(i as isize) = ffi_type_clone(*old.offset(i as isize));
+        *new.add(i) = ffi_type_clone(*old.add(i));
     }
 
     new

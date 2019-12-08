@@ -19,7 +19,7 @@ pub struct Type<T> {
 impl<T> Type<T> {
     fn make(untyped: middle::Type) -> Self {
         Type {
-            untyped: untyped,
+            untyped,
             _marker: PhantomData,
         }
     }

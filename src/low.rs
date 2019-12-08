@@ -28,7 +28,6 @@ pub type Result<T> = ::std::result::Result<T, Error>;
 fn status_to_result<R>(status: raw::ffi_status, good: R) -> Result<R> {
     if status == raw::ffi_status_FFI_OK { Ok(good) }
     else if status == raw::ffi_status_FFI_BAD_TYPEDEF { Err(Error::Typedef) }
-    else if status == raw::ffi_status_FFI_BAD_ABI { Err(Error::Abi) }
     // If we don't recognize the status, that is an ABI error:
     else { Err(Error::Abi) }
 }
@@ -74,7 +73,7 @@ impl CodePtr {
     /// cast before it is called.
     pub fn as_fun(&self) -> &unsafe extern "C" fn() {
         unsafe {
-            mem::transmute::<&*mut c_void, &unsafe extern "C" fn()>(&self.0)
+            self.as_any_ref_()
         }
     }
 
@@ -105,7 +104,7 @@ impl CodePtr {
     ///
     /// This is the other common type used in APIs (or at least in
     /// libffi) for untyped callback arguments.
-    pub fn as_ptr(&self) -> *const c_void {
+    pub fn as_ptr(self) -> *const c_void {
         self.0
     }
 
@@ -113,7 +112,7 @@ impl CodePtr {
     ///
     /// This is the other common type used in APIs (or at least in
     /// libffi) for untyped callback arguments.
-    pub fn as_mut_ptr(&self) -> *mut c_void {
+    pub fn as_mut_ptr(self) -> *mut c_void {
         self.0
     }
 }

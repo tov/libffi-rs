@@ -87,7 +87,7 @@ macro_rules! define_closure_mod {
         =>
     {
         /// CIF and closure types organized by function arity.
-        #[cfg_attr(feature = "clippy", allow(too_many_arguments))]
+        #[allow(clippy::too_many_arguments)]
         pub mod $module {
             use std::any::Any;
             use std::marker::PhantomData;
@@ -164,7 +164,7 @@ macro_rules! define_closure_mod {
                 /// closure.
                 pub fn code_ptr(&self) -> &extern "C" fn($( $T, )*) -> R {
                     unsafe {
-                        mem::transmute(self.untyped.code_ptr())
+                        self.untyped.instantiate_code_ptr()
                     }
                 }
 
@@ -250,7 +250,7 @@ macro_rules! define_closure_mod {
                 /// closure.
                 pub fn code_ptr(&self) -> &extern "C" fn($( $T, )*) -> R {
                     unsafe {
-                        mem::transmute(self.untyped.code_ptr())
+                        self.untyped.instantiate_code_ptr()
                     }
                 }
 
@@ -369,7 +369,7 @@ macro_rules! define_closure_mod {
                 /// closure.
                 pub fn code_ptr(&self) -> &extern "C" fn($( $T, )*) -> R {
                     unsafe {
-                        mem::transmute(self.untyped.code_ptr())
+                        self.untyped.instantiate_code_ptr()
                     }
                 }
 
@@ -499,7 +499,7 @@ mod test {
     #[test]
     fn new_mut() {
         let mut x: u64 = 0;
-        let mut f = |y: u32| { x += y as u64; x };
+        let mut f = |y: u32| { x += u64::from(y); x };
 
         let closure = ClosureMut1::new(&mut f);
         let counter = closure.code_ptr();
