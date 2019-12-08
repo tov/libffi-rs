@@ -87,6 +87,7 @@
 //!
 
 #![deny(missing_docs)]
+#![deny(warnings)]
 
 #[macro_use] extern crate abort_on_panic;
 extern crate libc;
