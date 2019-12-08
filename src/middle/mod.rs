@@ -329,6 +329,19 @@ impl<'a> Closure<'a> {
     pub fn code_ptr(&self) -> &unsafe extern "C" fn() {
         self.code.as_fun()
     }
+
+    /// Transmutes the callable code pointer for a closure to a reference
+    /// to any type. This is intended to be used to transmute it to its
+    /// correct function type in order to call it.
+    ///
+    /// # Safety
+    ///
+    /// This method allows transmuting to a reference to *any* sized type,
+    /// and cannot check whether the code pointer actually has that type.
+    /// If the type is wrong then undefined behavior will result.
+    pub unsafe fn instantiate_code_ptr<T>(&self) -> &T {
+        self.code.as_any_ref_()
+    }
 }
 
 /// The type of callback invoked by a
@@ -408,6 +421,19 @@ impl ClosureOnce {
     /// will result.
     pub fn code_ptr(&self) -> &unsafe extern "C" fn() {
         self.code.as_fun()
+    }
+
+    /// Transmutes the callable code pointer for a closure to a reference
+    /// to any type. This is intended to be used to transmute it to its
+    /// correct function type in order to call it.
+    ///
+    /// # Safety
+    ///
+    /// This method allows transmuting to a reference to *any* sized type,
+    /// and cannot check whether the code pointer actually has that type.
+    /// If the type is wrong then undefined behavior will result.
+    pub unsafe fn instantiate_code_ptr<T>(&self) -> &T {
+        self.code.as_any_ref_()
     }
 }
 

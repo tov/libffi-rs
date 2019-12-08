@@ -9,8 +9,13 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
-- Updated `libffi-sys` dependency version to `"0.9.0"` from
-  `"0.8.0"`.
+
+### Changed
+- Updated `libffi-sys` dependency version to `"0.9.0"` from `"0.8.0"`.
+
+### Added
+- Methods `middle::Closure::instantiate_code_ptr` and
+  `middle::ClosureOnce::instantiate_code_ptr`.
 
 ## [0.8.0] - 2019-10-24
 

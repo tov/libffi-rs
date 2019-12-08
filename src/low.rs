@@ -94,7 +94,11 @@ impl CodePtr {
     /// function actually has type `void(*)()`, it will need to be
     /// cast before it is called.
     pub unsafe fn as_safe_fun(&self) -> &extern "C" fn() {
-        mem::transmute::<&*mut c_void, &extern "C" fn()>(&self.0)
+        self.as_any_ref_()
+    }
+
+    pub (crate) unsafe fn as_any_ref_<T>(&self) -> &T {
+        &*(&self.0 as *const _ as *const T)
     }
 
     /// Gets the code pointer typed as a `const void*`.
