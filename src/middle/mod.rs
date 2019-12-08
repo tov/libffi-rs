@@ -349,7 +349,7 @@ pub struct ClosureOnce {
     alloc:     *mut low::ffi_closure,
     code:      CodePtr,
     _cif:      Box<Cif>,
-    _userdata: Box<Any>,
+    _userdata: Box<dyn Any>,
 }
 
 impl Drop for ClosureOnce {
@@ -380,7 +380,7 @@ impl ClosureOnce {
                           -> Self
     {
         let _cif = Box::new(cif);
-        let _userdata = Box::new(Some(userdata)) as Box<Any>;
+        let _userdata = Box::new(Some(userdata)) as Box<dyn Any>;
         let (alloc, code) = low::closure_alloc();
 
         assert!(!alloc.is_null(), "closure_alloc: returned null");
