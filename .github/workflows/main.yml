@@ -1,0 +1,54 @@
+name: Build & Test
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [1.36.0, stable, beta, nightly]
+    steps:
+      - uses: actions/checkout@master
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: ${{ matrix.rust }}
+      - name: Run build
+        run: cargo build --verbose
+      - name: Run Test
+        run: cargo test --verbose
+  macos:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [1.36.0, stable, beta, nightly]
+    steps:
+      - uses: actions/checkout@master
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: ${{ matrix.rust }}
+      - name: Run build
+        run: cargo build --verbose
+      - name: Run Test
+        run: cargo test --verbose
+
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [1.36.0, stable, beta, nightly]
+    steps:
+      - uses: actions/checkout@master
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: ${{ matrix.rust }}
+      - name: Run build
+        run: cargo build --verbose
+      - name: Run Test
+        run: cargo test --verbose
