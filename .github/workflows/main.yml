@@ -17,10 +17,13 @@ jobs:
       - uses: hecrj/setup-rust-action@v1
         with:
           rust-version: ${{ matrix.rust }}
+      - name: Install build dependencies
+        run: choco install llvm
       - name: Run build
         run: cargo build --verbose
       - name: Run Test
         run: cargo test --verbose
+
   macos:
     runs-on: macos-latest
     strategy:
@@ -32,6 +35,8 @@ jobs:
       - uses: hecrj/setup-rust-action@v1
         with:
           rust-version: ${{ matrix.rust }}
+      - name: Install build dependencies
+        run: brew install autoconf automake libtool
       - name: Run build
         run: cargo build --verbose
       - name: Run Test
