@@ -140,6 +140,10 @@ pub mod types {
         ffi_type_float as float,
         ffi_type_double as double,
         ffi_type_pointer as pointer,
+    };
+
+    #[cfg(not(all(target_arch = "arm", target_os="linux", target_env="gnu")))]
+    pub use crate::raw::{
         ffi_type_longdouble as longdouble
     };
 
@@ -147,6 +151,11 @@ pub mod types {
     pub use crate::raw::{
         ffi_type_complex_float as complex_float,
         ffi_type_complex_double as complex_double,
+    };
+
+    #[cfg(feature = "complex")]
+    #[cfg(not(all(target_arch = "arm", target_os="linux", target_env="gnu")))]
+    pub use crate::raw::{
         ffi_type_complex_longdouble as complex_longdouble
     };
 }
