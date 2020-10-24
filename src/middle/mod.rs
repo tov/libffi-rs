@@ -11,12 +11,11 @@
 //! layer for closures with type-checked arguments.
 
 use std::any::Any;
-use std::os::raw::c_void;
 use std::marker::PhantomData;
+use std::os::raw::c_void;
 
 use crate::low;
-pub use crate::low::{Callback, CallbackMut, CodePtr,
-                     ffi_abi as FfiAbi, ffi_abi_FFI_DEFAULT_ABI};
+pub use crate::low::{ffi_abi as FfiAbi, ffi_abi_FFI_DEFAULT_ABI, Callback, CallbackMut, CodePtr};
 
 mod util;
 
@@ -83,8 +82,8 @@ pub fn arg<T>(r: &T) -> Arg {
 /// ```
 #[derive(Debug)]
 pub struct Cif {
-    cif:    low::ffi_cif,
-    args:   types::TypeArray,
+    cif: low::ffi_cif,
+    args: types::TypeArray,
     result: Type,
 }
 
@@ -93,13 +92,13 @@ pub struct Cif {
 impl Clone for Cif {
     fn clone(&self) -> Self {
         let mut copy = Cif {
-            cif:    self.cif,
-            args:   self.args.clone(),
+            cif: self.cif,
+            args: self.args.clone(),
             result: self.result.clone(),
         };
 
         copy.cif.arg_types = copy.args.as_raw_ptr();
-        copy.cif.rtype     = copy.result.as_raw_ptr();
+        copy.cif.rtype = copy.result.as_raw_ptr();
 
         copy
     }
@@ -114,8 +113,9 @@ impl Cif {
     /// Defaults to the platform’s default calling convention; this
     /// can be adjusted using [`set_abi`](#method.set_abi).
     pub fn new<I>(args: I, result: Type) -> Self
-        where I: IntoIterator<Item=Type>,
-              I::IntoIter: ExactSizeIterator<Item=Type>
+    where
+        I: IntoIterator<Item = Type>,
+        I::IntoIter: ExactSizeIterator<Item = Type>,
     {
         let args = args.into_iter();
         let nargs = args.len();
@@ -123,12 +123,15 @@ impl Cif {
         let mut cif: low::ffi_cif = Default::default();
 
         unsafe {
-            low::prep_cif(&mut cif,
-                          low::ffi_abi_FFI_DEFAULT_ABI,
-                          nargs,
-                          result.as_raw_ptr(),
-                          args.as_raw_ptr())
-        }.expect("low::prep_cif");
+            low::prep_cif(
+                &mut cif,
+                low::ffi_abi_FFI_DEFAULT_ABI,
+                nargs,
+                result.as_raw_ptr(),
+                args.as_raw_ptr(),
+            )
+        }
+        .expect("low::prep_cif");
 
         // Note that cif retains references to args and result,
         // which is why we hold onto them here.
@@ -146,12 +149,17 @@ impl Cif {
     /// in the `Cif` match the actual calling convention and types of
     /// `fun`, nor that they match the types of `args`.
     pub unsafe fn call<R>(&self, fun: CodePtr, args: &[Arg]) -> R {
-        assert_eq!(self.cif.nargs as usize, args.len(),
-                   "Cif::call: passed wrong number of arguments");
+        assert_eq!(
+            self.cif.nargs as usize,
+            args.len(),
+            "Cif::call: passed wrong number of arguments"
+        );
 
-        low::call::<R>(&self.cif as *const _ as *mut _,
-                       fun,
-                       args.as_ptr() as *mut *mut c_void)
+        low::call::<R>(
+            &self.cif as *const _ as *mut _,
+            fun,
+            args.as_ptr() as *mut *mut c_void,
+        )
     }
 
     /// Sets the CIF to use the given calling convention.
@@ -224,9 +232,9 @@ impl Cif {
 /// ```
 #[derive(Debug)]
 pub struct Closure<'a> {
-    _cif:    Box<Cif>,
-    alloc:   *mut low::ffi_closure,
-    code:    CodePtr,
+    _cif: Box<Cif>,
+    alloc: *mut low::ffi_closure,
+    code: CodePtr,
     _marker: PhantomData<&'a ()>,
 }
 
@@ -252,23 +260,23 @@ impl<'a> Closure<'a> {
     /// # Result
     ///
     /// The new closure.
-    pub fn new<U, R>(cif:      Cif,
-                     callback: Callback<U, R>,
-                     userdata: &'a U) -> Self
-    {
+    pub fn new<U, R>(cif: Cif, callback: Callback<U, R>, userdata: &'a U) -> Self {
         let cif = Box::new(cif);
         let (alloc, code) = low::closure_alloc();
 
         unsafe {
-            low::prep_closure(alloc,
-                              cif.as_raw_ptr(),
-                              callback,
-                              userdata as *const U,
-                              code).unwrap();
+            low::prep_closure(
+                alloc,
+                cif.as_raw_ptr(),
+                callback,
+                userdata as *const U,
+                code,
+            )
+            .unwrap();
         }
 
         Closure {
-            _cif:    cif,
+            _cif: cif,
             alloc,
             code,
             _marker: PhantomData,
@@ -288,23 +296,17 @@ impl<'a> Closure<'a> {
     /// # Result
     ///
     /// The new closure.
-    pub fn new_mut<U, R>(cif:      Cif,
-                         callback: CallbackMut<U, R>,
-                         userdata: &'a mut U) -> Self
-    {
+    pub fn new_mut<U, R>(cif: Cif, callback: CallbackMut<U, R>, userdata: &'a mut U) -> Self {
         let cif = Box::new(cif);
         let (alloc, code) = low::closure_alloc();
 
         unsafe {
-            low::prep_closure_mut(alloc,
-                                  cif.as_raw_ptr(),
-                                  callback,
-                                  userdata as *mut U,
-                                  code).unwrap();
+            low::prep_closure_mut(alloc, cif.as_raw_ptr(), callback, userdata as *mut U, code)
+                .unwrap();
         }
 
         Closure {
-            _cif:    cif,
+            _cif: cif,
             alloc,
             code,
             _marker: PhantomData,
@@ -346,9 +348,9 @@ pub type CallbackOnce<U, R> = CallbackMut<Option<U>, R>;
 /// which case the userdata will be gone if called again.
 #[derive(Debug)]
 pub struct ClosureOnce {
-    alloc:     *mut low::ffi_closure,
-    code:      CodePtr,
-    _cif:      Box<Cif>,
+    alloc: *mut low::ffi_closure,
+    code: CodePtr,
+    _cif: Box<Cif>,
     _userdata: Box<dyn Any>,
 }
 
@@ -374,11 +376,7 @@ impl ClosureOnce {
     /// # Result
     ///
     /// The new closure.
-    pub fn new<U: Any, R>(cif:      Cif,
-                          callback: CallbackOnce<U, R>,
-                          userdata: U)
-                          -> Self
-    {
+    pub fn new<U: Any, R>(cif: Cif, callback: CallbackOnce<U, R>, userdata: U) -> Self {
         let _cif = Box::new(cif);
         let _userdata = Box::new(Some(userdata)) as Box<dyn Any>;
         let (alloc, code) = low::closure_alloc();
@@ -388,15 +386,23 @@ impl ClosureOnce {
         {
             let borrow = _userdata.downcast_ref::<Option<U>>().unwrap();
             unsafe {
-                low::prep_closure_mut(alloc,
-                                      _cif.as_raw_ptr(),
-                                      callback,
-                                      borrow as *const _ as *mut _,
-                                      code).unwrap();
+                low::prep_closure_mut(
+                    alloc,
+                    _cif.as_raw_ptr(),
+                    callback,
+                    borrow as *const _ as *mut _,
+                    code,
+                )
+                .unwrap();
             }
         }
 
-        ClosureOnce { alloc, code, _cif, _userdata }
+        ClosureOnce {
+            alloc,
+            code,
+            _cif,
+            _userdata,
+        }
     }
 
     /// Obtains the callable code pointer for a closure.
@@ -426,17 +432,15 @@ impl ClosureOnce {
 
 #[cfg(test)]
 mod test {
-    use crate::low;
     use super::*;
+    use crate::low;
     use std::os::raw::c_void;
 
     #[test]
     fn call() {
-        let cif  = Cif::new(vec![Type::i64(), Type::i64()].into_iter(),
-                            Type::i64());
-        let f    = |m: i64, n: i64| -> i64 {
-            unsafe { cif.call(CodePtr(add_it as *mut c_void),
-                              &[arg(&m), arg(&n)]) }
+        let cif = Cif::new(vec![Type::i64(), Type::i64()].into_iter(), Type::i64());
+        let f = |m: i64, n: i64| -> i64 {
+            unsafe { cif.call(CodePtr(add_it as *mut c_void), &[arg(&m), arg(&n)]) }
         };
 
         assert_eq!(12, f(5, 7));
@@ -450,47 +454,43 @@ mod test {
 
     #[test]
     fn closure() {
-        let cif  = Cif::new(vec![Type::u64()].into_iter(), Type::u64());
+        let cif = Cif::new(vec![Type::u64()].into_iter(), Type::u64());
         let env: u64 = 5;
         let closure = Closure::new(cif, callback, &env);
 
-        let fun: &extern "C" fn(u64) -> u64 = unsafe {
-            closure.instantiate_code_ptr()
-        };
+        let fun: &extern "C" fn(u64) -> u64 = unsafe { closure.instantiate_code_ptr() };
 
         assert_eq!(11, fun(6));
         assert_eq!(12, fun(7));
     }
 
-    unsafe extern "C" fn callback(_cif: &low::ffi_cif,
-                                  result: &mut u64,
-                                  args: *const *const c_void,
-                                  userdata: &u64)
-    {
+    unsafe extern "C" fn callback(
+        _cif: &low::ffi_cif,
+        result: &mut u64,
+        args: *const *const c_void,
+        userdata: &u64,
+    ) {
         let args = args as *const &u64;
         *result = **args + *userdata;
     }
 
     #[test]
     fn rust_lambda() {
-        let cif = Cif::new(vec![Type::u64(), Type::u64()].into_iter(),
-                           Type::u64());
+        let cif = Cif::new(vec![Type::u64(), Type::u64()].into_iter(), Type::u64());
         let env = |x: u64, y: u64| x + y;
         let closure = Closure::new(cif, callback2, &env);
 
-        let fun: &extern "C" fn(u64, u64) -> u64 = unsafe {
-            closure.instantiate_code_ptr()
-        };
+        let fun: &extern "C" fn(u64, u64) -> u64 = unsafe { closure.instantiate_code_ptr() };
 
         assert_eq!(11, fun(5, 6));
     }
 
-    unsafe extern "C" fn callback2<F: Fn(u64, u64) -> u64>
-        (_cif: &low::ffi_cif,
-         result: &mut u64,
-         args: *const *const c_void,
-         userdata: &F)
-    {
+    unsafe extern "C" fn callback2<F: Fn(u64, u64) -> u64>(
+        _cif: &low::ffi_cif,
+        result: &mut u64,
+        args: *const *const c_void,
+        userdata: &F,
+    ) {
         let args = args as *const &u64;
         let arg1 = **args.offset(0);
         let arg2 = **args.offset(1);

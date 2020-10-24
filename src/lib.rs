@@ -98,5 +98,5 @@ pub mod raw {
 }
 
 pub mod high;
-pub mod middle;
 pub mod low;
+pub mod middle;

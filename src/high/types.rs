@@ -38,7 +38,7 @@ impl<T> Type<T> {
 /// This trait is unsafe to implement because if the libffi type
 /// associated with a Rust type doesn’t match then we get
 /// undefined behavior.
-pub unsafe trait CType : Copy {
+pub unsafe trait CType: Copy {
     /// Creates or retrieves a `Type<T>` for any type `T: CType`.
     ///
     /// We can use the resulting object to assemble a CIF to set up
@@ -48,7 +48,7 @@ pub unsafe trait CType : Copy {
 
 macro_rules! impl_ffi_type {
     ($type_:ty, $cons:ident) => {
-        unsafe impl<> CType for $type_ {
+        unsafe impl CType for $type_ {
             fn reify() -> Type<Self> {
                 Type::make(middle::Type::$cons())
             }
@@ -116,9 +116,13 @@ impl_ffi_type!(c_c32, c32);
 impl_ffi_type!(c_c64, c64);
 
 unsafe impl<T> CType for *const T {
-    fn reify() -> Type<Self> { Type::make(middle::Type::pointer()) }
+    fn reify() -> Type<Self> {
+        Type::make(middle::Type::pointer())
+    }
 }
 
 unsafe impl<T> CType for *mut T {
-    fn reify() -> Type<Self> { Type::make(middle::Type::pointer()) }
+    fn reify() -> Type<Self> {
+        Type::make(middle::Type::pointer())
+    }
 }
