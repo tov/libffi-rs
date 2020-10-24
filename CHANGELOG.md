@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+### Changed
+- Use libffi-sys-rs 1.0.0
+- Update libc dependency to a more recent version
+
 ## [0.9.0] - 2019-12-07
 
 ### Added
@@ -65,13 +71,13 @@ The format is based on [Keep a Changelog] and this project adheres to
 - Mentions dependencies in build instructions.
 
 ### Changed
-- Constructors and factories that need sequences now take `IntoIterator` 
+- Constructors and factories that need sequences now take `IntoIterator`
 instead of `Iterator` or `FixedSizeIterator`.
 
 ## [0.5.3] - 2017-04-15
 
 ### Fixed
-- `Closure[0-9]` and `ClosureMut[0-9]` now abort on panic rather than 
+- `Closure[0-9]` and `ClosureMut[0-9]` now abort on panic rather than
 attempting to unwind past an FFI boundary. (Thanks, ngkz!)
 
 ## [0.5.2] - 2017-04-14

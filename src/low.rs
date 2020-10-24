@@ -117,7 +117,7 @@ impl CodePtr {
     }
 }
 
-pub use raw::{ffi_abi, ffi_abi_FFI_DEFAULT_ABI, _ffi_type as ffi_type, ffi_status,
+pub use raw::{ffi_abi, ffi_abi_FFI_DEFAULT_ABI, ffi_type, ffi_status,
               ffi_cif, ffi_closure};
 
 /// Re-exports the `ffi_type` objects used to describe the types of
