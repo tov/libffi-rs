@@ -70,10 +70,10 @@
 
 use abort_on_panic::abort_on_panic;
 
-pub use crate::middle::{FfiAbi, ffi_abi_FFI_DEFAULT_ABI};
+pub use crate::middle::{ffi_abi_FFI_DEFAULT_ABI, FfiAbi};
 
 pub mod types;
-pub use types::{Type, CType};
+pub use types::{CType, Type};
 
 pub mod call;
 pub use call::*;
@@ -403,9 +403,9 @@ macro_rules! define_closure_mod {
 }
 
 define_closure_mod!(arity0 Cif0
-                    Callback0 CallbackMut0 CallbackOnce0
-                    Closure0 ClosureMut0 ClosureOnce0;
-                    );
+Callback0 CallbackMut0 CallbackOnce0
+Closure0 ClosureMut0 ClosureOnce0;
+);
 define_closure_mod!(arity1 Cif1
                     Callback1 CallbackMut1 CallbackOnce1
                     Closure1 ClosureMut1 ClosureOnce1;
@@ -464,8 +464,8 @@ mod test {
         let x: u64 = 1;
         let f = |y: u64, z: u64| x + y + z;
 
-        let type_   = u64::reify();
-        let cif     = Cif2::new(type_.clone(), type_.clone(), type_.clone());
+        let type_ = u64::reify();
+        let cif = Cif2::new(type_.clone(), type_.clone(), type_.clone());
         let closure = Closure2::new_with_cif(cif, &f);
 
         assert_eq!(12, closure.code_ptr()(5, 6));
@@ -474,10 +474,13 @@ mod test {
     #[test]
     fn new_with_cif_mut() {
         let mut x: u64 = 0;
-        let mut f = |y: u64| { x += y; x };
+        let mut f = |y: u64| {
+            x += y;
+            x
+        };
 
-        let type_   = u64::reify();
-        let cif     = Cif1::new(type_.clone(), type_.clone());
+        let type_ = u64::reify();
+        let cif = Cif1::new(type_.clone(), type_.clone());
         let closure = ClosureMut1::new_with_cif(cif, &mut f);
 
         let counter = closure.code_ptr();
@@ -500,7 +503,10 @@ mod test {
     #[test]
     fn new_mut() {
         let mut x: u64 = 0;
-        let mut f = |y: u32| { x += u64::from(y); x };
+        let mut f = |y: u32| {
+            x += u64::from(y);
+            x
+        };
 
         let closure = ClosureMut1::new(&mut f);
         let counter = closure.code_ptr();

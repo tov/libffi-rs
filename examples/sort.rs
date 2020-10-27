@@ -3,15 +3,12 @@
 use libffi::high::Closure2;
 
 mod c {
-    use std::os::raw::{c_void, c_int};
+    use std::os::raw::{c_int, c_void};
 
     pub type Callback = extern "C" fn(*const c_void, *const c_void) -> c_int;
 
     extern "C" {
-        pub fn qsort(base:   *const c_void,
-                     nel:    usize,
-                     width:  usize,
-                     compar: Callback);
+        pub fn qsort(base: *const c_void, nel: usize, width: usize, compar: Callback);
     }
 }
 
@@ -32,10 +29,12 @@ fn qsort<T: Ord>(array: &mut [T]) {
     let compare = Closure2::new(&lambda);
 
     unsafe {
-        c::qsort(array.as_ptr() as *const _,
-                 array.len(),
-                 mem::size_of::<T>(),
-                 *compare.code_ptr())
+        c::qsort(
+            array.as_ptr() as *const _,
+            array.len(),
+            mem::size_of::<T>(),
+            *compare.code_ptr(),
+        )
     }
 }
 
