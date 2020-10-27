@@ -368,7 +368,7 @@ impl Type {
     }
 
     /// Returns the C `long double` (extended-precision floating point) type.
-    #[cfg(not(all(target_arch = "arm", target_os = "linux", target_env = "gnu")))]
+    #[cfg(not(all(target_arch = "arm", target_os = "linux")))]
     pub fn longdouble() -> Self {
         Type(unsafe { Unique::new(&mut low::types::longdouble) })
     }
@@ -393,7 +393,7 @@ impl Type {
     ///
     /// This item is enabled by `#[cfg(feature = "complex")]`.
     #[cfg(feature = "complex")]
-    #[cfg(not(all(target_arch = "arm", target_os = "linux", target_env = "gnu")))]
+    #[cfg(not(all(target_arch = "arm", target_os = "linux")))]
     pub fn complex_longdouble() -> Self {
         Type(unsafe { Unique::new(&mut low::types::complex_longdouble) })
     }
