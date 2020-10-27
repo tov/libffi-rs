@@ -87,7 +87,8 @@ impl Builder {
 
     /// Adds several types to the argument type list.
     pub fn args<I>(mut self, types: I) -> Self
-        where I: IntoIterator<Item=Type>
+    where
+        I: IntoIterator<Item = Type>,
     {
         self.args.extend(types.into_iter());
         self
@@ -126,9 +127,8 @@ impl Builder {
     pub fn into_closure<U, R>(
         self,
         callback: super::Callback<U, R>,
-        userdata: &U)
-        -> super::Closure
-    {
+        userdata: &U,
+    ) -> super::Closure {
         super::Closure::new(self.into_cif(), callback, userdata)
     }
 
@@ -146,9 +146,8 @@ impl Builder {
     pub fn into_closure_mut<U, R>(
         self,
         callback: super::CallbackMut<U, R>,
-        userdata: &mut U)
-        -> super::Closure
-    {
+        userdata: &mut U,
+    ) -> super::Closure {
         super::Closure::new_mut(self.into_cif(), callback, userdata)
     }
 
@@ -166,9 +165,8 @@ impl Builder {
     pub fn into_closure_once<U: Any, R>(
         self,
         callback: super::CallbackOnce<U, R>,
-        userdata: U)
-        -> super::ClosureOnce
-    {
+        userdata: U,
+    ) -> super::ClosureOnce {
         super::ClosureOnce::new(self.into_cif(), callback, userdata)
     }
 }

@@ -6,10 +6,10 @@
 //! libffi uses this to figure out how to set up a call to a function
 //! with those types.
 
+use libc;
 use std::fmt;
 use std::mem;
 use std::ptr;
-use libc;
 
 use crate::low;
 
@@ -19,12 +19,12 @@ use super::util::Unique;
 // since this is what libffi understands. Below we wrap them with
 // types that implement Drop and Clone.
 
-type Type_      = *mut low::ffi_type;
+type Type_ = *mut low::ffi_type;
 type TypeArray_ = *mut Type_;
 
 // Informal indication that the object should be considered owned by
 // the given reference.
-type Owned<T>      = T;
+type Owned<T> = T;
 
 /// Represents a single C type.
 ///
@@ -73,7 +73,7 @@ impl fmt::Debug for TypeArray {
 /// Computes the length of a raw `TypeArray_` by searching for the
 /// null terminator.
 unsafe fn ffi_type_array_len(mut array: TypeArray_) -> usize {
-    let mut count   = 0;
+    let mut count = 0;
     while !(*array).is_null() {
         count += 1;
         array = array.offset(1);
@@ -83,10 +83,11 @@ unsafe fn ffi_type_array_len(mut array: TypeArray_) -> usize {
 
 /// Creates an empty `TypeArray_` with null terminator.
 unsafe fn ffi_type_array_create_empty(len: usize) -> Owned<TypeArray_> {
-    let array = libc::malloc((len + 1) * mem::size_of::<Type_>())
-                    as TypeArray_;
-    assert!(!array.is_null(),
-            "ffi_type_array_create_empty: out of memory");
+    let array = libc::malloc((len + 1) * mem::size_of::<Type_>()) as TypeArray_;
+    assert!(
+        !array.is_null(),
+        "ffi_type_array_create_empty: out of memory"
+    );
     *array.add(len) = ptr::null_mut::<low::ffi_type>() as Type_;
     array
 }
@@ -94,10 +95,11 @@ unsafe fn ffi_type_array_create_empty(len: usize) -> Owned<TypeArray_> {
 /// Creates a null-terminated array of Type_. Takes ownership of
 /// the elements.
 unsafe fn ffi_type_array_create<I>(elements: I) -> Owned<TypeArray_>
-    where I: ExactSizeIterator<Item=Type>
+where
+    I: ExactSizeIterator<Item = Type>,
 {
     let size = elements.len();
-    let new  = ffi_type_array_create_empty(size);
+    let new = ffi_type_array_create_empty(size);
     for (i, element) in elements.enumerate() {
         *new.add(i) = *element.0;
     }
@@ -106,17 +108,14 @@ unsafe fn ffi_type_array_create<I>(elements: I) -> Owned<TypeArray_>
 }
 
 /// Creates a struct type from a raw array of element types.
-unsafe fn ffi_type_struct_create_raw(elements: Owned<TypeArray_>)
-    -> Owned<Type_>
-{
+unsafe fn ffi_type_struct_create_raw(elements: Owned<TypeArray_>) -> Owned<Type_> {
     let new = libc::malloc(mem::size_of::<low::ffi_type>()) as Type_;
-    assert!(!new.is_null(),
-            "ffi_type_struct_create_raw: out of memory");
+    assert!(!new.is_null(), "ffi_type_struct_create_raw: out of memory");
 
-    (*new).size      = 0;
+    (*new).size = 0;
     (*new).alignment = 0;
-    (*new).type_     = low::type_tag::STRUCT;
-    (*new).elements  = elements;
+    (*new).type_ = low::type_tag::STRUCT;
+    (*new).elements = elements;
 
     new
 }
@@ -124,7 +123,8 @@ unsafe fn ffi_type_struct_create_raw(elements: Owned<TypeArray_>)
 /// Creates a struct `ffi_type` with the given elements. Takes ownership
 /// of the elements.
 unsafe fn ffi_type_struct_create<I>(elements: I) -> Owned<Type_>
-    where I: ExactSizeIterator<Item=Type>
+where
+    I: ExactSizeIterator<Item = Type>,
 {
     ffi_type_struct_create_raw(ffi_type_array_create(elements))
 }
@@ -132,9 +132,9 @@ unsafe fn ffi_type_struct_create<I>(elements: I) -> Owned<Type_>
 /// Makes a copy of a type array.
 unsafe fn ffi_type_array_clone(old: TypeArray_) -> Owned<TypeArray_> {
     let size = ffi_type_array_len(old);
-    let new  = ffi_type_array_create_empty(size);
+    let new = ffi_type_array_create_empty(size);
 
-    for i in 0 .. size {
+    for i in 0..size {
         *new.add(i) = ffi_type_clone(*old.add(i));
     }
 
@@ -189,9 +189,7 @@ impl Clone for Type {
 
 impl Clone for TypeArray {
     fn clone(&self) -> Self {
-        TypeArray(unsafe {
-            Unique::new(ffi_type_array_clone(*self.0))
-        })
+        TypeArray(unsafe { Unique::new(ffi_type_array_clone(*self.0)) })
     }
 }
 
@@ -202,9 +200,9 @@ macro_rules! match_size_signed {
             2 => Self::i16(),
             4 => Self::i32(),
             8 => Self::i64(),
-            _  => panic!("Strange size for C type"),
+            _ => panic!("Strange size for C type"),
         }
-    }
+    };
 }
 
 macro_rules! match_size_unsigned {
@@ -214,9 +212,9 @@ macro_rules! match_size_unsigned {
             2 => Self::u16(),
             4 => Self::u32(),
             8 => Self::u64(),
-            _  => panic!("Strange size for C type"),
+            _ => panic!("Strange size for C type"),
         }
-    }
+    };
 }
 
 impl Type {
@@ -370,6 +368,7 @@ impl Type {
     }
 
     /// Returns the C `long double` (extended-precision floating point) type.
+    #[cfg(not(all(target_arch = "arm")))]
     pub fn longdouble() -> Self {
         Type(unsafe { Unique::new(&mut low::types::longdouble) })
     }
@@ -394,18 +393,18 @@ impl Type {
     ///
     /// This item is enabled by `#[cfg(feature = "complex")]`.
     #[cfg(feature = "complex")]
+    #[cfg(not(all(target_arch = "arm")))]
     pub fn complex_longdouble() -> Self {
         Type(unsafe { Unique::new(&mut low::types::complex_longdouble) })
     }
 
     /// Constructs a structure type whose fields have the given types.
     pub fn structure<I>(fields: I) -> Self
-        where I: IntoIterator<Item=Type>,
-              I::IntoIter: ExactSizeIterator<Item=Type>
+    where
+        I: IntoIterator<Item = Type>,
+        I::IntoIter: ExactSizeIterator<Item = Type>,
     {
-        Type(unsafe {
-            Unique::new(ffi_type_struct_create(fields.into_iter()))
-        })
+        Type(unsafe { Unique::new(ffi_type_struct_create(fields.into_iter())) })
     }
 
     /// Gets a raw pointer to the underlying
@@ -422,12 +421,11 @@ impl Type {
 impl TypeArray {
     /// Constructs an array the given `Type`s.
     pub fn new<I>(elements: I) -> Self
-        where I: IntoIterator<Item=Type>,
-              I::IntoIter: ExactSizeIterator<Item=Type>
+    where
+        I: IntoIterator<Item = Type>,
+        I::IntoIter: ExactSizeIterator<Item = Type>,
     {
-        TypeArray(unsafe {
-            Unique::new(ffi_type_array_create(elements.into_iter()))
-        })
+        TypeArray(unsafe { Unique::new(ffi_type_array_create(elements.into_iter())) })
     }
 
     /// Gets a raw pointer to the underlying C array of
@@ -459,16 +457,13 @@ mod test {
 
     #[test]
     fn create_struct() {
-        Type::structure(vec![Type::i64(),
-                             Type::i64(),
-                             Type::u64()]);
+        Type::structure(vec![Type::i64(), Type::i64(), Type::u64()]);
     }
 
     #[test]
     fn clone_struct() {
-        let _ = Type::structure(vec![Type::i64(),
-                                     Type::i64(),
-                                     Type::u64()]).clone().clone();
+        let _ = Type::structure(vec![Type::i64(), Type::i64(), Type::u64()])
+            .clone()
+            .clone();
     }
-
 }

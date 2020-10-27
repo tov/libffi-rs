@@ -79,8 +79,7 @@ pub unsafe fn call<R: super::CType>(fun: CodePtr, args: &[Arg]) -> R {
     let types = args.iter().map(|arg| arg.type_.clone());
     let cif = middle::Cif::new(types, R::reify().into_middle());
 
-    let values = args.iter().map(|arg| arg.value.clone())
-                     .collect::<Vec<_>>();
+    let values = args.iter().map(|arg| arg.value.clone()).collect::<Vec<_>>();
     cif.call(fun, &values)
 }
 

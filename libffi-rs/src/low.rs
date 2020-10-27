@@ -8,7 +8,7 @@
 //! See [`middle`](../middle/index.html) for an easier-to-use approach.
 
 use std::mem;
-use std::os::raw::{c_void, c_uint};
+use std::os::raw::{c_uint, c_void};
 
 use crate::raw;
 
@@ -26,10 +26,15 @@ pub type Result<T> = ::std::result::Result<T, Error>;
 
 // Converts the raw status type to a `Result`.
 fn status_to_result<R>(status: raw::ffi_status, good: R) -> Result<R> {
-    if status == raw::ffi_status_FFI_OK { Ok(good) }
-    else if status == raw::ffi_status_FFI_BAD_TYPEDEF { Err(Error::Typedef) }
+    if status == raw::ffi_status_FFI_OK {
+        Ok(good)
+    } else if status == raw::ffi_status_FFI_BAD_TYPEDEF {
+        Err(Error::Typedef)
+    }
     // If we don't recognize the status, that is an ABI error:
-    else { Err(Error::Abi) }
+    else {
+        Err(Error::Abi)
+    }
 }
 
 /// Wraps a function pointer of unknown type.
@@ -72,9 +77,7 @@ impl CodePtr {
     /// function actually has type `void(*)()`, it will need to be
     /// cast before it is called.
     pub fn as_fun(&self) -> &unsafe extern "C" fn() {
-        unsafe {
-            self.as_any_ref_()
-        }
+        unsafe { self.as_any_ref_() }
     }
 
     /// Gets the code pointer typed as a “safe” C function pointer.
@@ -96,7 +99,7 @@ impl CodePtr {
         self.as_any_ref_()
     }
 
-    pub (crate) unsafe fn as_any_ref_<T>(&self) -> &T {
+    pub(crate) unsafe fn as_any_ref_<T>(&self) -> &T {
         &*(&self.0 as *const _ as *const T)
     }
 
@@ -117,8 +120,7 @@ impl CodePtr {
     }
 }
 
-pub use raw::{ffi_abi, ffi_abi_FFI_DEFAULT_ABI, _ffi_type as ffi_type, ffi_status,
-              ffi_cif, ffi_closure};
+pub use raw::{ffi_abi, ffi_abi_FFI_DEFAULT_ABI, ffi_cif, ffi_closure, ffi_status, ffi_type};
 
 /// Re-exports the `ffi_type` objects used to describe the types of
 /// arguments and results.
@@ -128,27 +130,23 @@ pub use raw::{ffi_abi, ffi_abi_FFI_DEFAULT_ABI, _ffi_type as ffi_type, ffi_statu
 /// becomes `low::types::void`.
 pub mod types {
     pub use crate::raw::{
-        ffi_type_void as void,
-        ffi_type_uint8 as uint8,
-        ffi_type_sint8 as sint8,
-        ffi_type_uint16 as uint16,
-        ffi_type_sint16 as sint16,
-        ffi_type_uint32 as uint32,
-        ffi_type_sint32 as sint32,
-        ffi_type_uint64 as uint64,
-        ffi_type_sint64 as sint64,
-        ffi_type_float as float,
-        ffi_type_double as double,
-        ffi_type_pointer as pointer,
-        ffi_type_longdouble as longdouble
+        ffi_type_double as double, ffi_type_float as float, ffi_type_pointer as pointer,
+        ffi_type_sint16 as sint16, ffi_type_sint32 as sint32, ffi_type_sint64 as sint64,
+        ffi_type_sint8 as sint8, ffi_type_uint16 as uint16, ffi_type_uint32 as uint32,
+        ffi_type_uint64 as uint64, ffi_type_uint8 as uint8, ffi_type_void as void,
     };
+
+    #[cfg(not(all(target_arch = "arm")))]
+    pub use crate::raw::ffi_type_longdouble as longdouble;
 
     #[cfg(feature = "complex")]
     pub use crate::raw::{
-        ffi_type_complex_float as complex_float,
-        ffi_type_complex_double as complex_double,
-        ffi_type_complex_longdouble as complex_longdouble
+        ffi_type_complex_double as complex_double, ffi_type_complex_float as complex_float,
     };
+
+    #[cfg(feature = "complex")]
+    #[cfg(not(all(target_arch = "arm")))]
+    pub use crate::raw::ffi_type_complex_longdouble as complex_longdouble;
 }
 
 /// Type tags used in constructing and inspecting `ffi_type`s.
@@ -194,7 +192,7 @@ pub mod type_tag {
     use std::os::raw::c_ushort;
 
     /// Indicates a structure type.
-    pub const STRUCT:  c_ushort = raw::ffi_type_enum_STRUCT as c_ushort;
+    pub const STRUCT: c_ushort = raw::ffi_type_enum_STRUCT as c_ushort;
 
     /// Indicates a complex number type.
     ///
@@ -246,16 +244,14 @@ pub mod type_tag {
 ///              &mut types::pointer, args.as_mut_ptr())
 /// }.unwrap();
 /// ```
-pub unsafe fn prep_cif(cif: *mut ffi_cif,
-                       abi: ffi_abi,
-                       nargs: usize,
-                       rtype: *mut ffi_type,
-                       atypes: *mut *mut ffi_type)
-                       -> Result<()>
-{
-    let status = raw::ffi_prep_cif(cif, abi,
-                                 nargs as c_uint,
-                                 rtype, atypes);
+pub unsafe fn prep_cif(
+    cif: *mut ffi_cif,
+    abi: ffi_abi,
+    nargs: usize,
+    rtype: *mut ffi_type,
+    atypes: *mut *mut ffi_type,
+) -> Result<()> {
+    let status = raw::ffi_prep_cif(cif, abi, nargs as c_uint, rtype, atypes);
     status_to_result(status, ())
 }
 
@@ -286,18 +282,22 @@ pub unsafe fn prep_cif(cif: *mut ffi_cif,
 ///
 /// `Ok(())` for success or `Err(e)` for failure.
 ///
-pub unsafe fn prep_cif_var(cif: *mut ffi_cif,
-                           abi: ffi_abi,
-                           nfixedargs: usize,
-                           ntotalargs: usize,
-                           rtype: *mut ffi_type,
-                           atypes: *mut *mut ffi_type)
-                           -> Result<()>
-{
-    let status = raw::ffi_prep_cif_var(cif, abi,
-                                     nfixedargs as c_uint,
-                                     ntotalargs as c_uint,
-                                     rtype, atypes);
+pub unsafe fn prep_cif_var(
+    cif: *mut ffi_cif,
+    abi: ffi_abi,
+    nfixedargs: usize,
+    ntotalargs: usize,
+    rtype: *mut ffi_type,
+    atypes: *mut *mut ffi_type,
+) -> Result<()> {
+    let status = raw::ffi_prep_cif_var(
+        cif,
+        abi,
+        nfixedargs as c_uint,
+        ntotalargs as c_uint,
+        rtype,
+        atypes,
+    );
     status_to_result(status, ())
 }
 
@@ -337,15 +337,14 @@ pub unsafe fn prep_cif_var(cif: *mut ffi_cif,
 ///
 /// assert_eq!(9, result);
 /// ```
-pub unsafe fn call<R>(cif:  *mut ffi_cif,
-                      fun:  CodePtr,
-                      args: *mut *mut c_void) -> R
-{
+pub unsafe fn call<R>(cif: *mut ffi_cif, fun: CodePtr, args: *mut *mut c_void) -> R {
     let mut result = mem::MaybeUninit::<R>::uninit();
-    raw::ffi_call(cif,
-                  Some(*fun.as_safe_fun()),
-                  result.as_mut_ptr() as *mut c_void,
-                  args);
+    raw::ffi_call(
+        cif,
+        Some(*fun.as_safe_fun()),
+        result.as_mut_ptr() as *mut c_void,
+        args,
+    );
     result.assume_init()
 }
 
@@ -370,9 +369,12 @@ pub unsafe fn call<R>(cif:  *mut ffi_cif,
 pub fn closure_alloc() -> (*mut ffi_closure, CodePtr) {
     unsafe {
         let mut code_pointer = mem::MaybeUninit::<*mut c_void>::uninit();
-        let closure = raw::ffi_closure_alloc(mem::size_of::<ffi_closure>(),
-                                             code_pointer.as_mut_ptr());
-        (closure as *mut ffi_closure, CodePtr::from_ptr(code_pointer.assume_init()))
+        let closure =
+            raw::ffi_closure_alloc(mem::size_of::<ffi_closure>(), code_pointer.as_mut_ptr());
+        (
+            closure as *mut ffi_closure,
+            CodePtr::from_ptr(code_pointer.assume_init()),
+        )
     }
 }
 
@@ -403,29 +405,28 @@ pub unsafe fn closure_free(closure: *mut ffi_closure) {
 /// `U` is the type of the user data captured by the closure and passed
 /// to the callback, and `R` is the type of the result. The parameters
 /// are not typed, since they are passed as a C array of `void*`.
-pub type Callback<U, R>
-    = unsafe extern "C" fn(cif:      &ffi_cif,
-                           result:   &mut R,
-                           args:     *const *const c_void,
-                           userdata: &U);
+pub type Callback<U, R> =
+    unsafe extern "C" fn(cif: &ffi_cif, result: &mut R, args: *const *const c_void, userdata: &U);
 
 /// The type of function called by a mutable closure.
 ///
 /// `U` is the type of the user data captured by the closure and passed
 /// to the callback, and `R` is the type of the result. The parameters
 /// are not typed, since they are passed as a C array of `void*`.
-pub type CallbackMut<U, R>
-    = unsafe extern "C" fn(cif:      &ffi_cif,
-                           result:   &mut R,
-                           args:     *const *const c_void,
-                           userdata: &mut U);
+pub type CallbackMut<U, R> = unsafe extern "C" fn(
+    cif: &ffi_cif,
+    result: &mut R,
+    args: *const *const c_void,
+    userdata: &mut U,
+);
 
 /// The callback type expected by `raw::ffi_prep_closure_loc`.
-pub type RawCallback
-    = unsafe extern "C" fn(cif:      *mut ffi_cif,
-                           result:   *mut c_void,
-                           args:     *mut *mut c_void,
-                           userdata: *mut c_void);
+pub type RawCallback = unsafe extern "C" fn(
+    cif: *mut ffi_cif,
+    result: *mut c_void,
+    args: *mut *mut c_void,
+    userdata: *mut c_void,
+);
 
 /// Initializes a closure with a callback function and userdata.
 ///
@@ -501,19 +502,20 @@ pub type RawCallback
 ///     assert_eq!(22, twice(add5, 12));
 /// }
 /// ```
-pub unsafe fn prep_closure<U, R>(closure:  *mut ffi_closure,
-                                 cif:      *mut ffi_cif,
-                                 callback: Callback<U, R>,
-                                 userdata: *const U,
-                                 code:     CodePtr)
-    -> Result<()>
-{
-    let status = raw::ffi_prep_closure_loc
-        (closure,
-         cif,
-         Some(mem::transmute::<Callback<U, R>, RawCallback>(callback)),
-         userdata as *mut c_void,
-         code.as_mut_ptr());
+pub unsafe fn prep_closure<U, R>(
+    closure: *mut ffi_closure,
+    cif: *mut ffi_cif,
+    callback: Callback<U, R>,
+    userdata: *const U,
+    code: CodePtr,
+) -> Result<()> {
+    let status = raw::ffi_prep_closure_loc(
+        closure,
+        cif,
+        Some(mem::transmute::<Callback<U, R>, RawCallback>(callback)),
+        userdata as *mut c_void,
+        code.as_mut_ptr(),
+    );
     status_to_result(status, ())
 }
 
@@ -593,18 +595,19 @@ pub unsafe fn prep_closure<U, R>(closure:  *mut ffi_closure,
 ///     assert_eq!(19, twice(add5, 1));
 /// }
 /// ```
-pub unsafe fn prep_closure_mut<U, R>(closure:  *mut ffi_closure,
-                                     cif:      *mut ffi_cif,
-                                     callback: CallbackMut<U, R>,
-                                     userdata: *mut U,
-                                     code:     CodePtr)
-    -> Result<()>
-{
-    let status = raw::ffi_prep_closure_loc
-        (closure,
-         cif,
-         Some(mem::transmute::<CallbackMut<U, R>, RawCallback>(callback)),
-         userdata as *mut c_void,
-         code.as_mut_ptr());
+pub unsafe fn prep_closure_mut<U, R>(
+    closure: *mut ffi_closure,
+    cif: *mut ffi_cif,
+    callback: CallbackMut<U, R>,
+    userdata: *mut U,
+    code: CodePtr,
+) -> Result<()> {
+    let status = raw::ffi_prep_closure_loc(
+        closure,
+        cif,
+        Some(mem::transmute::<CallbackMut<U, R>, RawCallback>(callback)),
+        userdata as *mut c_void,
+        code.as_mut_ptr(),
+    );
     status_to_result(status, ())
 }

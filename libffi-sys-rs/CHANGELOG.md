@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
+## [1.0.0] - 2020-10-25
+
+### Changed
+- Replace bindgen dependency with manually maintained libffi bindings. This
+  removes the need for installing clang, and reduces the amount of build-time
+  Rust dependencies.
+- Unset DESTDIR when building libffi.
+
 ## [0.9.1] - 2019-12-29
 
 ### Added
@@ -67,7 +75,7 @@ The format is based on [Keep a Changelog] and this project adheres to
 ### [0.5.4] - 2017-11-12
 
 ### Changed
-- Calling `bindgen` with `blacklist_type` rather than `hide_type`, as the 
+- Calling `bindgen` with `blacklist_type` rather than `hide_type`, as the
 latter is deprecated. (Thanks, fitzgen.)
 
 ### [0.5.3] - 2017-07-07
@@ -83,7 +91,7 @@ latter is deprecated. (Thanks, fitzgen.)
 - Avoids link error on Arch Linux by building C libffi `--withpic`.
 
 ### Changed
-- Links against a self-build static C libffi rather than dynamic. (Thanks, 
+- Links against a self-build static C libffi rather than dynamic. (Thanks,
   ngkz.)
 
 ### [0.5.0] - 2017-03-02
@@ -94,10 +102,10 @@ latter is deprecated. (Thanks, fitzgen.)
 ## [0.4.7] - 2017-03-01
 
 ### Changed
-- Hiding `max_align_t` struct in `stddef.h` from bindgen, because it was 
+- Hiding `max_align_t` struct in `stddef.h` from bindgen, because it was
   confusing it.
 - Upgraded bindgen (0.22). (Thanks, cholcombe973.)
-  
+
 ### Added
 
 - Bindgen now generates default impls. (Thanks, cholcombe973.)
@@ -120,9 +128,9 @@ latter is deprecated. (Thanks, fitzgen.)
 ## [0.4.2] - 2016-06-20
 
 ### Changed
-- Fetching C libffi from a cached copy on my website, because fetching it 
+- Fetching C libffi from a cached copy on my website, because fetching it
   from ftp is unreliable.
-  
+
 ## [0.4.1] - 2016-06-20
 
 ### Changed

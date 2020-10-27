@@ -17,7 +17,7 @@ impl<T> Unique<T> {
     pub unsafe fn new(ptr: *mut T) -> Self {
         Unique {
             contents: ptr,
-            _marker:  PhantomData,
+            _marker: PhantomData,
         }
     }
 }
