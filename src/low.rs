@@ -136,7 +136,7 @@ pub mod types {
         ffi_type_uint64 as uint64, ffi_type_uint8 as uint8, ffi_type_void as void,
     };
 
-    #[cfg(not(all(target_arch = "arm", target_os = "linux")))]
+    #[cfg(not(all(target_arch = "arm")))]
     pub use crate::raw::ffi_type_longdouble as longdouble;
 
     #[cfg(feature = "complex")]
@@ -145,7 +145,7 @@ pub mod types {
     };
 
     #[cfg(feature = "complex")]
-    #[cfg(not(all(target_arch = "arm", target_os = "linux")))]
+    #[cfg(not(all(target_arch = "arm")))]
     pub use crate::raw::ffi_type_complex_longdouble as complex_longdouble;
 }
 
