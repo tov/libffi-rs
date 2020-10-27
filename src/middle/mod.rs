@@ -77,8 +77,8 @@ pub fn arg<T>(r: &T) -> Arg {
 /// let args = vec![Type::f64(), Type::pointer()];
 /// let cif = Cif::new(args.into_iter(), Type::f64());
 ///
-/// let n = unsafe { cif.call(CodePtr(add as *mut _), &[arg(&5), arg(&&6)]) };
-/// assert_eq!(11, n);
+/// let n = unsafe { cif.call(CodePtr(add as *mut _), &[arg(&5f64), arg(&&6f64)]) };
+/// assert_eq!(11f64, n);
 /// ```
 #[derive(Debug)]
 pub struct Cif {
