@@ -12,14 +12,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Install Windows build dependencies
-        if: matrix.os == 'windows-latest'
-        run: choco install llvm
-
-      - name: Install macOS build dependencies
-        if: matrix.os == 'macos-latest'
-        run: brew install autoconf automake libtool
-
       - name: Checkout code
         uses: actions/checkout@v1
         with:
@@ -31,7 +23,7 @@ jobs:
           toolchain: ${{ matrix.rust }}
           profile: minimal
 
-      - name: Run Tests 
+      - name: Run Tests
         run: cargo test
 
   # test-windows-gnu:
@@ -54,5 +46,5 @@ jobs:
   #         target: x86_64-pc-windows-gnu
   #         profile: minimal
   #         override: true
-  #     - name: Run Tests 
+  #     - name: Run Tests
   #       run: msys2do "export PATH=C:\\Rust.cargo\\bin:$PATH && cargo test --target x86_64-pc-windows-gnu"
