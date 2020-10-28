@@ -1,7 +1,6 @@
 # libffi-sys-rs: Low-level Rust bindings for [libffi]
 
-[![Travis CI build status](https://travis-ci.org/tov/libffi-sys-rs.svg?branch=master)](https://travis-ci.org/tov/libffi-sys-rs)
-[![Appveyor build status](https://ci.appveyor.com/api/projects/status/7jlhe1ahf7vjkcnw/branch/master?svg=true)](https://ci.appveyor.com/project/tov/libffi-sys-rs/branch/master)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/tov/libffi-rs/Build%20&%20Test)](https://github.com/tov/libffi-rs/actions)
 [![Crates.io](https://img.shields.io/crates/v/libffi-sys.svg?maxAge=2592000)](https://crates.io/crates/libffi-sys)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE-MIT)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE-APACHE)
@@ -47,12 +46,7 @@ to your `Cargo.toml` instead.
 
 This crate supports Rust version 1.32 and later.
 
-
 [the `libffi` crate]: https://crates.io/crates/libffi/
-
 [libffi]: https://sourceware.org/libffi/
-
 [libffi github]: https://github.com/libffi/libffi
-
 [libffi documentation]: http://www.atmark-techno.com/~yashi/libffi.html
-

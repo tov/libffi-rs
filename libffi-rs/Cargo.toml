@@ -10,9 +10,6 @@ keywords = ["ffi", "libffi", "closure", "c"]
 categories = ["development-tools::ffi"]
 edition = "2018"
 
-[badges]
-travis-ci = { repository = "tov/libffi-rs" }
-
 [dependencies]
 libffi-sys = { path = "../libffi-sys-rs" }
 abort_on_panic = "2.0.0"
