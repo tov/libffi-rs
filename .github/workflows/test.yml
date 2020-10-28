@@ -65,12 +65,12 @@ jobs:
         shell: msys2 {0}
         run: |
           cd libffi-sys-rs 
-          C:\\Rust\\.cargo\\bin\\cargo test
+          cargo test
       - name: Test libffi-rs
         shell: msys2 {0}
         run: |
           cd libffi-rs
-          C:\\Rust\\.cargo\\bin\\cargo test
+          cargo test
 
   macos:
     strategy:
