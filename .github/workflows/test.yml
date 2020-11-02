@@ -1,0 +1,138 @@
+name: Build & Test
+on: [push, pull_request]
+
+jobs:
+  windows-msvc:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [i686-pc-windows-msvc, x86_64-pc-windows-msvc]
+        channel: [1.36.0, stable, beta, nightly]
+    runs-on: windows-latest
+    name: Windows - ${{ matrix.target }} - ${{ matrix.channel }}
+    env:
+      RUST_BACKTRACE: 1
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.channel }}-${{ matrix.target }}
+          target: ${{ matrix.target }}
+          override: true
+          profile: minimal
+          default: true
+      - name: Test libffi-sys-rs
+        run: |
+          cd libffi-sys-rs
+          cargo test
+      - name: Test libffi-rs
+        run: |
+          cd libffi-rs
+          cargo test
+
+  windows-gnu:
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: [1.36.0, stable, beta, nightly]
+    runs-on: windows-latest
+    name: Windows - x86_64-pc-windows-gnu - ${{ matrix.channel }}
+    env:
+      RUST_BACKTRACE: 1
+    steps:
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          release: false
+          path-type: inherit
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.channel }}-x86_64-pc-windows-gnu
+          target: x86_64-pc-windows-gnu
+          override: true
+          profile: minimal
+          default: true
+      - name: Test libffi-sys-rs
+        shell: msys2 {0}
+        run: |
+          cd libffi-sys-rs 
+          cargo test
+      - name: Test libffi-rs
+        shell: msys2 {0}
+        run: |
+          cd libffi-rs
+          cargo test
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: [1.36.0, stable, beta, nightly]
+        features: ["--no-default-features", "--features system"]
+    runs-on: macos-latest
+    name: macOS - ${{ matrix.channel }} ${{ matrix.features }}
+    env:
+      RUST_BACKTRACE: 1
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Install dependencies
+        run: brew install autoconf automake libtool libffi
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.channel }}-x86_64-apple-darwin
+          target: x86_64-apple-darwin
+          override: true
+          profile: minimal
+          default: true
+      - name: Test libffi-sys-rs
+        run: |
+          cd libffi-sys-rs
+          cargo test ${{ matrix.features }}
+      - name: Test libffi-rs
+        run: |
+          cd libffi-rs
+          cargo test ${{ matrix.features }}
+
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: [1.36.0, stable, beta, nightly]
+        features: ["--no-default-features", "--features system"]
+    runs-on: ubuntu-latest
+    name: Linux - ${{ matrix.channel }} ${{ matrix.features }}
+    env:
+      RUST_BACKTRACE: 1
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.channel }}
+          override: true
+          profile: minimal
+          default: true
+      - name: Test libffi-sys-rs
+        run: |
+          cd libffi-sys-rs
+          cargo test ${{ matrix.features }}
+      - name: Test libffi-rs
+        run: |
+          cd libffi-rs
+          cargo test ${{ matrix.features }}

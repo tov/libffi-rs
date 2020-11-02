@@ -1,26 +1,5 @@
-[package]
-name = "libffi"
-version = "1.0.0"
-authors = ["Jesse A. Tov <jesse.tov@gmail.com>"]
-description = "Rust bindings for libffi"
-repository = "https://github.com/tov/libffi-rs"
-readme = "README.md"
-license = "MIT/Apache-2.0"
-keywords = ["ffi", "libffi", "closure", "c"]
-categories = ["development-tools::ffi"]
-edition = "2018"
-
-[badges]
-travis-ci = { repository = "tov/libffi-rs" }
-
-[dependencies]
-libffi-sys = "^1.0"
-abort_on_panic = "2.0.0"
-libc = "^0.2"
-
-[features]
-complex = []
-system = ["libffi-sys/system"]
-
-[package.metadata.docs.rs]
-features = ["system"]
+[workspace]
+members = [
+    "libffi-rs",
+    "libffi-sys-rs",
+]
