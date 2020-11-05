@@ -64,7 +64,7 @@ jobs:
   #     - name: Test libffi-sys-rs
   #       shell: msys2 {0}
   #       run: |
-  #         cd libffi-sys-rs 
+  #         cd libffi-sys-rs
   #         cargo test
   #     - name: Test libffi-rs
   #       shell: msys2 {0}
@@ -159,7 +159,7 @@ jobs:
           override: true
           default: true
       - uses: actions-rs/cargo@v1
-      with:
-        use-cross: true
-        command: build
-        args:  --package libffi-sys --target armv7-unknown-linux-gnueabihf
+        with:
+          use-cross: true
+          command: build
+          args: --package libffi-sys --target armv7-unknown-linux-gnueabihf
