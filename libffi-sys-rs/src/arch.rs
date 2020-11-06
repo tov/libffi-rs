@@ -227,6 +227,7 @@ mod powerpc {
 
         mod elfv1 {
             pub const STRUCT_ALIGN_FLAG: crate::ffi_abi = 0b0;
+            pub const FFI_TRAMPOLINE_SIZE: usize = 24;
         }
 
         mod elfv2 {
@@ -244,18 +245,25 @@ mod powerpc {
 
         #[cfg(any(
             // ELFv1 is the used for powerpc64 when not targeting musl
-            all(target_arch = "powerpc64", not(target_env = "musl")),
+            all(target_arch = "powerpc64", target_endian="big", not(target_env = "musl")),
             // Use empty flags when targeting a non-PowerPC target, too, just so code compiles.
-            not(target_arch = "powerpc64le")
+            not(all(target_arch = "powerpc64", target_endian="little"))
         ))]
-        use elfv1::*;
+        mod elf {
+            pub use super::elfv1::*;
+        }
 
         // ELFv2 is used for Little-Endian powerpc64 and with musl
         #[cfg(any(
-            all(target_arch = "powerpc64", target_env = "musl"),
-            target_arch = "powerpc64le"
+            all(target_arch = "powerpc64", target_endian = "big", target_env = "musl"),
+            all(target_arch = "powerpc64", target_endian = "little")
         ))]
-        use elfv2::*;
+        mod elf {
+            pub use super::elfv2::*;
+        }
+
+        pub use elf::FFI_TRAMPOLINE_SIZE;
+        use elf::STRUCT_ALIGN_FLAG;
 
         mod long_double_64 {
             pub const LONG_DOUBLE_128_FLAG: crate::ffi_abi = 0b0;
@@ -280,10 +288,6 @@ mod powerpc {
 
         pub const FFI_NATIVE_RAW_API: u32 = 0;
         pub const FFI_GO_CLOSURES: u32 = 1;
-
-        // If no elfv2...
-        #[cfg(all(target_arch = "powerpc64", not(target_env = "musl")))]
-        pub const FFI_TRAMPOLINE_SIZE: usize = 24;
     }
 }
 
