@@ -47,11 +47,13 @@
 #![allow(improper_ctypes)]
 #![allow(unused_imports)]
 
+use std::fmt::{self, Debug};
 use std::mem::zeroed;
 use std::os::raw::{c_char, c_int, c_long, c_schar, c_uint, c_ulong, c_ushort, c_void};
 
 mod arch;
 pub use arch::*;
+use fmt::Formatter;
 
 pub type ffi_arg = c_ulong;
 pub type ffi_sarg = c_long;
@@ -160,7 +162,7 @@ impl Default for ffi_raw {
 pub type ffi_java_raw = ffi_raw;
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct ffi_closure {
     pub tramp: [c_char; FFI_TRAMPOLINE_SIZE],
     pub cif: *mut ffi_cif,
@@ -175,6 +177,18 @@ pub struct ffi_closure {
     pub user_data: *mut c_void,
 }
 
+/// Implements Debug manually since sometimes FFI_TRAMPOLINE_SIZE is too large
+impl Debug for ffi_closure {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ffi_closure")
+            .field("tramp", &&self.tramp[..])
+            .field("cif", &self.cif)
+            .field("fun", &self.fun)
+            .field("user_data", &self.user_data)
+            .finish()
+    }
+}
+
 impl Default for ffi_closure {
     fn default() -> Self {
         unsafe { zeroed() }
@@ -182,7 +196,7 @@ impl Default for ffi_closure {
 }
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct ffi_raw_closure {
     pub tramp: [c_char; FFI_TRAMPOLINE_SIZE],
     pub cif: *mut ffi_cif,
@@ -208,13 +222,34 @@ pub struct ffi_raw_closure {
     >,
     pub user_data: *mut c_void,
 }
+
+/// Implements Debug manually since sometimes FFI_TRAMPOLINE_SIZE is too large
+impl Debug for ffi_raw_closure {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let mut debug_struct = f.debug_struct("ffi_raw_closure");
+        debug_struct
+            .field("tramp", &&self.tramp[..])
+            .field("cif", &self.cif);
+
+        #[cfg(not(target_arch = "i686"))]
+        debug_struct.field("translate_args", &self.translate_args);
+        #[cfg(not(target_arch = "i686"))]
+        debug_struct.field("this_closure", &self.this_closure);
+
+        debug_struct
+            .field("fun", &self.fun)
+            .field("user_data", &self.user_data)
+            .finish()
+    }
+}
+
 impl Default for ffi_raw_closure {
     fn default() -> Self {
         unsafe { zeroed() }
     }
 }
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct ffi_java_raw_closure {
     pub tramp: [c_char; FFI_TRAMPOLINE_SIZE],
     pub cif: *mut ffi_cif,
@@ -240,6 +275,27 @@ pub struct ffi_java_raw_closure {
     >,
     pub user_data: *mut c_void,
 }
+
+/// Implements Debug manually since sometimes FFI_TRAMPOLINE_SIZE is too large
+impl Debug for ffi_java_raw_closure {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let mut debug_struct = f.debug_struct("ffi_java_raw_closure");
+        debug_struct
+            .field("tramp", &&self.tramp[..])
+            .field("cif", &self.cif);
+
+        #[cfg(not(target_arch = "i686"))]
+        debug_struct.field("translate_args", &self.translate_args);
+        #[cfg(not(target_arch = "i686"))]
+        debug_struct.field("this_closure", &self.this_closure);
+
+        debug_struct
+            .field("fun", &self.fun)
+            .field("user_data", &self.user_data)
+            .finish()
+    }
+}
+
 impl Default for ffi_java_raw_closure {
     fn default() -> Self {
         unsafe { zeroed() }

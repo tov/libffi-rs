@@ -209,9 +209,13 @@ mod powerpc {
         #[cfg(not(any(target_os = "netbsd", target_os = "freebsd", target_env = "musl")))]
         use long_double_128::*;
 
-        pub const ffi_abi_FFI_DEFAULT_ABI: ffi_abi =
-            ffi_abi_FFI_SYSV | SOFT_FLOAT_FLAG | STRUCT_RET_FLAG | LONG_DOUBLE_128_FLAG;
+        pub const ffi_abi_FFI_DEFAULT_ABI: ffi_abi = ffi_abi_FFI_SYSV
+            | ffi_abi_FFI_SYSV_IBM_LONG_DOUBLE
+            | SOFT_FLOAT_FLAG
+            | STRUCT_RET_FLAG
+            | LONG_DOUBLE_128_FLAG;
 
+        pub const FFI_TRAMPOLINE_SIZE: usize = 40;
         pub const FFI_NATIVE_RAW_API: u32 = 0;
         pub const FFI_GO_CLOSURES: u32 = 1;
     }
