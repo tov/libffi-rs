@@ -128,11 +128,7 @@ pub struct ffi_cif {
     pub vfp_nargs: c_ushort,
     #[cfg(all(target_arch = "arm"))]
     pub vfp_args: [c_schar; 16],
-    #[cfg(any(
-        target_arch = "powerpc",
-        target_arch = "powerpc64",
-        target_arch = "powerpc64le"
-    ))]
+    #[cfg(any(target_arch = "powerpc", target_arch = "powerpc64"))]
     pub nfixedargs: c_uint,
 }
 
