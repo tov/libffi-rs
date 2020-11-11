@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+### Changed
+- Improved portability by adding support for architectures such as PowerPC and
+  i686, courtesy of Andrew Gaspar
+- Added support for ARMv7, courtesy of Tim Fish
+
 ## [1.0.0] - 2020-10-25
 
 ### Changed
