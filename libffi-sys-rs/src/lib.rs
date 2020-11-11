@@ -45,9 +45,15 @@
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
 #![allow(improper_ctypes)]
+#![allow(unused_imports)]
 
+use std::fmt::{self, Debug};
 use std::mem::zeroed;
-use std::os::raw::{c_char, c_long, c_uint, c_ulong, c_ushort, c_void};
+use std::os::raw::{c_char, c_int, c_long, c_schar, c_uint, c_ulong, c_ushort, c_void};
+
+mod arch;
+pub use arch::*;
+use fmt::Formatter;
 
 pub type ffi_arg = c_ulong;
 pub type ffi_sarg = c_long;
@@ -57,36 +63,27 @@ pub type ffi_type_enum = u32;
 
 pub const FFI_64_BIT_MAX: u64 = 9223372036854775807;
 pub const FFI_CLOSURES: u32 = 1;
-pub const FFI_GO_CLOSURES: u32 = 1;
-pub const FFI_NATIVE_RAW_API: u32 = 0;
-pub const FFI_SIZEOF_ARG: u32 = 8;
-pub const FFI_SIZEOF_JAVA_RAW: u32 = 8;
-pub const FFI_TRAMPOLINE_SIZE: u32 = 24;
-pub const FFI_TYPE_COMPLEX: u32 = 15;
-pub const FFI_TYPE_DOUBLE: u32 = 3;
-pub const FFI_TYPE_FLOAT: u32 = 2;
-pub const FFI_TYPE_INT: u32 = 1;
-pub const FFI_TYPE_LAST: u32 = 15;
-pub const FFI_TYPE_LONGDOUBLE: u32 = 4;
-pub const FFI_TYPE_POINTER: u32 = 14;
-pub const FFI_TYPE_SINT16: u32 = 8;
-pub const FFI_TYPE_SINT32: u32 = 10;
-pub const FFI_TYPE_SINT64: u32 = 12;
-pub const FFI_TYPE_SINT8: u32 = 6;
-pub const FFI_TYPE_STRUCT: u32 = 13;
-pub const FFI_TYPE_UINT16: u32 = 7;
-pub const FFI_TYPE_UINT32: u32 = 9;
-pub const FFI_TYPE_UINT64: u32 = 11;
-pub const FFI_TYPE_UINT8: u32 = 5;
-pub const FFI_TYPE_VOID: u32 = 0;
+pub const FFI_SIZEOF_ARG: usize = std::mem::size_of::<c_long>();
+// NOTE: This only differs from FFI_SIZEOF_ARG on ILP platforms, which Rust does not support
+pub const FFI_SIZEOF_JAVA_RAW: usize = FFI_SIZEOF_ARG;
 
-pub const ffi_abi_FFI_FIRST_ABI: ffi_abi = 1;
-pub const ffi_abi_FFI_UNIX64: ffi_abi = 2;
-pub const ffi_abi_FFI_WIN64: ffi_abi = 3;
-pub const ffi_abi_FFI_EFI64: ffi_abi = 3;
-pub const ffi_abi_FFI_GNUW64: ffi_abi = 4;
-pub const ffi_abi_FFI_LAST_ABI: ffi_abi = 5;
-pub const ffi_abi_FFI_DEFAULT_ABI: ffi_abi = 2;
+pub const FFI_TYPE_VOID: u32 = 0;
+pub const FFI_TYPE_INT: u32 = 1;
+pub const FFI_TYPE_FLOAT: u32 = 2;
+pub const FFI_TYPE_DOUBLE: u32 = 3;
+pub const FFI_TYPE_LONGDOUBLE: u32 = 4;
+pub const FFI_TYPE_UINT8: u32 = 5;
+pub const FFI_TYPE_SINT8: u32 = 6;
+pub const FFI_TYPE_UINT16: u32 = 7;
+pub const FFI_TYPE_SINT16: u32 = 8;
+pub const FFI_TYPE_UINT32: u32 = 9;
+pub const FFI_TYPE_SINT32: u32 = 10;
+pub const FFI_TYPE_UINT64: u32 = 11;
+pub const FFI_TYPE_SINT64: u32 = 12;
+pub const FFI_TYPE_STRUCT: u32 = 13;
+pub const FFI_TYPE_POINTER: u32 = 14;
+pub const FFI_TYPE_COMPLEX: u32 = 15;
+pub const FFI_TYPE_LAST: u32 = 15;
 
 pub const ffi_status_FFI_OK: ffi_status = 0;
 pub const ffi_status_FFI_BAD_TYPEDEF: ffi_status = 1;
@@ -119,6 +116,20 @@ pub struct ffi_cif {
     pub rtype: *mut ffi_type,
     pub bytes: c_uint,
     pub flags: c_uint,
+    #[cfg(all(target_arch = "aarch64", target_os = "windows"))]
+    pub is_variadic: c_uint,
+    #[cfg(all(target_arch = "aarch64", target_vendor = "apple"))]
+    pub aarch64_nfixedargs: c_uint,
+    #[cfg(all(target_arch = "arm"))]
+    pub vfp_used: c_int,
+    #[cfg(all(target_arch = "arm"))]
+    pub vfp_reg_free: c_ushort,
+    #[cfg(all(target_arch = "arm"))]
+    pub vfp_nargs: c_ushort,
+    #[cfg(all(target_arch = "arm"))]
+    pub vfp_args: [c_schar; 16],
+    #[cfg(any(target_arch = "powerpc", target_arch = "powerpc64"))]
+    pub nfixedargs: c_uint,
 }
 
 impl Default for ffi_cif {
@@ -133,7 +144,7 @@ pub union ffi_raw {
     pub sint: ffi_sarg,
     pub uint: ffi_arg,
     pub flt: f32,
-    pub data: [c_char; 8usize],
+    pub data: [c_char; FFI_SIZEOF_ARG],
     pub ptr: *mut c_void,
     _bindgen_union_align: u64,
 }
@@ -147,9 +158,9 @@ impl Default for ffi_raw {
 pub type ffi_java_raw = ffi_raw;
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct ffi_closure {
-    pub tramp: [c_char; 24usize],
+    pub tramp: [c_char; FFI_TRAMPOLINE_SIZE],
     pub cif: *mut ffi_cif,
     pub fun: Option<
         unsafe extern "C" fn(
@@ -162,6 +173,18 @@ pub struct ffi_closure {
     pub user_data: *mut c_void,
 }
 
+/// Implements Debug manually since sometimes FFI_TRAMPOLINE_SIZE is too large
+impl Debug for ffi_closure {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ffi_closure")
+            .field("tramp", &&self.tramp[..])
+            .field("cif", &self.cif)
+            .field("fun", &self.fun)
+            .field("user_data", &self.user_data)
+            .finish()
+    }
+}
+
 impl Default for ffi_closure {
     fn default() -> Self {
         unsafe { zeroed() }
@@ -169,10 +192,12 @@ impl Default for ffi_closure {
 }
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct ffi_raw_closure {
-    pub tramp: [c_char; 24usize],
+    pub tramp: [c_char; FFI_TRAMPOLINE_SIZE],
     pub cif: *mut ffi_cif,
+    // See: https://github.com/libffi/libffi/blob/3a7580da73b7f16f275277316d00e3497cbb5a8c/include/ffi.h.in#L364
+    #[cfg(not(target_arch = "i686"))]
     pub translate_args: Option<
         unsafe extern "C" fn(
             arg1: *mut ffi_cif,
@@ -181,6 +206,7 @@ pub struct ffi_raw_closure {
             arg4: *mut c_void,
         ),
     >,
+    #[cfg(not(target_arch = "i686"))]
     pub this_closure: *mut c_void,
     pub fun: Option<
         unsafe extern "C" fn(
@@ -192,16 +218,39 @@ pub struct ffi_raw_closure {
     >,
     pub user_data: *mut c_void,
 }
+
+/// Implements Debug manually since sometimes FFI_TRAMPOLINE_SIZE is too large
+impl Debug for ffi_raw_closure {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let mut debug_struct = f.debug_struct("ffi_raw_closure");
+        debug_struct
+            .field("tramp", &&self.tramp[..])
+            .field("cif", &self.cif);
+
+        #[cfg(not(target_arch = "i686"))]
+        debug_struct.field("translate_args", &self.translate_args);
+        #[cfg(not(target_arch = "i686"))]
+        debug_struct.field("this_closure", &self.this_closure);
+
+        debug_struct
+            .field("fun", &self.fun)
+            .field("user_data", &self.user_data)
+            .finish()
+    }
+}
+
 impl Default for ffi_raw_closure {
     fn default() -> Self {
         unsafe { zeroed() }
     }
 }
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct ffi_java_raw_closure {
-    pub tramp: [c_char; 24usize],
+    pub tramp: [c_char; FFI_TRAMPOLINE_SIZE],
     pub cif: *mut ffi_cif,
+    // See: https://github.com/libffi/libffi/blob/3a7580da73b7f16f275277316d00e3497cbb5a8c/include/ffi.h.in#L390
+    #[cfg(not(target_arch = "i686"))]
     pub translate_args: Option<
         unsafe extern "C" fn(
             arg1: *mut ffi_cif,
@@ -210,6 +259,7 @@ pub struct ffi_java_raw_closure {
             arg4: *mut c_void,
         ),
     >,
+    #[cfg(not(target_arch = "i686"))]
     pub this_closure: *mut c_void,
     pub fun: Option<
         unsafe extern "C" fn(
@@ -221,6 +271,27 @@ pub struct ffi_java_raw_closure {
     >,
     pub user_data: *mut c_void,
 }
+
+/// Implements Debug manually since sometimes FFI_TRAMPOLINE_SIZE is too large
+impl Debug for ffi_java_raw_closure {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let mut debug_struct = f.debug_struct("ffi_java_raw_closure");
+        debug_struct
+            .field("tramp", &&self.tramp[..])
+            .field("cif", &self.cif);
+
+        #[cfg(not(target_arch = "i686"))]
+        debug_struct.field("translate_args", &self.translate_args);
+        #[cfg(not(target_arch = "i686"))]
+        debug_struct.field("this_closure", &self.this_closure);
+
+        debug_struct
+            .field("fun", &self.fun)
+            .field("user_data", &self.user_data)
+            .finish()
+    }
+}
+
 impl Default for ffi_java_raw_closure {
     fn default() -> Self {
         unsafe { zeroed() }
@@ -287,6 +358,8 @@ extern "C" {
 
     pub fn ffi_raw_size(cif: *mut ffi_cif) -> usize;
 
+    // See: https://github.com/libffi/libffi/blob/3a7580da73b7f16f275277316d00e3497cbb5a8c/include/ffi.h.in#L286
+    #[cfg(not(target_arch = "i686"))]
     pub fn ffi_java_raw_call(
         cif: *mut ffi_cif,
         fn_: Option<unsafe extern "C" fn()>,
@@ -370,6 +443,8 @@ extern "C" {
         codeloc: *mut c_void,
     ) -> ffi_status;
 
+    // See: https://github.com/libffi/libffi/blob/3a7580da73b7f16f275277316d00e3497cbb5a8c/include/ffi.h.in#L419
+    #[cfg(not(target_arch = "i686"))]
     pub fn ffi_prep_java_raw_closure(
         arg1: *mut ffi_java_raw_closure,
         cif: *mut ffi_cif,
@@ -384,6 +459,8 @@ extern "C" {
         user_data: *mut c_void,
     ) -> ffi_status;
 
+    // See: https://github.com/libffi/libffi/blob/3a7580da73b7f16f275277316d00e3497cbb5a8c/include/ffi.h.in#L419
+    #[cfg(not(target_arch = "i686"))]
     pub fn ffi_prep_java_raw_closure_loc(
         arg1: *mut ffi_java_raw_closure,
         cif: *mut ffi_cif,
