@@ -102,7 +102,7 @@ where
     let new = ffi_type_array_create_empty(size);
     for (i, element) in elements.enumerate() {
         *new.add(i) = *element.0;
-        forget(element);
+        mem::forget(element);
     }
 
     new
