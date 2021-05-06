@@ -5,5 +5,5 @@ pub use std::{
 };
 
 pub fn run_command(which: &'static str, cmd: &mut Command) {
-    assert!(cmd.status().expect(which).success(), which);
+    assert!(cmd.status().expect(which).success(), "{}", which);
 }

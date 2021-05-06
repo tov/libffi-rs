@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+- Fix assert! deprecation in the build script
+
 ## [1.1.0] - 2020-11-11
 
 ### Changed
