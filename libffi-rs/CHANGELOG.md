@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog] and this project adheres to
 
 ## [Unreleased]
 
+- Fixed used after free bug in ffi_type_array_create
+
 ### Added
 - Added support for ARMv7
 
