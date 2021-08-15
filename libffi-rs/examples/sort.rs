@@ -3,9 +3,10 @@
 use libffi::high::Closure2;
 
 mod c {
+    use libffi::high::FnPtr2;
     use std::os::raw::{c_int, c_void};
 
-    pub type Callback = extern "C" fn(*const c_void, *const c_void) -> c_int;
+    pub type Callback<'a> = FnPtr2<'a, *const c_void, *const c_void, c_int>;
 
     extern "C" {
         pub fn qsort(base: *const c_void, nel: usize, width: usize, compar: Callback);

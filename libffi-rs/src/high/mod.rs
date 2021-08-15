@@ -41,9 +41,9 @@
 //! let closure = ClosureMut1::new(&mut f);
 //! let counter = closure.code_ptr();
 //!
-//! assert_eq!(5, counter(5));
-//! assert_eq!(6, counter(1));
-//! assert_eq!(8, counter(2));
+//! assert_eq!(5, counter.call(5));
+//! assert_eq!(6, counter.call(1));
+//! assert_eq!(8, counter.call(2));
 //! ```
 //!
 //! Note that in the above example, `counter` is an ordinary C function
@@ -63,7 +63,7 @@
 //! let closure = ClosureOnce3::new(f);
 //! let call = closure.code_ptr();
 //!
-//! assert_eq!(12, call(2, 3, 4));
+//! assert_eq!(12, call.call(2, 3, 4));
 //! ```
 //!
 //! Invoking the closure a second time will panic.
@@ -80,7 +80,7 @@ pub use call::*;
 
 macro_rules! define_closure_mod {
     (
-        $module:ident $cif:ident
+        $module:ident $cif:ident $fnptr:ident
           $callback:ident $callback_mut:ident $callback_once:ident
           $closure:ident $closure_mut:ident $closure_once:ident;
         $( $T:ident )*
@@ -129,6 +129,26 @@ macro_rules! define_closure_mod {
                 }
             }
 
+            /// A lifetime carrying wrapper type for [`fn`] pointers.
+            #[derive(Clone, Copy)]
+            #[repr(transparent)]
+            pub struct $fnptr<'a, $( $T, )* R> {
+                func: extern "C" fn($( $T, )*) -> R,
+                _lifetime: PhantomData<&'a extern "C" fn($( $T, )*) -> R>,
+            }
+            impl<'a, $( $T, )* R> $fnptr<'a, $( $T, )* R> {
+                /// Call the wrapped [`fn`] pointer.
+                // We allow non snake case variable identifiers here because
+                // we would otherwise need to take in a whole new list of
+                // argument identifiers at every invocation of this macro,
+                // and there would be no gain from doing so, since the parameter
+                // names here are entirely meaningless.
+                #[allow(non_snake_case)]
+                pub fn call(&self, $( $T : $T, )*) -> R {
+                    (self.func)($( $T, )*)
+                }
+            }
+
             // We use tuples of pointers to describe the arguments, and we
             // extract them by pattern matching. This assumes that a tuple
             // of pointers will be laid out packed and in order. This seems
@@ -163,7 +183,17 @@ macro_rules! define_closure_mod {
             impl<'a, $( $T, )* R> $closure<'a, $( $T, )* R> {
                 /// Gets the C code pointer that is used to invoke the
                 /// closure.
-                pub fn code_ptr(&self) -> &extern "C" fn($( $T, )*) -> R {
+                pub fn code_ptr(&self) -> & $fnptr <'a, $( $T, )* R> {
+                    // Safety: Here we produce an FnPtrN wrapper for
+                    // the correct `fn` pointer, which is repr(transparent)
+                    // and therefore reference, layout, and otherwise ABI compatible
+                    // with that type.
+                    // Additionally, the FnPtrN wrapper enforces usage of the returned
+                    // function pointer be only within the lifetime of the closure
+                    // from which it was made.
+                    // Other safety invariants have not been checked by
+                    // the author of this comment, see the `instantiate_code_ptr`
+                    // method docs for more.
                     unsafe {
                         self.untyped.instantiate_code_ptr()
                     }
@@ -249,7 +279,7 @@ macro_rules! define_closure_mod {
             impl<'a, $( $T, )* R> $closure_mut<'a, $( $T, )* R> {
                 /// Gets the C code pointer that is used to invoke the
                 /// closure.
-                pub fn code_ptr(&self) -> &extern "C" fn($( $T, )*) -> R {
+                pub fn code_ptr(&self) -> & $fnptr <'a, $( $T, )* R> {
                     unsafe {
                         self.untyped.instantiate_code_ptr()
                     }
@@ -368,7 +398,7 @@ macro_rules! define_closure_mod {
             impl<$( $T, )* R> $closure_once<$( $T, )* R> {
                 /// Gets the C code pointer that is used to invoke the
                 /// closure.
-                pub fn code_ptr(&self) -> &extern "C" fn($( $T, )*) -> R {
+                pub fn code_ptr(&self) -> & $fnptr <'_, $( $T, )* R> {
                     unsafe {
                         self.untyped.instantiate_code_ptr()
                     }
@@ -402,55 +432,55 @@ macro_rules! define_closure_mod {
     }
 }
 
-define_closure_mod!(arity0 Cif0
+define_closure_mod!(arity0 Cif0 FnPtr0
 Callback0 CallbackMut0 CallbackOnce0
 Closure0 ClosureMut0 ClosureOnce0;
 );
-define_closure_mod!(arity1 Cif1
+define_closure_mod!(arity1 Cif1 FnPtr1
                     Callback1 CallbackMut1 CallbackOnce1
                     Closure1 ClosureMut1 ClosureOnce1;
                     A);
-define_closure_mod!(arity2 Cif2
+define_closure_mod!(arity2 Cif2 FnPtr2
                     Callback2 CallbackMut2 CallbackOnce2
                     Closure2 ClosureMut2 ClosureOnce2;
                     A B);
-define_closure_mod!(arity3 Cif3
+define_closure_mod!(arity3 Cif3 FnPtr3
                     Callback3 CallbackMut3 CallbackOnce3
                     Closure3 ClosureMut3 ClosureOnce3;
                     A B C);
-define_closure_mod!(arity4 Cif4
+define_closure_mod!(arity4 Cif4 FnPtr4
                     Callback4 CallbackMut4 CallbackOnce4
                     Closure4 ClosureMut4 ClosureOnce4;
                     A B C D);
-define_closure_mod!(arity5 Cif5
+define_closure_mod!(arity5 Cif5 FnPtr5
                     Callback5 CallbackMut5 CallbackOnce5
                     Closure5 ClosureMut5 ClosureOnce5;
                     A B C D E);
-define_closure_mod!(arity6 Cif6
+define_closure_mod!(arity6 Cif6 FnPtr6
                     Callback6 CallbackMut6 CallbackOnce6
                     Closure6 ClosureMut6 ClosureOnce6;
                     A B C D E F);
-define_closure_mod!(arity7 Cif7
+define_closure_mod!(arity7 Cif7 FnPtr7
                     Callback7 CallbackMut7 CallbackOnce7
                     Closure7 ClosureMut7 ClosureOnce7;
                     A B C D E F G);
-define_closure_mod!(arity8 Cif8
+define_closure_mod!(arity8 Cif8 FnPtr8
                     Callback8 CallbackMut8 CallbackOnce8
                     Closure8 ClosureMut8 ClosureOnce8;
                     A B C D E F G H);
-define_closure_mod!(arity9 Cif9
+define_closure_mod!(arity9 Cif9 FnPtr9
                     Callback9 CallbackMut9 CallbackOnce9
                     Closure9 ClosureMut9 ClosureOnce9;
                     A B C D E F G H I);
-define_closure_mod!(arity10 Cif10
+define_closure_mod!(arity10 Cif10 FnPtr10
                     Callback10 CallbackMut10 CallbackOnce10
                     Closure10 ClosureMut10 ClosureOnce10;
                     A B C D E F G H I J);
-define_closure_mod!(arity11 Cif11
+define_closure_mod!(arity11 Cif11 FnPtr11
                     Callback11 CallbackMut11 CallbackOnce11
                     Closure11 ClosureMut11 ClosureOnce11;
                     A B C D E F G H I J K);
-define_closure_mod!(arity12 Cif12
+define_closure_mod!(arity12 Cif12 FnPtr12
                     Callback12 CallbackMut12 CallbackOnce12
                     Closure12 ClosureMut12 ClosureOnce12;
                     A B C D E F G H I J K L);
@@ -468,7 +498,7 @@ mod test {
         let cif = Cif2::new(type_.clone(), type_.clone(), type_.clone());
         let closure = Closure2::new_with_cif(cif, &f);
 
-        assert_eq!(12, closure.code_ptr()(5, 6));
+        assert_eq!(12, closure.code_ptr().call(5, 6));
     }
 
     #[test]
@@ -485,9 +515,9 @@ mod test {
 
         let counter = closure.code_ptr();
 
-        assert_eq!(5, counter(5));
-        assert_eq!(6, counter(1));
-        assert_eq!(8, counter(2));
+        assert_eq!(5, counter.call(5));
+        assert_eq!(6, counter.call(1));
+        assert_eq!(8, counter.call(2));
     }
 
     #[test]
@@ -497,7 +527,7 @@ mod test {
 
         let closure = Closure2::new(&f);
 
-        assert_eq!(12, closure.code_ptr()(5, 6));
+        assert_eq!(12, closure.code_ptr().call(5, 6));
     }
 
     #[test]
@@ -511,8 +541,8 @@ mod test {
         let closure = ClosureMut1::new(&mut f);
         let counter = closure.code_ptr();
 
-        assert_eq!(5, counter(5));
-        assert_eq!(6, counter(1));
-        assert_eq!(8, counter(2));
+        assert_eq!(5, counter.call(5));
+        assert_eq!(6, counter.call(1));
+        assert_eq!(8, counter.call(2));
     }
 }
