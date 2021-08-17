@@ -64,7 +64,7 @@ jobs:
       - name: Test libffi-sys-rs
         shell: msys2 {0}
         run: |
-          cd libffi-sys-rs 
+          cd libffi-sys-rs
           cargo test
       - name: Test libffi-rs
         shell: msys2 {0}
@@ -115,8 +115,6 @@ jobs:
         target:
         - x86_64-unknown-linux-gnu
         - i686-unknown-linux-gnu
-        - powerpc64le-unknown-linux-gnu
-        - powerpc64-unknown-linux-gnu
         - aarch64-unknown-linux-gnu
         - armv7-unknown-linux-gnueabihf
         exclude:
@@ -125,10 +123,6 @@ jobs:
         # (e.g. I got it working on my Ubuntu image for i686), but it complicates
         # testing a bit
         - target: i686-unknown-linux-gnu
-          features: "--features system"
-        - target: powerpc64le-unknown-linux-gnu
-          features: "--features system"
-        - target: powerpc64-unknown-linux-gnu
           features: "--features system"
         - target: aarch64-unknown-linux-gnu
           features: "--features system"
@@ -181,7 +175,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             gcc-8-$(echo $GCC_ARCH | tr _ -)-linux-$ABI
-          
+
           # Convert target triple to uppercase and replace - with _
           TARGET_TRIPLE=$(echo "${{ matrix.target }}" | tr - _)
           TARGET_TRIPLE=${TARGET_TRIPLE^^}
