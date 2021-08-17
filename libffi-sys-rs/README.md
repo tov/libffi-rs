@@ -8,8 +8,7 @@
 The C libffi library provides two main facilities: assembling calls
 to functions dynamically, and creating closures that can be called
 as ordinary C functions. This is an undocumented wrapper, generated
-by bindgen, intended as the basis for higher-level bindings, but you
-can see the [libffi documentation].
+by bindgen, intended as the basis for higher-level bindings.
 
 If you clone this repository in order to build the library and you do
 not plan to enable the `system` Cargo feature to build against your
@@ -49,4 +48,3 @@ This crate supports Rust version 1.32 and later.
 [the `libffi` crate]: https://crates.io/crates/libffi/
 [libffi]: https://sourceware.org/libffi/
 [libffi github]: https://github.com/libffi/libffi
-[libffi documentation]: http://www.atmark-techno.com/~yashi/libffi.html
