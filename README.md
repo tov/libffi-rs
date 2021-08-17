@@ -25,7 +25,7 @@ you can add
 
 ```toml
 [dependencies]
-libffi = "1.0.0"
+libffi = "2.0.0"
 ```
 
 to your `Cargo.toml`.
@@ -37,7 +37,7 @@ feature in your `Cargo.toml`:
 
 ```toml
 [features]
-libffi = { version = "1.0.0", features = ["system"] }
+libffi = { version = "2.0.0", features = ["system"] }
 ```
 
 See [the `libffi-sys` documentation] for more information about how it
