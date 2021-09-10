@@ -1,4 +1,5 @@
 use crate::common::*;
+use std::process::Command;
 
 pub fn build_and_link() {
     let out_dir = env::var("OUT_DIR").unwrap();
@@ -28,7 +29,7 @@ pub fn build_and_link() {
 
     run_command(
         "Building libffi",
-        make_cmd::make()
+        Command::new("make")
             .env_remove("DESTDIR")
             .arg("install")
             .current_dir(&build_dir),

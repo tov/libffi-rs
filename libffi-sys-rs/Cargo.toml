@@ -20,6 +20,3 @@ features = ["system"]
 
 [target.'cfg(target_env = "msvc")'.build-dependencies]
 cc = "1.0.48"
-
-[target.'cfg(not(target_env = "msvc"))'.build-dependencies]
-make-cmd = "0.1"
