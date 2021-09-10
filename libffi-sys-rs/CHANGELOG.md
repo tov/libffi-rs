@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+### Changed
+
+- The dependency on make-cmd has been removed, and we now always use the `make`
+  command to compile libffi
+
 ## [1.1.2] - 2021-08-17
 
 ### Changed
