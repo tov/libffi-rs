@@ -30,14 +30,14 @@ a C libffi for you, add
 
 ```toml
 [dependencies]
-libffi-sys = "1.1.2"
+libffi-sys = "1.1.3"
 ```
 
 to your `Cargo.toml`. If you want to use your system C libffi, then
 
 ```toml
 [dependencies.libffi-sys]
-version = "1.1.2"
+version = "1.1.3"
 features = ["system"]
 ```
 
