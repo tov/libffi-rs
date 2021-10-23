@@ -86,6 +86,7 @@ pub const FFI_TYPE_LAST: u32 = 15;
 pub const ffi_status_FFI_OK: ffi_status = 0;
 pub const ffi_status_FFI_BAD_TYPEDEF: ffi_status = 1;
 pub const ffi_status_FFI_BAD_ABI: ffi_status = 2;
+pub const ffi_status_FFI_BAD_ARGTYPE: ffi_status = 3;
 
 pub const ffi_type_enum_STRUCT: ffi_type_enum = 13;
 pub const ffi_type_enum_COMPLEX: ffi_type_enum = 15;
@@ -136,7 +137,7 @@ impl Default for ffi_cif {
     }
 }
 
-#[repr(C)]
+#[repr(C, align(64))]
 #[derive(Copy, Clone)]
 pub union ffi_raw {
     pub sint: ffi_sarg,
@@ -144,7 +145,6 @@ pub union ffi_raw {
     pub flt: f32,
     pub data: [c_char; FFI_SIZEOF_ARG],
     pub ptr: *mut c_void,
-    _bindgen_union_align: u64,
 }
 
 impl Default for ffi_raw {
@@ -155,10 +155,17 @@ impl Default for ffi_raw {
 
 pub type ffi_java_raw = ffi_raw;
 
+#[repr(C, align(64))]
+#[derive(Copy, Clone)]
+pub union ffi_trampoline {
+    pub tramp: [c_char; FFI_TRAMPOLINE_SIZE],
+    pub ftramp: *mut c_void,
+}
+
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct ffi_closure {
-    pub tramp: [c_char; FFI_TRAMPOLINE_SIZE],
+    pub tramp: ffi_trampoline,
     pub cif: *mut ffi_cif,
     pub fun: Option<
         unsafe extern "C" fn(
@@ -175,7 +182,7 @@ pub struct ffi_closure {
 impl Debug for ffi_closure {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.debug_struct("ffi_closure")
-            .field("tramp", &&self.tramp[..])
+            .field("tramp", unsafe { &&self.tramp.tramp[..] })
             .field("cif", &self.cif)
             .field("fun", &self.fun)
             .field("user_data", &self.user_data)
