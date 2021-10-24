@@ -30,8 +30,8 @@ mod x86 {
         #[cfg(target_env = "msvc")]
         pub use msvc::*;
 
-        // See: https://github.com/libffi/libffi/blob/369ef49f71186fc9d6ab15614488ad466fac3fc1/src/x86/ffitarget.h#L137
-        pub const FFI_TRAMPOLINE_SIZE: usize = 24;
+        // See: https://github.com/libffi/libffi/blob/0f2dd369cd5edcefad29b3fca4e1d08cb34f8f19/src/x86/ffitarget.h#L141
+        pub const FFI_TRAMPOLINE_SIZE: usize = 32;
         pub const FFI_NATIVE_RAW_API: u32 = 0;
     }
 
@@ -46,8 +46,8 @@ mod x86 {
         pub const ffi_abi_FFI_LAST_ABI: ffi_abi = 5;
         pub const ffi_abi_FFI_DEFAULT_ABI: ffi_abi = ffi_abi_FFI_UNIX64;
 
-        // See: https://github.com/libffi/libffi/blob/369ef49f71186fc9d6ab15614488ad466fac3fc1/src/x86/ffitarget.h#L137
-        pub const FFI_TRAMPOLINE_SIZE: usize = 24;
+        // See: https://github.com/libffi/libffi/blob/0f2dd369cd5edcefad29b3fca4e1d08cb34f8f19/src/x86/ffitarget.h#L141
+        pub const FFI_TRAMPOLINE_SIZE: usize = 32;
         pub const FFI_NATIVE_RAW_API: u32 = 0;
     }
 
@@ -140,7 +140,7 @@ mod aarch64 {
     pub const FFI_TRAMPOLINE_SIZE: usize = 16;
 
     #[cfg(not(target_vendor = "apple"))]
-    pub const FFI_TRAMPOLINE_SIZE: usize = 24;
+    pub const FFI_TRAMPOLINE_SIZE: usize = 32;
 
     // No GO_CLOSURES on iOS or Windows
     #[cfg(not(any(target_os = "windows", target_vendor = "apple")))]
