@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+### Changed
+
+- The source code of libffi is now included directly, rather than through a
+  submodule. This removes the dependency on autotools. See
+  https://github.com/tov/libffi-rs/pull/33 for more information.
+
 ## [1.2.0] - 2021-10-24
 
 ### Changed
