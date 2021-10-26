@@ -1,3 +1,0 @@
-[submodule "libffi-sys-rs/libffi"]
-	path = libffi-sys-rs/libffi
-	url = https://github.com/libffi/libffi.git

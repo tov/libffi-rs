@@ -23,8 +23,6 @@ pub fn build_and_link() {
     );
 
     // Generate configure, run configure, make, make install
-    autogen(&build_dir);
-
     configure_libffi(prefix, &build_dir);
 
     run_command(
@@ -83,31 +81,4 @@ pub fn configure_libffi(prefix: PathBuf, build_dir: &Path) {
     }
 
     run_command("Configuring libffi", &mut command);
-}
-
-pub fn autogen(build_dir: &Path) {
-    assert!(
-        build_dir.join("autogen.sh").exists(),
-        "
-        **********
-        build.rs could not find autogen.sh when attempting to build C
-        libffi. Either init and update the libffi submodule or pass the
-        \"system\" feature to Cargo to use your system’s libffi.
-        **********
-        "
-    );
-
-    let mut command = Command::new("sh");
-
-    command.arg("autogen.sh").current_dir(&build_dir);
-
-    if cfg!(windows) {
-        // When building in MSYS2, not clearing the environment variables first
-        // results in `configure` being generated incorrectly. By clearing the
-        // variables first, then restoring PATH, we can ensure the correct file
-        // is generated.
-        command.env_clear().env("PATH", env::var("PATH").unwrap());
-    }
-
-    run_command("Generating configure", &mut command);
 }
