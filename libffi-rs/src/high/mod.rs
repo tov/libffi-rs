@@ -134,8 +134,10 @@ macro_rules! define_closure_mod {
             #[repr(transparent)]
             pub struct $fnptr<'a, $( $T, )* R> {
                 func: extern "C" fn($( $T, )*) -> R,
+                _marker: PhantomData<*const ()>,
                 _lifetime: PhantomData<&'a extern "C" fn($( $T, )*) -> R>,
             }
+
             impl<'a, $( $T, )* R> $fnptr<'a, $( $T, )* R> {
                 /// Call the wrapped [`fn`] pointer.
                 // We allow non snake case variable identifiers here because
