@@ -6,8 +6,8 @@
 
 #![allow(unused)]
 
-/// From libffi:src/x86/ffitarget.h
-/// See: https://github.com/libffi/libffi/blob/369ef49f71186fc9d6ab15614488ad466fac3fc1/src/x86/ffitarget.h#L80
+/// From libffi:src/x86/ffitarget.h.
+/// See: <https://github.com/libffi/libffi/blob/369ef49f71186fc9d6ab15614488ad466fac3fc1/src/x86/ffitarget.h#L80>
 mod x86 {
     pub mod x86_win64 {
         use crate::ffi_abi;
@@ -104,8 +104,8 @@ pub use x86::x86_win32::*;
 #[cfg(all(target_arch = "x86", unix))]
 pub use x86::x86::*;
 
-/// From libffi:src/arm/ffitarget.h
-/// See: https://github.com/libffi/libffi/blob/db5706ff285c476aa3c0f811ff2b188319ac3ebe/src/arm/ffitarget.h
+/// From libffi:src/arm/ffitarget.h.
+/// See: <https://github.com/libffi/libffi/blob/db5706ff285c476aa3c0f811ff2b188319ac3ebe/src/arm/ffitarget.h>
 mod arm {
     use crate::ffi_abi;
 
@@ -115,7 +115,7 @@ mod arm {
     pub const ffi_abi_FFI_LAST_ABI: ffi_abi = 3;
     pub const ffi_abi_FFI_DEFAULT_ABI: ffi_abi = ffi_abi_FFI_SYSV;
 
-    // See: https://github.com/libffi/libffi/blob/db5706ff285c476aa3c0f811ff2b188319ac3ebe/src/arm/ffitarget.h#L84
+    // See: <https://github.com/libffi/libffi/blob/db5706ff285c476aa3c0f811ff2b188319ac3ebe/src/arm/ffitarget.h#L84>
     pub const FFI_GO_CLOSURES: u32 = 1;
     pub const FFI_TRAMPOLINE_SIZE: usize = 12;
     pub const FFI_NATIVE_RAW_API: u32 = 0;
@@ -124,8 +124,8 @@ mod arm {
 #[cfg(target_arch = "arm")]
 pub use arm::*;
 
-/// From libffi:src/aarch64/ffitarget.h
-/// See: https://github.com/libffi/libffi/blob/c2a6859012d928b67a83619bd5087674a96b9254/src/aarch64/ffitarget.h#L44
+/// From libffi:src/aarch64/ffitarget.h.
+/// See: <https://github.com/libffi/libffi/blob/c2a6859012d928b67a83619bd5087674a96b9254/src/aarch64/ffitarget.h#L44>
 mod aarch64 {
     use crate::ffi_abi;
 
@@ -150,8 +150,8 @@ mod aarch64 {
 #[cfg(target_arch = "aarch64")]
 pub use aarch64::*;
 
-/// From libffi:src/powerpc/ffitarget.h
-/// See: https://github.com/libffi/libffi/blob/73dd43afc8a447ba98ea02e9aad4c6898dc77fb0/src/powerpc/ffitarget.h#L60
+/// From libffi:src/powerpc/ffitarget.h.
+/// See: <https://github.com/libffi/libffi/blob/73dd43afc8a447ba98ea02e9aad4c6898dc77fb0/src/powerpc/ffitarget.h#L60>
 mod powerpc {
     pub mod powerpc {
         use crate::ffi_abi;
