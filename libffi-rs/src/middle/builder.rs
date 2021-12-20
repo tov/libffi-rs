@@ -4,19 +4,19 @@ use super::types::Type;
 
 /// Provides a builder-style API for constructing CIFs and closures.
 ///
-/// To use a builder, first construct it using [`Builder::new`](#method.new).
-/// The default calling convention is `ffi_abi_FFI_DEFAULT_ABI`, and the default
-/// function type is `extern "C" fn()` (or in C, `void(*)()`). Add
-/// argument types to the function type with the [`arg`](#method.arg)
-/// and [`args`](#method.args) methods. Set the result type with
-/// [`res`](#method.res). Change the calling convention, if necessary,
-/// with [`abi`](#method.abi).
+/// To use a builder, first construct it using [`Builder::new`]. The
+/// default calling convention is
+/// [`ffi_abi_FFI_DEFAULT_ABI`](crate::low::ffi_abi_FFI_DEFAULT_ABI),
+/// and the default function type is `extern "C" fn()` (or in C,
+/// `void(*)()`). Add argument types to the function type with the
+/// [`Builder::arg`] and [`args`](Builder::args) methods. Set the result type
+/// with [`Builder::res`]. Change the calling convention, if necessary,
+/// with [`Builder::abi`].
 ///
 /// Once the builder is configured, construct a `Cif` with
-/// [`into_cif`](#method.into_cif) or a closure with
-/// [`into_closure`](#method.into_closure),
-/// [`into_closure_mut`](#method.into_closure_mut), or
-/// [`into_closure_once`](#method.into_closure_once).
+/// [`Builder::into_cif`] or a closure with [`Builder::into_closure`],
+/// [`into_closure_mut`](Builder::into_closure_mut), or
+/// [`into_closure_once`](Builder::into_closure_once).
 ///
 /// # Examples
 ///

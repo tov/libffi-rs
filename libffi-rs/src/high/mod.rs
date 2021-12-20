@@ -11,8 +11,8 @@
 //! used to turn Rust lambdas (or in generally, anything that implements
 //! `Fn` or `FnMut`) into ordinary C function pointers. For example, a
 //! Rust value of type `Fn(u32, u32) -> u64` can be turned into a
-//! closure of type `Closure2<u32, u32, u64>` using
-//! [`Closure2::new`](struct.Closure2.html#method.new). Then a C
+//! closure of type [`Closure2<u32, u32, u64>`] using
+//! [`Closure2::new`]. Then a C
 //! function pointer of type `extern "C" fn(u32, u32) -> u64` can be
 //! borrowed from the closure and passed to C.
 //!
@@ -20,15 +20,15 @@
 //! creating a closure as compared to the `middle` and `low` layers, but
 //! at the price of flexibility. Some flexibility can be recovered by
 //! manually constructing and configuring a CIF (*e.g.,* a
-//! [`Cif2`](struct.Cif2.html)) and then creating the closure with
-//! [`Closure2::new_with_cif`](struct.Closure2.html#method.new_with_cif).
+//! [`Cif2`]) and then creating the closure with
+//! [`Closure2::new_with_cif`].
 //!
-//! See the [`call`](call/index.html) submodule for a simple interface
+//! See the [`mod@call`] submodule for a simple interface
 //! to dynamic calls to C functions.
 //!
 //! # Examples
 //!
-//! Here we use [`ClosureMut1`](struct.ClosureMut1.html), which is the type
+//! Here we use [`ClosureMut1`], which is the type
 //! for creating mutable closures of one argument. We use it to turn a
 //! Rust lambda into a C function pointer.
 //!

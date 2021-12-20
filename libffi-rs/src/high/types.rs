@@ -8,8 +8,7 @@ use super::super::middle;
 ///
 /// In particular, the run-time value describes a particular C type,
 /// while the type parameter `T` is the equivalent Rust type.
-/// Instances of this type are created via the
-/// [`CType`](trait.CType.html) trait.
+/// Instances of this type are created via the [`CType`] trait.
 #[derive(Clone, Debug)]
 pub struct Type<T> {
     untyped: middle::Type,
@@ -25,7 +24,7 @@ impl<T> Type<T> {
     }
 
     /// Gets the underlying representation as used by the
-    /// [`middle`](../../middle/index.html) layer.
+    /// [`mod@middle`] layer.
     pub fn into_middle(self) -> middle::Type {
         self.untyped
     }
