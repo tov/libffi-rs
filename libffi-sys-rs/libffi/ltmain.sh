@@ -8256,7 +8256,7 @@ func_mode_link ()
 		  *-*-darwin* )
 		    # if the lib is a (non-dlopened) module then we cannot
 		    # link against it, someone is ignoring the earlier warnings
-		    if /usr/bin/file -L $add 2> /dev/null |
+		    if file -L $add 2> /dev/null |
 			 $GREP ": [^:]* bundle" >/dev/null; then
 		      if test "X$dlopenmodule" != "X$lib"; then
 			$ECHO "*** Warning: lib $linklib is a module, not a shared library"
