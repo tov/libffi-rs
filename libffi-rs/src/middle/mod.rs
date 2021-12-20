@@ -1,14 +1,12 @@
 //! Middle layer providing a somewhat safer (but still quite unsafe)
 //! API.
 //!
-//! The main idea of the middle layer is to wrap types
-//! [`ffi_cif`](../raw/struct.ffi_cif.html) and
-//! [`ffi_closure`](../raw/struct.ffi_closure.html) as
-//! [`Cif`](struct.Cif.html) and [`Closure`](struct.Closure.html),
-//! respectively, so that their resources are managed properly. However,
-//! calling a function via a CIF or closure is still unsafe because
-//! argument types aren’t checked. See the [`high`](../high/index.html)
-//! layer for closures with type-checked arguments.
+//! The main idea of the middle layer is to wrap types [`low::ffi_cif`]
+//! and [`low::ffi_closure`] as [`Cif`] and [`Closure`], respectively,
+//! so that their resources are managed properly. However, calling a
+//! function via a CIF or closure is still unsafe because argument types
+//! aren’t checked. See the [`high`](crate::high) layer for closures
+//! with type-checked arguments.
 
 use std::any::Any;
 use std::marker::PhantomData;
@@ -27,43 +25,40 @@ pub use builder::Builder;
 
 /// Contains an untyped pointer to a function argument.
 ///
-/// When calling a function via a [CIF](struct.Cif.html), each argument
-/// must be passed as a C `void*`. Wrapping the argument in the `Arg`
+/// When calling a function via a [CIF](Cif), each argument
+/// must be passed as a C `void*`. Wrapping the argument in the [`Arg`]
 /// struct accomplishes the necessary coercion.
 #[derive(Clone, Debug)]
 #[repr(C)]
 pub struct Arg(*mut c_void);
 
 impl Arg {
-    /// Coerces an argument reference into the `Arg` type.
+    /// Coerces an argument reference into the [`Arg`] type.
     ///
     /// This is used to wrap each argument pointer before passing them
-    /// to [`Cif::call`](struct.Cif.html#method.call).
+    /// to [`Cif::call`].
     pub fn new<T>(r: &T) -> Self {
         Arg(r as *const T as *mut c_void)
     }
 }
 
-/// Coerces an argument reference into the [`Arg`](struct.Arg.html)
-/// type.
+/// Coerces an argument reference into the [`Arg`] type.
 ///
 /// This is used to wrap each argument pointer before passing them
-/// to [`Cif::call`](struct.Cif.html#method.call).
-/// (This is the same as [`Arg::new`](struct.Arg.html#method.new)).
+/// to [`Cif::call`]. (This is the same as [`Arg::new`]).
 pub fn arg<T>(r: &T) -> Arg {
     Arg::new(r)
 }
 
 /// Describes the calling convention and types for calling a function.
 ///
-/// This is the `middle` layer’s wrapping of the `low` and `raw` layers’
-/// [`ffi_cif`](../raw/struct.ffi_cif.html). An initialized CIF contains
-/// references to an array of argument types and a result type, each of
-/// which may be allocated on the heap. `Cif` manages the memory of
-/// those referenced objects.
+/// This is the middle layer’s wrapping of the [`low`](crate::low) and
+/// [`raw`](crate::raw) layers’ [`low::ffi_cif`]. An initialized CIF
+/// contains references to an array of argument types and a result type,
+/// each of which may be allocated on the heap. `Cif` manages the memory
+/// of those referenced objects.
 ///
-/// Construct with [`Cif::new`](#method.new) or
-/// [`Cif::from_type_array`](#method.from_type_array).
+/// Construct with [`Cif::new`].
 ///
 /// # Examples
 ///
@@ -105,13 +100,13 @@ impl Clone for Cif {
 }
 
 impl Cif {
-    /// Creates a new CIF for the given argument and result types.
+    /// Creates a new [CIF](Cif) for the given argument and result
+    /// types.
     ///
-    /// Takes ownership of the argument and result
-    /// [`Type`](types/struct.Type.html)s, because the resulting
-    /// `Cif` retains references to them.
-    /// Defaults to the platform’s default calling convention; this
-    /// can be adjusted using [`set_abi`](#method.set_abi).
+    /// Takes ownership of the argument and result [`Type`]s, because
+    /// the resulting [`Cif`] retains references to them. Defaults to
+    /// the platform’s default calling convention; this can be adjusted
+    /// using [`Cif::set_abi`].
     pub fn new<I>(args: I, result: Type) -> Self
     where
         I: IntoIterator<Item = Type>,
@@ -167,11 +162,10 @@ impl Cif {
         self.cif.abi = abi;
     }
 
-    /// Gets a raw pointer to the underlying
-    /// [`ffi_cif`](../low/struct.ffi_cif.html).
+    /// Gets a raw pointer to the underlying [`low::ffi_cif`].
     ///
     /// This can be used for passing a `middle::Cif` to functions from the
-    /// [`low`](../low/index.html) and [`raw`](../raw/index.html) modules.
+    /// [`low`](crate::low) and [`raw`](crate::raw) modules.
     pub fn as_raw_ptr(&self) -> *mut low::ffi_cif {
         &self.cif as *const _ as *mut _
     }
@@ -180,12 +174,11 @@ impl Cif {
 /// Represents a closure callable from C.
 ///
 /// A libffi closure captures a `void*` (“userdata”) and passes it to a
-/// callback when the code pointer (obtained via
-/// [`code_ptr`](#method.code_ptr)) is invoked. Lifetype parameter `'a`
-/// ensures that the closure does not outlive the userdata.
+/// callback when the code pointer (obtained via [`Closure::code_ptr`])
+/// is invoked. Lifetype parameter `'a` ensures that the closure does
+/// not outlive the userdata.
 ///
-/// Construct with [`Closure::new`](#method.new) and
-/// [`Closure::new_mut`](#method.new_mut).
+/// Construct with [`Closure::new`] and [`Closure::new_mut`].
 ///
 /// # Examples
 ///
@@ -338,8 +331,7 @@ impl<'a> Closure<'a> {
     }
 }
 
-/// The type of callback invoked by a
-/// [`ClosureOnce`](struct.ClosureOnce.html).
+/// The type of callback invoked by a [`ClosureOnce`].
 pub type CallbackOnce<U, R> = CallbackMut<Option<U>, R>;
 
 /// A closure that owns needs-drop data.

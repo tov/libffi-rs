@@ -24,9 +24,9 @@ pub use middle::CodePtr;
 
 /// Encapsulates an argument with its type information.
 ///
-/// In order to set up calls using [`call`](index.html#method.call), we
+/// In order to set up calls using [`fn@call`], we
 /// need to wrap (a reference to) each argument in an `Arg`. The usual
-/// way to do this is with function [`arg`](fn.arg.html).
+/// way to do this is with function [`arg`].
 #[derive(Clone, Debug)]
 pub struct Arg<'a> {
     // There should be some type T such that type_ is the middle-layer
@@ -37,10 +37,9 @@ pub struct Arg<'a> {
 }
 
 impl<'a> Arg<'a> {
-    /// Wraps an argument reference for passing to `high::call::call`.
+    /// Wraps an argument reference for passing to [`fn@call`].
     ///
-    /// For a shorter alias of the same, see
-    /// [`high::call::arg`](fn.arg.html).
+    /// For a shorter alias of the same, see [`fn@arg`].
     pub fn new<T: super::CType>(arg: &'a T) -> Self {
         Arg {
             type_: T::reify().into_middle(),
@@ -50,15 +49,14 @@ impl<'a> Arg<'a> {
     }
 }
 
-/// Constructs an [`Arg`](struct.Arg.html) for passing to
-/// [`call`](fn.call.html).
+/// Constructs an [`Arg`] for passing to [`fn@call`].
 pub fn arg<T: super::CType>(arg: &T) -> Arg {
     Arg::new(arg)
 }
 
 /// Performs a dynamic call to a C function.
 ///
-/// To reduce boilerplate, see [`ffi_call!`](../../macro.ffi_call!.html).
+/// To reduce boilerplate, see [`ffi_call!`].
 ///
 /// # Examples
 ///
@@ -85,8 +83,9 @@ pub unsafe fn call<R: super::CType>(fun: CodePtr, args: &[Arg]) -> R {
 
 /// Performs a dynamic call to a C function.
 ///
-/// This macro provides sugar for `call::arg` and `call::call`. For more
-/// control, see [`high::call::call`](high/call/fn.call.html).
+/// This macro provides sugar for [`high::arg`](crate::high::arg) and
+/// [`high::call`](fn@crate::high::call). For more control, see
+/// [`high::call`](fn@crate::high::call).
 ///
 /// # Examples
 ///

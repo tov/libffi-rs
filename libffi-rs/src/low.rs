@@ -3,9 +3,9 @@
 //!
 //! This module also re-exports types and constants necessary for using the
 //! library, so it should not be generally necessary to use the `raw` module.
-//! While this is a bit “Rustier” than [`raw`](../raw/index.html), I’ve
+//! While this is a bit “Rustier” than [`raw`](crate::raw), I’ve
 //! avoided drastic renaming in favor of hewing close to the libffi API.
-//! See [`middle`](../middle/index.html) for an easier-to-use approach.
+//! See [`middle`](crate::middle) for an easier-to-use approach.
 
 use std::mem;
 use std::os::raw::{c_uint, c_void};
@@ -21,7 +21,7 @@ pub enum Error {
     Abi,
 }
 
-/// The `Result` type specialized for libffi `Error`s.
+/// The [`std::result::Result`] type specialized for libffi [`Error`]s.
 pub type Result<T> = ::std::result::Result<T, Error>;
 
 // Converts the raw status type to a `Result`.
@@ -122,12 +122,12 @@ impl CodePtr {
 
 pub use raw::{ffi_abi, ffi_abi_FFI_DEFAULT_ABI, ffi_cif, ffi_closure, ffi_status, ffi_type};
 
-/// Re-exports the `ffi_type` objects used to describe the types of
+/// Re-exports the [`ffi_type`] objects used to describe the types of
 /// arguments and results.
 ///
-/// These are from [`raw`](../../raw/index.html), but are renamed by
-/// removing the `ffi_type_` prefix. For example, `raw::ffi_type_void`
-/// becomes `low::types::void`.
+/// These are from [the raw layer](crate::raw), but are renamed by
+/// removing the `ffi_type_` prefix. For example, [`raw::ffi_type_void`]
+/// becomes [`types::void`].
 pub mod types {
     pub use crate::raw::{
         ffi_type_double as double, ffi_type_float as float, ffi_type_pointer as pointer,
@@ -149,12 +149,12 @@ pub mod types {
     pub use crate::raw::ffi_type_complex_longdouble as complex_longdouble;
 }
 
-/// Type tags used in constructing and inspecting `ffi_type`s.
+/// Type tags used in constructing and inspecting [`ffi_type`]s.
 ///
 /// For atomic types this tag doesn’t matter because libffi predeclares
-/// [an instance of each one](types/index.html). However, for composite
+/// [an instance of each one](mod@types). However, for composite
 /// types (structs and complex numbers), we need to create a new
-/// instance of the `ffi_type` struct. In particular, the `type_` field
+/// instance of the [`ffi_type`] struct. In particular, the `type_` field
 /// contains a value that indicates what kind of type is represented,
 /// and we use these values to indicate that that we are describing a
 /// struct or complex type.
@@ -207,7 +207,7 @@ pub mod type_tag {
 /// We need to initialize a CIF before we can use it to call a function
 /// or create a closure. This function lets us specify the calling
 /// convention to use and the argument and result types. For varargs
-/// CIF initialization, see [`prep_cif_var`](fn.prep_cif_var.html).
+/// CIF initialization, see [`prep_cif_var`].
 ///
 ///
 /// # Safety
@@ -260,7 +260,7 @@ pub unsafe fn prep_cif(
 /// We need to initialize a CIF before we can use it to call a function
 /// or create a closure. This function lets us specify the calling
 /// convention to use and the argument and result types. For non-varargs
-/// CIF initialization, see [`prep_cif`](fn.prep_cif.html).
+/// CIF initialization, see [`prep_cif`].
 ///
 /// # Safety
 ///
@@ -354,10 +354,9 @@ pub unsafe fn call<R>(cif: *mut ffi_cif, fun: CodePtr, args: *mut *mut c_void) -
 /// pointer for calling it. The former acts as a handle to the closure,
 /// and is used to configure and free it. The latter is the code pointer
 /// used to invoke the closure. Before it can be invoked, it must be
-/// initialized with [`prep_closure`](fn.prep_closure.html) and
-/// [`prep_closure_mut`](fn.prep_closure_mut.html). The closure must be
-/// deallocated using [`closure_free`](fn.closure_free.html), after
-/// which point the code pointer should not be used.
+/// initialized with [`prep_closure`] and [`prep_closure_mut`]. The
+/// closure must be deallocated using [`closure_free`], after which
+/// point the code pointer should not be used.
 ///
 /// # Examples
 ///
@@ -380,8 +379,8 @@ pub fn closure_alloc() -> (*mut ffi_closure, CodePtr) {
 
 /// Frees a closure.
 ///
-/// Closures allocated with [`closure_alloc`](fn.closure_alloc.html)
-/// must be deallocated with `closure_free`.
+/// Closures allocated with [`closure_alloc`] must be deallocated with
+/// [`closure_free`].
 ///
 /// # Examples
 ///
@@ -420,7 +419,7 @@ pub type CallbackMut<U, R> = unsafe extern "C" fn(
     userdata: &mut U,
 );
 
-/// The callback type expected by `raw::ffi_prep_closure_loc`.
+/// The callback type expected by [`raw::ffi_prep_closure_loc`].
 pub type RawCallback = unsafe extern "C" fn(
     cif: *mut ffi_cif,
     result: *mut c_void,
@@ -430,13 +429,13 @@ pub type RawCallback = unsafe extern "C" fn(
 
 /// Initializes a closure with a callback function and userdata.
 ///
-/// After allocating a closure with
-/// [`closure_alloc`](fn.closure_alloc.html), it needs to be initialized
-/// with a function `callback` to call and a pointer `userdata` to pass
-/// to it. Invoking the closure’s code pointer will then pass the provided
-/// arguments and the user data pointer to the callback.
+/// After allocating a closure with [`closure_alloc`], it needs to be
+/// initialized with a function `callback` to call and a pointer
+/// `userdata` to pass to it. Invoking the closure’s code pointer will
+/// then pass the provided arguments and the user data pointer to the
+/// callback.
 ///
-/// For mutable userdata use [`prep_closure_mut`](fn.prep_closure_mut.html).
+/// For mutable userdata use [`prep_closure_mut`].
 ///
 /// # Safety
 ///
@@ -452,7 +451,7 @@ pub type RawCallback = unsafe extern "C" fn(
 /// - `userdata` — the closed-over value, stored in the closure and
 ///    passed to the callback upon invocation
 /// - `code` — the closure’s code pointer, *i.e.*, the second component
-///   returned by [`closure_alloc`](fn.closure_alloc.html).
+///   returned by [`closure_alloc`].
 ///
 /// # Result
 ///
@@ -522,13 +521,13 @@ pub unsafe fn prep_closure<U, R>(
 /// Initializes a mutable closure with a callback function and (mutable)
 /// userdata.
 ///
-/// After allocating a closure with
-/// [`closure_alloc`](fn.closure_alloc.html), it needs to be initialized
-/// with a function `callback` to call and a pointer `userdata` to pass
-/// to it. Invoking the closure’s code pointer will then pass the provided
-/// arguments and the user data pointer to the callback.
+/// After allocating a closure with [`closure_alloc`], it needs to be
+/// initialized with a function `callback` to call and a pointer
+/// `userdata` to pass to it. Invoking the closure’s code pointer will
+/// then pass the provided arguments and the user data pointer to the
+/// callback.
 ///
-/// For immutable userdata use [`prep_closure`](fn.prep_closure.html).
+/// For immutable userdata use [`prep_closure`].
 ///
 /// # Safety
 ///
@@ -544,7 +543,7 @@ pub unsafe fn prep_closure<U, R>(
 /// - `userdata` — the closed-over value, stored in the closure and
 ///    passed to the callback upon invocation
 /// - `code` — the closure’s code pointer, *i.e.*, the second component
-///   returned by [`closure_alloc`](fn.closure_alloc.html).
+///   returned by [`closure_alloc`].
 ///
 /// # Result
 ///
