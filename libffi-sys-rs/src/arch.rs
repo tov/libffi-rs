@@ -300,3 +300,28 @@ pub use powerpc::powerpc::*;
 
 #[cfg(target_arch = "powerpc64")]
 pub use powerpc::powerpc64::*;
+
+/// From libffi:src/riscv/ffitarget.h
+/// See: <https://github.com/libffi/libffi/blob/4cb776bc8075332d2f3e59f51785d621fcda48f6/src/riscv/ffitarget.h>
+mod riscv {
+    use crate::ffi_abi;
+
+    pub const ffi_abi_FFI_FIRST_ABI: ffi_abi = 0;
+    pub const ffi_abi_FFI_SYSV: ffi_abi = 1;
+    pub const ffi_abi_FFI_UNUSED_1: ffi_abi = 2;
+    pub const ffi_abi_FFI_UNUSED_2: ffi_abi = 3;
+    pub const ffi_abi_FFI_UNUSED_3: ffi_abi = 4;
+    pub const ffi_abi_LAST_ABI: ffi_abi = 5;
+    pub const ffi_abi_FFI_DEFAULT_ABI: ffi_abi = ffi_abi_FFI_SYSV;
+
+    // See: <https://github.com/libffi/libffi/blob/4cb776bc8075332d2f3e59f51785d621fcda48f6/src/riscv/ffitarget.h#L63>
+    pub const FFI_GO_CLOSURES: u32 = 1;
+    pub const FFI_TRAMPOLINE_SIZE: usize = 24;
+    pub const FFI_NATIVE_RAW_API: u32 = 0;
+}
+
+#[cfg(target_arch = "riscv")]
+pub use riscv::*;
+
+#[cfg(target_arch = "riscv64")]
+pub use riscv::*;

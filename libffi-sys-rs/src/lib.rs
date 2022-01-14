@@ -129,6 +129,10 @@ pub struct ffi_cif {
     pub vfp_args: [c_schar; 16],
     #[cfg(any(target_arch = "powerpc", target_arch = "powerpc64"))]
     pub nfixedargs: c_uint,
+    #[cfg(any(target_arch = "riscv", target_arch = "riscv64"))]
+    pub riscv_nfixedargs: c_uint,
+    #[cfg(any(target_arch = "riscv", target_arch = "riscv64"))]
+    pub riscv_unused: c_uint,
 }
 
 impl Default for ffi_cif {
