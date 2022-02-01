@@ -53,7 +53,12 @@ pub fn configure_libffi(prefix: PathBuf, build_dir: &Path) {
 
     let target = std::env::var("TARGET").unwrap();
     if target != std::env::var("HOST").unwrap() {
-        command.arg(format!("--host={}", target.to_string()));
+        // Autoconf uses riscv64 while Rust uses riscv64gc for the architecture
+        if target == "riscv64gc-unknown-linux-gnu" {
+            command.arg("--host=riscv64-unknown-linux-gnu");
+        } else {
+            command.arg(format!("--host={}", target));
+        }
     }
 
     command.current_dir(&build_dir);
