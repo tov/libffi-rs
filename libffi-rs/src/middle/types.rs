@@ -369,7 +369,7 @@ impl Type {
     }
 
     /// Returns the C `long double` (extended-precision floating point) type.
-    #[cfg(not(all(target_arch = "arm")))]
+    #[cfg(not(any(target_arch = "arm", target_arch = "aarch64")))]
     pub fn longdouble() -> Self {
         Type(unsafe { Unique::new(&mut low::types::longdouble) })
     }

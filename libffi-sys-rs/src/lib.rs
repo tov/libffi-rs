@@ -341,6 +341,7 @@ extern "C" {
     pub static mut ffi_type_double: ffi_type;
     pub static mut ffi_type_pointer: ffi_type;
 
+    #[cfg(not(target_arch = "aarch64"))]
     #[cfg(not(all(target_arch = "arm", target_os = "linux", target_env = "gnu")))]
     pub static mut ffi_type_longdouble: ffi_type;
 
