@@ -1,6 +1,6 @@
 [package]
 name = "libffi"
-version = "2.0.0"
+version = "2.0.1"
 authors = ["Jesse A. Tov <jesse.tov@gmail.com>"]
 description = "Rust bindings for libffi"
 repository = "https://github.com/tov/libffi-rs"
