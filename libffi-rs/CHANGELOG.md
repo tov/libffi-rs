@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+### Changed
+
+- Fix linker errors for aarch64: https://github.com/tov/libffi-rs/pull/51
+
 ## [2.0.0] - 2021-08-17
 
 ### Fixed
