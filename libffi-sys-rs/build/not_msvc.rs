@@ -49,6 +49,7 @@ pub fn configure_libffi(prefix: PathBuf, build_dir: &Path) {
     command
         .arg("configure")
         .arg("--with-pic")
+        .arg("--disable-shared")
         .arg("--disable-docs");
 
     let target = std::env::var("TARGET").unwrap();
