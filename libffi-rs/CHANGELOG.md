@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+- Improve cross-compilation support: https://github.com/tov/libffi-rs/pull/53
+- Rust 1.48 or newer is now required
+
 ## [2.0.1] - 2022-02-13
 
 ### Changed
