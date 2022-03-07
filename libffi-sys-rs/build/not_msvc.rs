@@ -49,16 +49,42 @@ pub fn configure_libffi(prefix: PathBuf, build_dir: &Path) {
     command
         .arg("configure")
         .arg("--with-pic")
+        .arg("--disable-shared")
         .arg("--disable-docs");
 
     let target = std::env::var("TARGET").unwrap();
-    if target != std::env::var("HOST").unwrap() {
+    let host = std::env::var("HOST").unwrap();
+    if target != host {
         // Autoconf uses riscv64 while Rust uses riscv64gc for the architecture
         if target == "riscv64gc-unknown-linux-gnu" {
             command.arg("--host=riscv64-unknown-linux-gnu");
         } else {
             command.arg(format!("--host={}", target));
         }
+    }
+
+    let mut c_cfg = cc::Build::new();
+    c_cfg
+        .cargo_metadata(false)
+        .target(&target)
+        .warnings(false)
+        .host(&host);
+    let c_compiler = c_cfg.get_compiler();
+
+    command.env("CC", c_compiler.path());
+
+    let mut cflags = c_compiler.cflags_env();
+    match env::var_os("CFLAGS") {
+        None => (),
+        Some(flags) => {
+            cflags.push(" ");
+            cflags.push(&flags);
+        }
+    }
+    command.env("CFLAGS", cflags);
+
+    for (k, v) in c_compiler.env().iter() {
+        command.env(k, v);
     }
 
     command.current_dir(&build_dir);
