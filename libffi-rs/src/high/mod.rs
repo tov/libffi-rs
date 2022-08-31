@@ -68,8 +68,6 @@
 //!
 //! Invoking the closure a second time will panic.
 
-use abort_on_panic::abort_on_panic;
-
 pub use crate::middle::{ffi_abi_FFI_DEFAULT_ABI, FfiAbi};
 
 pub mod types;
@@ -77,6 +75,17 @@ pub use types::{CType, Type};
 
 pub mod call;
 pub use call::*;
+
+macro_rules! abort_on_panic {
+    ($msg:literal, $body:expr) => {
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| { $body }))
+            .unwrap_or_else(|err| {
+                std::mem::forget(err); // defends against the issue that dropping `err` might panic
+                eprintln!($msg);
+                std::process::abort()
+            })
+    }
+}
 
 macro_rules! define_closure_mod {
     (
