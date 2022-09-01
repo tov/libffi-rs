@@ -77,14 +77,24 @@ pub mod call;
 pub use call::*;
 
 macro_rules! abort_on_panic {
-    ($msg:literal, $body:expr) => {
-        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| { $body }))
-            .unwrap_or_else(|err| {
-                std::mem::forget(err); // defends against the issue that dropping `err` might panic
-                eprintln!($msg);
-                std::process::abort()
-            })
-    }
+    ($msg:literal, $body:expr) => {{
+        // Aborts when dropped (which will only happen due to an unwinding panic).
+        struct Bomb;
+        impl Drop for Bomb {
+            fn drop(&mut self) {
+                // We do our best to ignore errors that occur during printing.
+                // If this panics anyway, that'll still just be a double-panic which leads to abort.
+                let _ = writeln!(std::io::stderr(), $msg);
+                std::process::abort();
+            }
+        }
+
+        let b = Bomb;
+        // If this panics, `b` will be dropped, triggering the bomb.
+        $body;
+        // Defuse the bomb.
+        std::mem::forget(b);
+    }};
 }
 
 macro_rules! define_closure_mod {
