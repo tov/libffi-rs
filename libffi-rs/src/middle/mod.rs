@@ -489,4 +489,59 @@ mod test {
 
         *result = userdata(arg1, arg2);
     }
+
+    #[test]
+    fn clone_cif() {
+        let cif = Cif::new(
+            vec![
+                Type::structure(vec![
+                    Type::structure(vec![Type::u64(), Type::u8(), Type::f64()]),
+                    Type::i8(),
+                    Type::i64(),
+                ]),
+                Type::u64(),
+            ]
+            .into_iter(),
+            Type::u64(),
+        );
+        let clone_cif = cif.clone();
+
+        unsafe {
+            let args = std::slice::from_raw_parts(cif.cif.arg_types, cif.cif.nargs as usize);
+            let struct_arg = args
+                .first()
+                .expect("CIF arguments slice was empty")
+                .as_ref()
+                .expect("CIF first argument was null");
+            // Get slice of length 1 to get the first element
+            let struct_size = struct_arg.size;
+            let struct_parts = std::slice::from_raw_parts(struct_arg.elements, 1);
+            let substruct_size = struct_parts
+                .first()
+                .expect("CIF struct argument's elements slice was empty")
+                .as_ref()
+                .expect("CIF struct argument's first element was null")
+                .size;
+
+            let clone_args =
+                std::slice::from_raw_parts(clone_cif.cif.arg_types, clone_cif.cif.nargs as usize);
+            let clone_struct_arg = clone_args
+                .first()
+                .expect("CIF arguments slice was empty")
+                .as_ref()
+                .expect("CIF first argument was null");
+            // Get slice of length 1 to get the first element
+            let clone_struct_size = clone_struct_arg.size;
+            let clone_struct_parts = std::slice::from_raw_parts(clone_struct_arg.elements, 1);
+            let clone_substruct_size = clone_struct_parts
+                .first()
+                .expect("Cloned CIF struct argument's elements slice was empty")
+                .as_ref()
+                .expect("Cloned CIF struct argument's first element was null")
+                .size;
+
+            assert_eq!(struct_size, clone_struct_size);
+            assert_eq!(substruct_size, clone_substruct_size);
+        }
+    }
 }

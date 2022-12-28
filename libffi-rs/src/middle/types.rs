@@ -109,12 +109,16 @@ where
 }
 
 /// Creates a struct type from a raw array of element types.
-unsafe fn ffi_type_struct_create_raw(elements: Owned<TypeArray_>) -> Owned<Type_> {
+unsafe fn ffi_type_struct_create_raw(
+    elements: Owned<TypeArray_>,
+    size: usize,
+    alignment: u16,
+) -> Owned<Type_> {
     let new = libc::malloc(mem::size_of::<low::ffi_type>()) as Type_;
     assert!(!new.is_null(), "ffi_type_struct_create_raw: out of memory");
 
-    (*new).size = 0;
-    (*new).alignment = 0;
+    (*new).size = size;
+    (*new).alignment = alignment;
     (*new).type_ = low::type_tag::STRUCT;
     (*new).elements = elements;
 
@@ -127,7 +131,7 @@ unsafe fn ffi_type_struct_create<I>(elements: I) -> Owned<Type_>
 where
     I: ExactSizeIterator<Item = Type>,
 {
-    ffi_type_struct_create_raw(ffi_type_array_create(elements))
+    ffi_type_struct_create_raw(ffi_type_array_create(elements), 0, 0)
 }
 
 /// Makes a copy of a type array.
@@ -145,7 +149,14 @@ unsafe fn ffi_type_array_clone(old: TypeArray_) -> Owned<TypeArray_> {
 /// Makes a copy of a type.
 unsafe fn ffi_type_clone(old: Type_) -> Owned<Type_> {
     if (*old).type_ == low::type_tag::STRUCT {
-        ffi_type_struct_create_raw(ffi_type_array_clone((*old).elements))
+        let low::ffi_type {
+            alignment,
+            elements,
+            size,
+            ..
+        } = *old;
+        let new = ffi_type_struct_create_raw(ffi_type_array_clone(elements), size, alignment);
+        new
     } else {
         old
     }
