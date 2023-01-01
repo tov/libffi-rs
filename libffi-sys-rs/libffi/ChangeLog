@@ -1,3 +1,1737 @@
+commit f24180be1367f942824365b131ae894b9c769c7d
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Oct 23 20:17:29 2022 -0400
+
+    Update to version 3.4.4
+
+commit 848052fabb207d6f56485c8c2c3509eddecbe828
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Oct 23 11:25:10 2022 -0400
+
+    More aarch64 fixes
+
+commit af0f14cd6d932bd1c2f7c39c01e2df3b0ad19ea9
+Author: Icecream95 <the.real.icecream95@gmail.com>
+Date:   Mon Oct 24 04:08:10 2022 +1300
+
+    Fix types of temporary variables in aarch64 extend_integer_type (#745)
+    
+    Fixes truncated values in weston-info output.
+
+commit f7233db2a781b43e419a30edbec7639f74fa2a00
+Author: musvaage <112724366+musvaage@users.noreply.github.com>
+Date:   Mon Oct 17 17:26:17 2022 -0500
+
+    typos (#742)
+
+commit 45e492952e9f984a105ab281fb9433a4bbc12146
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Oct 16 12:41:56 2022 -0400
+
+    Add 32-bit cygwin test
+
+commit 93cfb655200f34ab1b2b7d8955291c457b91ee9f
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Oct 10 14:32:35 2022 -0400
+
+    Correction for older compilers
+
+commit 77a0fb82b53087647a12334c6ddd590ea6215199
+Author: Andreas Schwab <schwab@linux-m68k.org>
+Date:   Mon Oct 10 17:59:04 2022 +0200
+
+    Flush output before aborting (#740)
+    
+    Co-authored-by: Andreas Schwab <schwab@suse.de>
+
+commit 3874fd9865eef72a5cf5a761781b51f8db9fa267
+Author: Andreas Schwab <schwab@linux-m68k.org>
+Date:   Mon Oct 10 17:58:48 2022 +0200
+
+    Fix strict aliasing problem in aarch64 ffi_call (#739)
+    
+    The assignment a = &dest in ffi_call_int may be moved after the call to
+    extend_integer_type because that function accesses the assigned value with
+    a different type.
+    
+    Co-authored-by: Andreas Schwab <schwab@suse.de>
+
+commit 4b0c358e28fae22164bf0d423f183dfed8a1ba10
+Author: Andreas Schwab <schwab@linux-m68k.org>
+Date:   Mon Oct 10 17:57:47 2022 +0200
+
+    riscv: make copies of structs passed by reference (#738)
+    
+    Co-authored-by: Andreas Schwab <schwab@suse.de>
+
+commit c163d93ac032a101cda1818855d681430f7af89a
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Oct 8 18:35:38 2022 -0400
+
+    Add gcc-12 testing for aarch64 linux
+
+commit 62fd1f218be35976858a9f3a0b36fe0d38146bc9
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Oct 2 13:03:37 2022 -0400
+
+    Tweak quotes
+
+commit e1d1b094d31dbf97bd53c09736be97e1e9812d6a
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 28 10:16:45 2022 -0400
+
+    Add .
+
+commit b45f68949d7d1b705eb5e26f58a09972ad70a9c4
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 28 10:16:01 2022 -0400
+
+    Update README for 3.4.4.
+
+commit 817a43fbc1d6d1c702c492e926f158b17ae988e4
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 28 09:05:45 2022 -0400
+
+    Revert to previous cfi check. (#735)
+
+commit 963c4a969326192a2a0ad536d3943f21dbbb0eaa
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue Sep 27 22:05:42 2022 -0400
+
+    Remove nested comments
+
+commit e9e44157526c00bfd1142175ed6a7eb936ea0ede
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue Sep 27 21:25:30 2022 -0400
+
+    Don't tweak path
+
+commit 4594dcc98770b4fa60fce313abf557f090f8a0fd
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue Sep 27 21:05:26 2022 -0400
+
+    Fix find
+
+commit fe68a7b998329f471c3c0c5726073b9cb1a5a126
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue Sep 27 20:29:17 2022 -0400
+
+    Locate tools
+
+commit cfb3f4c255cda534d1dc5de6a31cff70f02f9d69
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue Sep 27 20:13:42 2022 -0400
+
+    Use cross tools for Windows
+
+commit ae544e0043079d778fdf0e16408db3b7a6d723bd
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue Sep 27 18:23:06 2022 -0400
+
+    Fix shell
+
+commit b8d849bd85294253787bbe1838de354ad2f54201
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue Sep 27 17:58:31 2022 -0400
+
+    Find ms tools
+
+commit 9785eee066782d7575023f94b64402963b55aa8c
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue Sep 27 17:39:44 2022 -0400
+
+    32- and 64-bit Windows
+
+commit 1421717effc7b5052e3c26e2b715a83a8a61355c
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue Sep 27 08:13:17 2022 -0400
+
+    Add "lto" to triple to identify lto builds
+
+commit 425acd4c2f217b00868ec1577c20b73de032c114
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue Sep 27 07:57:37 2022 -0400
+
+    Try aarch64 linux with -flto
+
+commit c4261a0588fa997837e44f8417fc8577b37cd461
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 26 16:45:00 2022 -0400
+
+    Show compiler version
+
+commit a1467200c36ce80dacb8d9d0d50049765809b6f4
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 26 11:41:48 2022 -0400
+
+    Never link pthread for android
+
+commit 5ce26a0e03eacb483709189e8cbb05509fa68612
+Author: Frederik Seiffert <frederik@seiffert.org>
+Date:   Mon Sep 26 13:43:40 2022 +0200
+
+    CI: add Android builds (#732)
+
+commit 55bcc47717bb0f9c5276a45710d757cda7a61f8e
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 24 22:03:52 2022 -0400
+
+    Test idea borrowed from cpython
+
+commit a2473cde0a02c096dc3e0b57f0cb73f598765570
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 24 21:41:02 2022 -0400
+
+    or1k: All struct args are passed in memory
+
+commit f93224d38662a8cdc33ca56fe6f2d5650a86d690
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 24 21:38:57 2022 -0400
+
+    moxie: All struct args are passed in memory
+
+commit e79f19489bb294ce60bef5cdba5e56c3e7d84382
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 24 17:11:30 2022 -0400
+
+    Add test case transcribed from cpython
+
+commit ab96038772ec4f4ccfaf49d621cd20f58742c401
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 19 19:42:35 2022 -0400
+
+    Set host triplet for native builds
+
+commit a6fc81653d6ce649a6bc29675baa112c68a21df0
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 19 19:25:09 2022 -0400
+
+    Update job names
+
+commit 6b7fb6ce9eb4751ed3179de256566971c9d46cb7
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 19 18:23:42 2022 -0400
+
+    Give better names to CI workflows
+
+commit f0675ab7e85ca31095b51db5a5c955f1005240cb
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 19 17:30:51 2022 -0400
+
+    Update version to 3.4.4-experimental
+
+commit e3eaa609882fbcffb6c1b21270b6ff46fb57699f
+Author: Hans <h-c-mueller@users.noreply.github.com>
+Date:   Mon Sep 19 23:26:59 2022 +0200
+
+    Suppress error console output duing configure in case not an ELF file (#729)
+    
+    On Cygwin, MSYS and MinGW readelf is available, but files generated are no
+    ELF files. This results in an Error output on console:
+    'checking whether .eh_frame section should be read-only... readelf: Error: Not an ELF file - it has the wrong magic bytes at the start
+    yes'
+    With this patch the error output is suppressed resulting in only
+    'checking whether .eh_frame section should be read-only... yes'
+    Setting of related variables is not changed.
+    
+    Co-authored-by: Hannes Müller <>
+
+commit 84817695eab13c282436fca278bde2384ca955e5
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 19 13:31:46 2022 -0400
+
+    Fix typo
+
+commit 53338d2bbf547682b2461a6e4199276e24ec5c85
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 19 13:07:50 2022 -0400
+
+    Update version
+
+commit 0bd41b75df49f002f3fee9f4d5df225d742d3f1b
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 19 12:26:05 2022 -0400
+
+    Update libtool version
+
+commit 9b1dd8f2d5af8c76d120ffd566bf3c821580c96c
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 19 12:22:04 2022 -0400
+
+    Update version to 3.4.3
+
+commit 0a769ccc0f7a4a7e3e76a79b61c28341fc47e3be
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 19 08:17:15 2022 -0400
+
+    Update release dates
+
+commit f26b56e1c547d2b4d8c9303275ecea47b5936184
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 19 08:15:22 2022 -0400
+
+    Add new files for distribution
+
+commit b801b54b667340867441e922c14230a93832c8e2
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 19 06:49:32 2022 -0400
+
+    Mention AIX with GCC
+
+commit ff34df233c863371912881516eae039f850fcad6
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 19 06:45:19 2022 -0400
+
+    Update comment about platform support
+
+commit 598ea692b81ac8116bd9907d2b498c16fc92bde7
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 19 06:43:41 2022 -0400
+
+    Clean ups, preparing for new release
+
+commit fc6b939066f211b99eed3c8111e446ec95d51ca6
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 19 06:42:29 2022 -0400
+
+    Standardize temp exec file creation
+
+commit 4c2984c43fbb3db8e65b2b5702b27944eb0ed343
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 18 15:06:57 2022 -0400
+
+    Handle win32 ABIs for struct return
+
+commit b05dc51bbe9aef6fcac66a8e68b59472bfaff126
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 18 13:03:10 2022 -0400
+
+    Debug x86
+
+commit cafdb8377a8be2eadac05c318fae9ef6786c36c2
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 18 12:05:12 2022 -0400
+
+    Revert
+
+commit acf0ce9e9b0bcd73d39f599a53e9924ba74c13c1
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 18 11:04:54 2022 -0400
+
+    Add test case
+
+commit b49308eaac7288e01a36894598fb62bfaf61b238
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 18 08:26:23 2022 -0400
+
+    Add missing ABI_ATTR
+
+commit 735e7be4fb2a0401a9ca66cc64004b8b3418feb3
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 18 08:21:34 2022 -0400
+
+    X86 is never defined.
+
+commit ee22ecbd11f52f8de1adbb2a6561aee2125a576a
+Author: Hans <h-c-mueller@users.noreply.github.com>
+Date:   Sun Sep 18 01:56:25 2022 +0200
+
+    Add MSYS configuration files (#728)
+    
+    * Add MSYS configuration files
+    
+    MSYS behaves very similiar to Cygwin, e.g. also __CYGWIN__ is defined.
+    Now 'make check' passes on MSYS without extra patches.
+    
+    * Fix warning extra tokens at end of #endif in closures.c
+    
+    Extra tokens converted into a comment. Also nearby indentations corrected.
+    
+    * Fix missing prototype warning mkostemp() on Cygwin
+    
+    Cygwin requires also _GNU_SOURCE to be defined to enable mkostemp() prototype.
+    
+    * Fix warning label ‘out’ defined but not used in ffi functions
+    
+    Define same preprocessor conditions for goto and label visibility.
+    
+    * Fix warning label ‘out’ defined but not used and related indentations.
+    
+    Define same preprocessor conditions for goto and label visibility. Correct also
+    related indentations.
+    
+    Co-authored-by: Hannes Müller <>
+
+commit 5e010474cf2e30fa053f0a1a460a752f06438cf7
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 15 16:57:59 2022 -0400
+
+    Fix test case for 64-bit mingw
+
+commit 305cde7904ab676b7974ae68acb40b788b4c484e
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 15 15:50:35 2022 -0400
+
+    Passes on 64bit mingw
+
+commit 05785cafcf584d80c6b48651e1d33c4a3feca75c
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 15 15:18:09 2022 -0400
+
+    Fix arg alignment for STDCALL
+
+commit 98d4ad65e9933ed4878ef4aacfaa8299e467a903
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 15 09:42:53 2022 -0400
+
+    Fix test headers
+
+commit 2abf00a6c61f4cf6232dc50f28204be020bef05d
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 15 08:25:39 2022 -0400
+
+    Tweak msys2 tools again
+
+commit d1b31536af74590b74236a00254e77617a8d50b0
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 15 08:16:26 2022 -0400
+
+    Fix msys2 tool selection
+
+commit d352ed366722d5dfce0c1581c3820124c0bbafed
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 15 08:10:53 2022 -0400
+
+    Build 32- and 64-bit msys2
+
+commit 4d0a0384ce11446e02fb7f233aae5c19c8082fb1
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 15 07:58:26 2022 -0400
+
+    msvc requires the printf change, not mingw
+
+commit a509abf6b0ef9045b8df05b0c3663969b21290c4
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 15 06:45:00 2022 -0400
+
+    Install unzip
+
+commit 950ed4a75384c4e7b0a512cb49f71f4d99c50a5d
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 15 06:33:14 2022 -0400
+
+    Don't make msys2 default shell
+
+commit 5d02c0cca3750c7aac61971b9e4cb94940793303
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 15 06:28:23 2022 -0400
+
+    Try msys2
+
+commit 64a78fa760c581f9c70199abb34aef1e0d086bd2
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 15 06:08:30 2022 -0400
+
+    Try new path
+
+commit 77fdeae859f3ab96bc936f0a967d34a5609af40d
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 15 01:37:31 2022 -0400
+
+    Find mingw32
+
+commit bb4e7278b7f362afd03d128e7cb68a5e0e2efaf7
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 15 01:28:58 2022 -0400
+
+    DEbug
+
+commit 7443b421d39087cad2e607d00b845c670b18920f
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 14 23:17:21 2022 -0400
+
+    Try new shell
+
+commit 2ebc36f4be835437fa5d6c4c2b796fc22f769323
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 14 23:11:52 2022 -0400
+
+    Fix indentation
+
+commit 3740b243277c6dc210d45bd0b4f8abe8c2e1cb29
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 14 23:10:43 2022 -0400
+
+    set mingw32 path
+
+commit 7bf23f899cef435d023ecc8afde34d9e83829c2f
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 14 23:04:42 2022 -0400
+
+    Rename job
+
+commit ce5b2208121667236874181360ca91aaa285b528
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 14 23:02:32 2022 -0400
+
+    Fix mingw32 github actions
+
+commit 317c9b6a13d3414c510b27bdc7ce57be56399df5
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 14 22:54:10 2022 -0400
+
+    Add mingw32 testing
+
+commit 19e8354ff9b608b5410451caef6a9773375de005
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 14 07:36:06 2022 -0400
+
+    Fix test case
+
+commit 4932f351579fb722e1e0b58a173b1571a6dfae79
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 14 07:08:06 2022 -0400
+
+    Improve test case
+
+commit 819b01ced894028d41a34ec0178de9e7637b23de
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 14 07:07:15 2022 -0400
+
+    Add test case
+
+commit b577a5b801b1d1aef1aec5920d34fd1fd6597122
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 12 10:23:59 2022 -0400
+
+    Mention Cygwin static trampoline support.
+
+commit 4b54a6471a8f98eb8bc1ea1694a8f3a3a433e538
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 12 09:02:08 2022 -0400
+
+    Fix limits.h inclusion for cygwin
+
+commit a1130f37712c03957c9b0adf316cd006fa92a60b
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 12 08:53:06 2022 -0400
+
+    Add static trampoline support for Cygwin
+
+commit 26cc9a6c73c80e8459c25da3718c91cf5a36cbd8
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 10 20:36:45 2022 -0400
+
+    Remove stray }}
+
+commit 078184887d65bf4a3ecd2f78f6cdbf4c91ccc357
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 10 11:45:28 2022 -0400
+
+    Update rlgl usage (switch from player ID to labels)
+
+commit 6e7caacb9c94efba6775825df2479be389da51f1
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 10 10:31:37 2022 -0400
+
+    Label rlgl reports
+
+commit d9a19e21c2b86e03b6acb8a2d73d992c8e4974e8
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 7 07:58:03 2022 -0400
+
+    The right kind of quotes
+
+commit 2b2644969cbeeaee50938fbea591ea7f85df809e
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 7 07:57:26 2022 -0400
+
+    More quotes
+
+commit eb9eb1f6f041548fe670c76f7a90d1c53c75d620
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 7 07:49:51 2022 -0400
+
+    Fix random build dir
+
+commit ea124a99da9efb3bde86a1706e15f62be7e68a66
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 7 07:21:21 2022 -0400
+
+    Remove bogus sparc compiler flag
+
+commit cca77833fd53ffec93a4962d1e9cd7ea5a38f13f
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 7 07:20:59 2022 -0400
+
+    Fix typo
+
+commit 8ee64076f1b7cc654ff24adaffff25ddb3d57484
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 7 07:14:13 2022 -0400
+
+    Fix typo
+
+commit 086935029d23dad133c97dfaf68749b7726460a1
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Sep 7 07:12:10 2022 -0400
+
+    Set CC and CXX for GCC compile farm builds
+
+commit da905276850342df0f9dfe2c775f6c649d4eed6b
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue Sep 6 21:15:58 2022 -0400
+
+    dlmmap fix and always check for PaX MPROTECT on linux
+    
+    Also make EMUTRAMP experimental
+    From Stefan Bühler
+    https://github.com/libffi/libffi/pull/282
+
+commit b86c3dc0950ad5d8991e3970d56daeb409650d60
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue Sep 6 14:25:09 2022 -0400
+
+    Fix typos
+
+commit c9be1378c709586f264dd643f92f71b9f1a842b2
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue Sep 6 14:12:21 2022 -0400
+
+    Retry autoconf downloads
+
+commit 62471fd078db7ef66ca8b3118187a2911f2bb3e7
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue Sep 6 13:00:02 2022 -0400
+
+    Fix typo
+
+commit b2344575569bc3bd129ad0ff92b49dc220fb287b
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue Sep 6 12:43:08 2022 -0400
+
+    Fix unwindtest on macos
+
+commit fc4e7c4a10dff3c99d7ea9be33d47e6d5f0efda7
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 22:13:58 2022 -0400
+
+    Install automake on macos
+
+commit 5a6c94f7d49bcd64c85bde04c2d1f10b59d5797c
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 22:04:52 2022 -0400
+
+    Test with gcc and clang on macos 11 and 12.
+
+commit 351318e3bde9ac90c6d5eddbaa7f26ee3e7bcc6c
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 15:45:53 2022 -0400
+
+    Switch to 7 char SHA IDs.  Fix windows crlf at git clone time.
+
+commit 2a024088801403ca0c579d20c3decb8dc1453df1
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 12:56:19 2022 -0400
+
+    Use GitHub SHA for rlgl ID
+
+commit e4c5d46b0abaa8a12e97f0e0673e3efdda59fab8
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 12:19:57 2022 -0400
+
+    Pass large structs by value
+
+commit 4b79267be359b42e7a4cbf95068abe805aae0061
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 08:11:45 2022 -0400
+
+    outputs vs output
+
+commit 3020ad832144e35d2a42fb8782ddbd3ed69fdbaf
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 08:07:57 2022 -0400
+
+    Use single quotes
+
+commit f969a50aadfdf288797d5492dfb768d9916b9477
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 08:06:53 2022 -0400
+
+    Try {{}}
+
+commit 8df671a35e517f27da78b1b933f19294cfc7224f
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 08:05:39 2022 -0400
+
+    Fix compares
+
+commit 6a9bbc85a95a8a6d314452c8c5ef4add61e7b280
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 07:54:47 2022 -0400
+
+    Show host availability
+
+commit 49a361c35b3d826c02e6dc3f15c86555e62ed933
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 07:51:34 2022 -0400
+
+    Fix conditionals?
+
+commit d9189beb6e61b20ff4b84fd994d895a29351c422
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 07:47:46 2022 -0400
+
+    Use boolean values
+
+commit 2bcdcda8eda82cce594d2c821fc6a87069041bcc
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 07:44:01 2022 -0400
+
+    Try conditional steps
+
+commit d86d55e51fc2d35ff3a829d41c8ec1c83570cd40
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 07:15:38 2022 -0400
+
+    Tweak test for host availability
+
+commit 5b4d5f2b3a3f3f9fb71ce40e3be00ae6191ffc37
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 07:11:12 2022 -0400
+
+    Fix triples
+
+commit 02e6a894cbb1d851ec1a31b3277f2414c4a1370f
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 06:55:08 2022 -0400
+
+    Add missing paren
+
+commit fcaa8ebbccf2e2e4e0317164b624b683ac95c474
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 06:47:40 2022 -0400
+
+    Unnest quotes
+
+commit f4009ed4f0351c6c8e8f410dac7c558fe9996e7e
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 06:40:00 2022 -0400
+
+    Fix syntax error
+
+commit f92e32cfacdbf82172b06ce13d63eab65f205598
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon Sep 5 06:17:38 2022 -0400
+
+    Try dribbling output during make check
+
+commit ef57e08aa34dc9f55abb493a554a957ca358d931
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 4 22:35:32 2022 -0400
+
+    Split up build into multiple steps
+
+commit 2480cc48def54eb155429710187452e0d495b773
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 4 21:09:06 2022 -0400
+
+    Try to fix ssh issues
+
+commit 1105db1ce6cf1f7ab5a254cd04453b0c5e9dad30
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 4 09:52:28 2022 -0400
+
+    Try forcing exit upon completion
+
+commit 92a7775150978b3e98b0d47280dd6dd6580dbd07
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 4 09:17:01 2022 -0400
+
+    Source .profile on remote host if it exists
+
+commit 8e3ea879a9e538c9237c34ae113babe078565da9
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 4 09:07:13 2022 -0400
+
+    Only ignore errors when testing for ssh connectivity.
+
+commit a643db6c1f1bd7594e42a03865b7a9063cfbf1c1
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 4 08:28:50 2022 -0400
+
+    Don't fail on error
+
+commit 33f1f19a7da022a7d8dba59bb97c28cb4fd6aadf
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 4 08:24:06 2022 -0400
+
+    Add POWER hosts
+
+commit 7a300f3d657ee7b94bda5296b3b366b5915a5c79
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 4 08:08:47 2022 -0400
+
+    Fix the setting of the host
+
+commit b104dd621f9d2b298ede781f0bd289ce8a0c20ee
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 4 08:07:12 2022 -0400
+
+    If a remote host is unavailable, don't fail the build.
+
+commit 7194e11832ad9609bd38c2a1fd4995d749443ee0
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 4 08:01:47 2022 -0400
+
+    Debug build
+
+commit 6fccf95b4f97335eda1d8bfe2e12fc38bea571d2
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 4 07:57:53 2022 -0400
+
+    Add connection timeouts and retries
+
+commit b4cf3d64b1807667eba7863701b6fcae68c65e68
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 4 07:32:18 2022 -0400
+
+    Prune warnings from sparc64 linux ld
+
+commit 807283704a4a77187103f9d4d73c9feb75f3c757
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun Sep 4 07:21:02 2022 -0400
+
+    For host triples to distinguish m1 arm64 from others.
+
+commit 4cba6c1858e842ef674ed41b5d79bc981fdfc411
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 11:42:11 2022 -0400
+
+    Don't exit if runtest fails
+
+commit 439dfa1f7f96aec5689d5b28511e0162bc0ae3f9
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 10:42:46 2022 -0400
+
+    Fix spaces
+
+commit b7d9e3a1a0c3138df513cd5df49a0e14584c7556
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 10:41:45 2022 -0400
+
+    Run rlgl
+
+commit e85b55c2d30783db52d148f2691c8a3afd3d4ec3
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 10:16:01 2022 -0400
+
+    Fix recursive copy flag
+
+commit 98168532a22615bd2aab0f3bf08e8a5f8abcd375
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 10:14:56 2022 -0400
+
+    Fix typo
+
+commit 943219e3281d4f9f3ae416ca3bf9fd3482cf8c63
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 10:13:04 2022 -0400
+
+    Use scp, as rsync isn't available on all hosts
+
+commit 0e912017c96afe6bf6500e90075df6b7366c337a
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 10:04:54 2022 -0400
+
+    Use ssh port numbers and copy dejagnu results back
+
+commit c8fe3d3d440d46b7b465e8d11ea8461a5ae86462
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 09:58:43 2022 -0400
+
+    Use username
+
+commit 3e75f9554f06bab33e022276d320a301f1b04e44
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 09:56:13 2022 -0400
+
+    Tighten permissions on key
+
+commit d893eda74196ecc39f1d839b340d0b158fc536eb
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 09:55:01 2022 -0400
+
+    Disable host key checking
+
+commit da35cf0fb693b6f93a745119c777b3c4aa6d779b
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 09:52:26 2022 -0400
+
+    Add quotes
+
+commit 128d57ab940a3a76658a8c8b4b98cd80fb602d65
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 09:51:00 2022 -0400
+
+    Remove bad command
+
+commit 5b34bed4ff0a5c1c0257f4d586b868ded173dc67
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 09:49:45 2022 -0400
+
+    Debug
+
+commit 77b32cb1533e5166bebf2a7cd1465e3a1eef55ad
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 09:43:41 2022 -0400
+
+    Fix typo
+
+commit 22c1ceb27597d21779c7565c94c444dadc606478
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 09:42:01 2022 -0400
+
+    Simplify remote tests
+
+commit dde8e81deba0c2ef3edca804f34347bfae0e88bd
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 09:22:19 2022 -0400
+
+    Revert to old file copy
+
+commit 3cd913c8dafa71c1bb14ca5e1f4208343cc3a194
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 09:19:08 2022 -0400
+
+    Remove SHA256
+
+commit 3127a25df827f2afa3f6bdfdfceff169fe241fcf
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 09:13:16 2022 -0400
+
+    Try new fingerprint
+
+commit f095b747423806b44c2ef883ec65a7ce5230fbf7
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 09:11:47 2022 -0400
+
+    Use correct fingerprint
+
+commit 1f44118157a005661b55f1747cfd15773214e458
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 08:55:20 2022 -0400
+
+    Ignore fingerprints
+
+commit 8fd73fe61f496a24a4093ba1d195a884f86d547e
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 08:51:33 2022 -0400
+
+    Use rsa fingerprints
+
+commit 09c3908a4279f4c9e2c4a8282efb29c412964119
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 08:43:23 2022 -0400
+
+    Use host fingerprints
+
+commit caa793a3401b92b0ef2006ab90c4dd30b7ab7d5c
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 08:35:56 2022 -0400
+
+    Try new scp
+
+commit 0cbffe5ef542641170b8cbe588fb703e7410cb13
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 08:23:35 2022 -0400
+
+    Fix GITHUB_RUN_NUMBER usage
+
+commit 628cc2f675c6df35213d74388aac69c5c165b1f4
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 08:16:47 2022 -0400
+
+    Fix loongarch64 server port. Try GITHUB_RUN_NUMBER.
+
+commit 9382d7955f80aaa6fc0ca036956fe4e14a0d45b6
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 08:06:11 2022 -0400
+
+    Reference matrix variables properly
+
+commit e081b2cec74253b48a0d09d8a0d309f60e8f82e5
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 07:58:27 2022 -0400
+
+    List cfarm servers explicitly
+
+commit 074e9c79e36e63a9cc8c8fca6c76dd927778dc54
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 07:46:02 2022 -0400
+
+    Try multiple hosts
+
+commit 6002b2ad639f9125da56834e4b0a1b12fa232c57
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 07:10:58 2022 -0400
+
+    Use correct version of scp-action
+
+commit a990426c5f4114c85f6cfc190276786ef5c49521
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 07:09:33 2022 -0400
+
+    Use scp instead of rsync
+
+commit 0fabd777d91e13bb4795d0b9db0b2201f9298904
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 07:02:34 2022 -0400
+
+    Remove extra debug
+
+commit 1922870fe3baf41991670db81b35c1ab0b482895
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 06:53:52 2022 -0400
+
+    Debug rsync
+
+commit aee50966ca85d777271cd7e14714b916264cb190
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Sep 3 06:47:49 2022 -0400
+
+    Change remote path
+
+commit 73552c2e732df17c7f9008fecfc448c1d6397cfe
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Sep 2 20:03:02 2022 -0400
+
+    Tweak
+
+commit 904424fe82bd6d4a498fee84b3f26d55426ff75f
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Sep 2 19:58:19 2022 -0400
+
+    Work in actions dir
+
+commit 31c31db079b054270a19cc710f06fbb84e805511
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Sep 2 19:48:33 2022 -0400
+
+    Run autogen before copying files to remote server
+
+commit d84f2ea0ea760b8e63f50eb6c3583aeb38d89d0e
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Sep 2 19:44:34 2022 -0400
+
+    Install autoconf
+
+commit 78beb4aee5386cd4ea14cfa753a778eafcc3ec2d
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Sep 2 19:34:50 2022 -0400
+
+    Try more remote testing
+
+commit 16f17cd8418ce2239f8b9b31e5f3b5414298292f
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Sep 2 19:16:12 2022 -0400
+
+    Fix ssh
+
+commit badccc01c84ee38f5f443c910ba06b3792029d8b
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Sep 2 19:11:53 2022 -0400
+
+    Add platform
+
+commit 0eae6af297d9a34bd6adcbf43fbbd27e5feebc53
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Sep 2 19:09:43 2022 -0400
+
+    Missing colon
+
+commit ce8cec023499d8da04936e2dc40111f8d6a1783e
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Sep 2 19:04:39 2022 -0400
+
+    Try cfarm access
+
+commit 9b58d4bad688820fa9bb077c0ec5f5949ac18bd2
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 1 08:57:13 2022 -0400
+
+    GCC_AS_CFI_PSEUDO_OP passes on msvc, although it's not sufficient.
+
+commit e6d05bea0b4c350edaaf215a81f49298f34b10e4
+Author: Ole André Vadla Ravnås <oleavr@gmail.com>
+Date:   Thu Sep 1 14:51:15 2022 +0200
+
+    Fix struct padding warning reported by MSVC (#613)
+    
+    When building on 32-bit x86.
+
+commit 80912f2f09f4c06b2f720ff243d7b9b6795093f9
+Author: Clément Chigot <pro@helflym.eu>
+Date:   Thu Sep 1 14:47:16 2022 +0200
+
+    Makefile: enable target overridings. (#661)
+    
+    This patch allows target to provide extra files enabling the
+    override of Makefile rules.
+    This patch is not needed for libffi itself but only for GCC on AIX. The
+    t-aix file which is here empty will be replaced in GCC repository. We cannot
+    include GCC version directly here because it has no sense for a standalone
+    libffi.
+    
+    Co-authored-by: Clement <clement.chigot@atos.net>
+
+commit 1fa7d96cdf7bba354f61337854210f060ea56b9f
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 1 08:28:59 2022 -0400
+
+    Don't use cached configure test result
+
+commit bcb42e432b5372b1876e8c8db68837d92d1f94ae
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Sep 1 08:05:01 2022 -0400
+
+    Fix .cfi pseudo-ops test.
+    
+    The existing tests were failing because the GCC was wrapping the test
+    asm in cfi directives, which gas doesn't like.  So now we test if the
+    compiler emits them first, and assume that the assembler will accept
+    them.  If that doesn't work, then we test if the assembler will accept
+    them assuming the compiler doesn't emit them.
+
+commit 0eb91425f355be19939507d4d4d056bdad12c9dd
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Aug 31 20:46:24 2022 -0400
+
+    Change comment style
+
+commit ca76ab3b8551d9e7cee6f533ecd1e89fee70e16a
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Aug 31 10:30:26 2022 -0400
+
+    Fix exports for tests
+
+commit 7b1dd8ce10e6bef043088896136105b8aabbb882
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Aug 31 09:49:21 2022 -0400
+
+    Don't -malign-double for x86-32
+
+commit 41d0851fc545ff1ffd8377236d193268c8a10740
+Author: Anthony Green <green@moxielogic.com>
+Date:   Wed Aug 31 07:36:43 2022 -0400
+
+    Update copyright year
+
+commit 5a4774cd4d90f9ea7e7f9e34b15de29463aba4c4
+Author: Xi Ruoyao <xry111@xry111.site>
+Date:   Fri Jul 22 05:56:30 2022 +0800
+
+    static trampoline for LoongArch (#723)
+    
+    For the benefit and technical details of static trampoline, see
+    https://github.com/libffi/libffi/pull/624.  As a new architecture, let's
+    be "safer" from the start.
+    
+    The change survived libffi testsuite on loongarch64-linux-gnu.
+
+commit 5264a7c5cd3460465326ebd347559828196dceb1
+Author: matoro <matoro@users.noreply.github.com>
+Date:   Thu Jul 21 17:54:19 2022 -0400
+
+    Move FFI_TYPE definitions above <ffitarget.h> include (#722)
+    
+    For powerpc at least, these definitions are referenced in the
+    target-specific ffitarget.h.  Discovered in the jffi project.  Should
+    close https://github.com/libffi/libffi/issues/637.  Downstream jffi bug
+    https://github.com/jnr/jffi/issues/107.  Downstream distro bug
+    https://bugs.gentoo.org/827215.
+    
+    Testing - both libffi and jffi test suites pass with this patch applied,
+    at least on ppc64le linux.  I did not see any warnings about
+    redefinitions.
+    
+    Tested versions - libffi 3.4.2, jffi 1.3.6 and 1.3.9.
+
+commit ddc6764386b29449d941b2b18d000f2987a9d848
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Jun 25 22:04:53 2022 -0400
+
+    Add missing file
+
+commit 2b4728a21f9a36c6567df8dd27fc8a665264019c
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Jun 25 21:58:51 2022 -0400
+
+    Fix path
+
+commit 37cc25bb25344ee33c5b7ff06c6804d31374a544
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Jun 25 21:56:40 2022 -0400
+
+    Install and use autoconf from special dir
+
+commit 2f2eab957d3acbf571c570ab2ccf894e3c85b033
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Jun 25 21:53:00 2022 -0400
+
+    Fix autoconf version number
+
+commit 4b1465495c9d6e5ef95bacc38b86483fd910f887
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Jun 25 21:51:25 2022 -0400
+
+    Fix wget
+
+commit 398b7534d97b2b642492fbb024e15be3df564da8
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Jun 25 21:49:09 2022 -0400
+
+    Fix wget
+
+commit 2c047eb7b108fba1203ba6122e830a7ae17721ca
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Jun 25 21:46:54 2022 -0400
+
+    Fix untar
+
+commit 446c092f409bd37c21b5b986c2be8f87a1cb1dec
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Jun 25 21:45:32 2022 -0400
+
+    Install autoconf-2.71
+
+commit 5c76ac1ff55c4ed6faa145b395e9a14cdb834708
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Jun 25 21:22:01 2022 -0400
+
+    Update autoconf?
+
+commit 4a46f35ba5a4bbb3ea396e1fa836535d338f8930
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Jun 25 21:14:30 2022 -0400
+
+    Update configury
+
+commit fc8c8c1e2c31321b38dc079e549bc7748da4159d
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Jun 25 11:06:00 2022 -0400
+
+    Fix ILP32 for aarch64
+
+commit b5abc4f6478147ce72fa6b2eb95296883d5ef3ef
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat Jun 25 10:43:00 2022 -0400
+
+    Remove duplicate macro definition.
+
+commit 280fe78d37f58927b280e2e316a2ae19201f2b83
+Author: Xi Ruoyao <xry111@xry111.site>
+Date:   Sat Jun 25 18:58:53 2022 +0800
+
+    configure.ac: use grep -E instead of egrep if possible (#720)
+    
+    Upstream will start to emit a warning if egrep is invoked in the next
+    grep release.  Stop invoking it explicitly.  Use AC_PROG_EGREP to try
+    "grep -E" first, and fallback to egrep if "grep -E" does not work.  We
+    need this fallback for some non-GNU grep implementations (like Solaris).
+    
+    Url: https://git.savannah.gnu.org/cgit/grep.git/commit/?id=a951562
+
+commit 1f14b3fa92d4442a60233e9596ddec428a985e3c
+Author: Russell Keith-Magee <russell@keith-magee.com>
+Date:   Fri Jun 3 02:46:35 2022 +0800
+
+    Ensure that VM_PROT_EXECUTE is set on the trampoline page. (#718)
+
+commit 000ecd01cb534fd8bb593422013a79c8497263ff
+Author: Sergei Trofimovich <slyich@gmail.com>
+Date:   Thu Jun 2 18:43:53 2022 +0000
+
+    powerpc64: fix build on gcc-12 (assembly requires AltiVec) (#719)
+    
+    Without the change build fails on powerpc64-gcc-12 as:
+    
+        src/powerpc/linux64_closure.S: Assembler messages:
+        src/powerpc/linux64_closure.S:363: Error: unrecognized opcode: `lvx'
+    
+    It's a 90205f67 "rs6000: Fix bootstrap (libffi)" patch by
+    Segher Boessenkool from gcc upstream repository. It's enough to get
+    libffi build on powerpc64.
+
+commit c528d5b45e248f47b5af6f16bfcafc779b196ed1
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun May 29 11:22:38 2022 -0400
+
+    Fix windows arg passing
+
+commit aa2c4141722ec8b8b014b97e049ffa2d140d0c0d
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun May 29 10:28:10 2022 -0400
+
+    64-bit cygwin: fix struct args. Document change.
+
+commit 36b265ae438a364722c98136ba79cb450a48fca3
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun May 29 10:12:30 2022 -0400
+
+    m32r: pass copies of large structs
+
+commit c248764d3391a460cdd31a1cae82281fd6dfbecd
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun May 29 07:27:32 2022 -0400
+
+    Update testsuite Makefile
+
+commit fd1fe195e1d98b65ac3b0735cc0d0df95fc1b27b
+Author: Martin Storsjö <martin@martin.st>
+Date:   Sun May 29 14:16:49 2022 +0300
+
+    Fix building on aarch64 after e409225b41b60c490a094bb068e639a2364202fd (#716)
+    
+    The ALIGN_DOWN macro was renamed in 2018 in
+    e6eac7863e2bf1a009ea863041b354bdb4af6b67.
+
+commit c1e237b22ee6042e2d4229008acea8f38c3d0109
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat May 28 20:46:14 2022 -0400
+
+    Pass large structs by value on the stack
+
+commit 769b7366d2312c7efdfa605cf1fc1156b94ba2e0
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat May 28 19:59:35 2022 -0400
+
+    Fix for MS x64 ABI
+
+commit faafcb9df9aebdde1415a73d17fe9e943d97d455
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat May 28 17:24:43 2022 -0400
+
+    Fix moxie struct passing
+
+commit f55d7ff1a24e9c678dac3397175772a9914c02b0
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat May 28 14:30:13 2022 -0400
+
+    moxie: structs > 8 go on stack
+
+commit 55f80b026c2ac854086a2770d324fa55188f0f81
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat May 28 14:17:53 2022 -0400
+
+    New test cases
+
+commit 72c3192773fe483f6517e343ecc3ea468ce73a4f
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat May 28 13:53:26 2022 -0400
+
+    Pass copies of large structs on the stack
+
+commit e409225b41b60c490a094bb068e639a2364202fd
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sat May 28 09:42:13 2022 -0400
+
+    Pass large structs by value for Linux x86_64 and Aarch64.
+    
+    Aarch patch by Andreas Schwab. https://github.com/libffi/libffi/commit/482b37f00467325e3389bab322525099860dd9aa
+
+commit 01d54435c9f9e22345cb2f7d482fcfb42fd11416
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue May 24 21:38:51 2022 -0400
+
+    Mention loongson64
+
+commit f259a6f6deff9bdc7dd998b8b6bdbb4c166b33c3
+Author: zhangwenlong <zhangwenlong@loongson.cn>
+Date:   Wed May 25 09:31:08 2022 +0800
+
+    Support loongarch64 (#678)
+    
+    * update config.{guess,sub}
+    
+    * Support loongarch64
+    
+    Co-Authored-By: Cheng Lulu <chenglulu@loongson.cn>
+    Co-Authored-By: Xi Ruoyao <xry111@mengyan1223.wang>
+    Co-Authored-By: Xu Hao
+    Co-Authored-By: Zhang Wenlong <zhangwenlong@loongson.cn>
+    Co-Authored-By: Pan Xuefeng <panxuefeng@loongson.cn>
+    
+    Co-authored-by: panxuefeng <panxuefeng@loongson.cn>
+    Co-authored-by: Cheng Lulu <chenglulu@loongson.cn>
+    Co-authored-by: Xi Ruoyao <xry111@mengyan1223.wang>
+
+commit d02d46607b5ba62510ddab5fa89303dfa09a7853
+Author: Anthony Green <green@moxielogic.com>
+Date:   Tue May 24 12:28:08 2022 -0400
+
+    Debug cygwin builds
+
+commit 7e93ded9302d7e6e3cc77b39e8eec4b323e63585
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon May 23 21:42:52 2022 -0400
+
+    Revert "Don't dereference beyond the last array entry. (#667)" (#715)
+    
+    This reverts commit 92d77d0e87a5f2a8c9c9b2431ffd264cb664e17a.
+
+commit 432384b6d47087d144d3e947b62c48ddc6e4740b
+Author: Russell Keith-Magee <russell@keith-magee.com>
+Date:   Tue May 24 09:06:19 2022 +0800
+
+    Add support for ARM64 as an Apple simulator platform. (#712)
+
+commit 9af445fd70e4d7f2b3bdfc511cc3cc76a6b84c9a
+Author: Kevin Bowling <kevin.bowling@kev009.com>
+Date:   Mon May 23 18:05:01 2022 -0700
+
+    Upstream FreeBSD riscv patch (#708)
+    
+    Like 8276f812a99b10d1f2c387dbd6ef2ca4f597c733 commit message:
+        > devel/libffi: Fix abort() on ARM related to __clear_cache()
+        >
+        > The current FreeBSD __clear_cache() implementation does nothing #if
+        > __i386__ || __x86_64__ #else abort();
+        >
+        > cognet@ advises this is an issue for anything !Apple that is using the
+        > libcompiler_rt provided by Clang on ARM, and requires upstreaming.
+    
+    Co-authored-by: Kristof Provost <kp@FreeBSD.org>
+
+commit de95947ae5db07e4589bb16bab30b6c8ba2b3106
+Author: Roland Schatz <roland.schatz@oracle.com>
+Date:   Tue May 24 03:04:43 2022 +0200
+
+    Fix check for invalid varargs arguments. (#707)
+
+commit 92d77d0e87a5f2a8c9c9b2431ffd264cb664e17a
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon May 23 21:03:00 2022 -0400
+
+    Don't dereference beyond the last array entry. (#667)
+
+commit e504f90fe9123d256f6bc556badb25d1d0aa7046
+Author: A. Wilcox <AWilcox@Wilcox-Tech.com>
+Date:   Mon May 23 18:42:32 2022 -0500
+
+    testsuite/libffi.closures: Fix PowerPC 64 (#709)
+    
+    -mlong-double-128 is only supported on glibc.
+    
+    This test still passes on glibc targets, and now passes on musl targets
+    as well (which uses 64-bit ldbl).
+
+commit f3e61d497a5ddc3bbe506e0554a0be421f6f0f35
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon May 23 09:11:42 2022 -0400
+
+    Remove debug code
+
+commit a36880e710f2ec37c0cc50d436facd7c2d282e7b
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon May 23 08:35:21 2022 -0400
+
+    Remove stray export command
+
+commit 5f98afe802e189584e5649f53a7dd07280516efd
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon May 23 08:11:26 2022 -0400
+
+    Debug cygwin builds
+
+commit abaacbf8cdf80ddd9303fda5d9be4312d52b531c
+Author: Anthony Green <green@moxielogic.com>
+Date:   Mon May 23 07:57:26 2022 -0400
+
+    Debug cygwin tests
+
+commit e770fb76a781c642f185c23e686bf2af0429ce4c
+Author: Anthony Green <green@moxielogic.com>
+Date:   Sun May 22 20:43:41 2022 -0400
+
+    Clean up types
+
+commit 2e825e219fa06d308b9a9863d70320606d67490d
+Author: YunQiang Su <syq@debian.org>
+Date:   Mon May 16 09:47:11 2022 +0800
+
+    MIPS: fix some N32 test failure (#701)
+    
+    Some go closure and pointer testcase fails.
+    These failures is not introduced by the complex support code.
+
+commit 1f1c33753b65a75216770928018e8932168e8908
+Author: YunQiang Su <syq@debian.org>
+Date:   Mon May 16 09:45:27 2022 +0800
+
+    MIPS: fix O32 softfloat support (#702)
+
+commit 3ac265d5c0e038e324bae29131dbc4bacb4935ea
+Author: hjl-tools <hjl.tools@gmail.com>
+Date:   Sun May 15 18:43:56 2022 -0700
+
+    x86-64: Always double jump table slot size for CET (#710) (#711)
+    
+    When CET is enabled, double jump table slot size to add 4 bytes of ENDBR64
+    for CET.  Since CET enabled clang doesn't have the LLVM assembler bug:
+    
+    https://bugs.llvm.org/show_bug.cgi?id=21501
+    
+    fixed by
+    
+    commit 04d39260d64e08b8bfb3844109ad43d4055b2e8d
+    Author: Rafael Espindola <rafael.espindola@gmail.com>
+    Date:   Wed Nov 4 23:50:29 2015 +0000
+    
+        Simplify .org processing and make it a bit more powerful.
+    
+    we can use .org to allocate jump table slot size to 16 bytes.
+
+commit e67697c370e8875f28b2bf62fac25edad7558eca
+Author: YunQiang Su <syq@debian.org>
+Date:   Thu Mar 31 20:44:49 2022 +0800
+
+    MIPS: add Complex support (#698)
+
+commit e3cf8b806c3ca919f95b9d33d6037869a059c035
+Author: Ole André Vadla Ravnås <oleavr@gmail.com>
+Date:   Thu Mar 31 14:42:03 2022 +0200
+
+    Allow system to have overlapping mallopt defines (#700)
+    
+    Which is the case on some OSes, such as QNX.
+
+commit c086cacb8b9665fab0c046fc92959fc8af5239b8
+Author: Ole André Vadla Ravnås <oleavr@gmail.com>
+Date:   Thu Mar 31 14:40:59 2022 +0200
+
+    Clean up the QNX ARM bits (#699)
+    
+    - Add missing include.
+    - Use constants instead of magic values.
+
+commit ab1677106605aba1c27665964ff90bea59612ce3
+Author: Max Filippov <jcmvbkbc@gmail.com>
+Date:   Sun Feb 20 16:01:38 2022 -0800
+
+    Xtensa cleanups and XEA3 support (#677)
+    
+    * xtensa: clean up stack usage in ffi_trampoline call
+    
+    Space for outgoing call arguments reserved in the stack frame of the
+    function ffi_trampoline overlaps register spill overflow area at the
+    top of the frame. In xtensa XEA2 exception architecture the layout of
+    overlapping areas is identical so that even if the ffi_trampoline
+    registers frame gets spilled the memory contents doesn't change.
+    This is not so with the xtensa XEA3 exception architecture, where
+    registers a0 - a7 of a different function are spilled in that location.
+    
+    Reserve spill area for 8 registers to avoid overlapping of the spill
+    area with the outgoing call arguments area in the ffi_trampoline.
+    
+    Signed-off-by: Max Filippov <jcmvbkbc@gmail.com>
+    
+    * xtensa: support xtensa XEA3 exception architecture
+    
+    XEA3 requires that 32 bytes of register spill area is reserved in all
+    functions. Fix ffi_cacheflush entry instruction to satisfy this
+    requirement.
+    
+    Signed-off-by: Max Filippov <jcmvbkbc@gmail.com>
+    
+    * xtensa: maintain stack alignment
+    
+    xtensa ABI requires stack alignment on 16 byte boundary and passing
+    up to 6 arguments in registers. To simplify stack alignment maintenance
+    fixed amount of stack space is reserved for arguments passed in
+    registers and variable but correctly aligned amount is reserved for the
+    remaining arguments. After copying arguments to the stack and loading
+    registers the fixed part of the stack reservation is freed.
+    
+    Signed-off-by: Max Filippov <jcmvbkbc@gmail.com>
+    
+    * xtensa: fix err_bad_abi tests
+    
+    Check ffi_cif::abi value in the ffi_prep_closure_loc and return
+    FFI_BAD_ABI error if it's not one of the supported values.
+    
+    Signed-off-by: Max Filippov <jcmvbkbc@gmail.com>
+
+commit aa3fce08ba620c50db17215a9f14dd0f1facf741
+Author: Andreas Schwab <schwab@linux-m68k.org>
+Date:   Sun Feb 13 21:04:33 2022 +0100
+
+    riscv: extend return types smaller than ffi_arg (#680)
+    
+    Co-authored-by: Andreas Schwab <schwab@suse.de>
+
+commit 464b4b66e3cf3b5489e730c1466ee1bf825560e0
+Author: Dan Horák <dan@danny.cz>
+Date:   Mon Jan 31 14:08:09 2022 +0100
+
+    powerpc64: fix handling of homogeneous float128 structs (#689)
+    
+    If there is a homogeneous struct with float128 members, they should be
+    copied to vector register save area. The current code incorrectly copies
+    only the value of the first member, not increasing the pointer with each
+    iteration. Fix this.
+
+commit b60d4fc7bb4419021bf566e09de55ed1d9b041db
+Author: rorth <ro@CeBiTec.Uni-Bielefeld.DE>
+Date:   Thu Dec 23 14:32:46 2021 +0100
+
+    src/x86/win64.S: Use #define instead of .macro (#665) (#669)
+    
+    The Solaris/x86 assembler doesn't support .macro/.endm, so use #define since
+    win64.S is passed through cpp anyway.
+
+commit 4fa6239f42ddc7df12e40da9ae25ba715312239c
+Author: Andreas Schwab <schwab@linux-m68k.org>
+Date:   Thu Dec 23 14:27:32 2021 +0100
+
+    testsuite/libffi.call: fix mismatching return types (#679)
+    
+    Co-authored-by: Andreas Schwab <schwab@suse.de>
+
+commit 0f2dd369cd5edcefad29b3fca4e1d08cb34f8f19
+Author: Jules Maselbas <54854023+jmaselbas@users.noreply.github.com>
+Date:   Wed Sep 22 21:39:56 2021 +0200
+
+    Makefile: Add missing kvx/asm.h to dist headers (#660)
+    
+    The header kvx/asm.h is required to build libffi and is missing from
+    the dist tarball.
+    
+    Signed-off-by: Jules Maselbas <jmaselbas@kalray.eu>
+
+commit ee1263f7d43bd29b15fc72c4d9520a824e8004df
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Jul 29 17:46:17 2021 -0400
+
+    Fix 'type'-o
+
+commit 86d5ecc5e84fbbc79fcff6a307310630d9d68549
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Jul 29 16:58:32 2021 -0400
+
+    Fix struct arg passing
+
+commit 03596285ed36b94bb3e1d8bdebfe58590e2766df
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Jul 29 10:16:42 2021 -0400
+
+    No more xfail for alpha
+
+commit 4ac18f26ed16588377b1482208212aaa39624e21
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Jul 29 10:01:40 2021 -0400
+
+    Add alpha CPU
+
+commit 7643c6ee68e376810b4185e5f38e156c97bcc090
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Jul 29 08:51:35 2021 -0400
+
+    Try to fix ARM QEMU tests
+
+commit a04f57bce057604f38bb7c1bf32b7f671d2b56d5
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Jul 29 08:47:53 2021 -0400
+
+    Fix m32r testing
+
+commit 339acf3d8f049d296dafac3f482c1b7db29c0bae
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Jul 29 08:38:18 2021 -0400
+
+    Debug cross-in-containers builds
+
+commit 43e4ad4d7b4bcc87ee447736a1172b2801a47908
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Jul 29 07:55:59 2021 -0400
+
+    Test passing structs by value
+
+commit 68485e33a413c3d91fbfd7ec270803ae6bd3d3db
+Author: Anthony Green <green@moxielogic.com>
+Date:   Thu Jul 29 07:13:35 2021 -0400
+
+    Mention x32 static tramponline fix
+
+commit 07f826fdd4d8a23a190f107f7ec6ad830a4864a0
+Author: Harald van Dijk <harald@gigawatt.nl>
+Date:   Sun Jul 25 02:39:37 2021 +0100
+
+    Fix trampoline_code_table for x32. (#657)
+    
+    x32's struct tramp_parm has 32-bit pointers. This change adjusts the
+    loads and offsets accordingly.
+
+commit be0b3b6e75d4890fe18ba4164b91387beaebee06
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Jul 16 21:51:03 2021 -0400
+
+    Fix CHECK
+
+commit 7db17442a6c9f1399065748b7d5b9fbcac203344
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Jul 16 11:30:01 2021 -0400
+
+    Don't check the whole buffer, just what we printed.
+
+commit 8bcf594749882e9e4966fec2e3d6009d08a554ab
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Jul 16 11:26:02 2021 -0400
+
+    Fix test case
+
+commit c96b057757446fe4277f30e8423f09851ae5d0fa
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Jul 16 11:16:39 2021 -0400
+
+    Fix test check
+
+commit 4ed23be8e2a59e438c201ca1ba5affc0b0477b15
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Jul 16 11:08:01 2021 -0400
+
+    Fix test check
+
+commit eb2447249540ca568b0b464f6107501dcc0f65ab
+Author: Hood Chatham <hood@mit.edu>
+Date:   Fri Jul 16 14:33:04 2021 +0000
+
+    Use CHECK to assert more things in test suite (#654)
+    
+    * Use CHECK to assert more things in test suite
+    
+    * Use snprintf instead of sprintf
+    
+    * Fix va_struct1 and va_struct3
+
+commit a541fc600f4418441f91073a0834ea47b0989de9
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Jul 16 08:56:30 2021 -0400
+
+    Update README for next release.
+
+commit b4cf80ab54b6d9d31ef2135036e471388cf026df
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Jul 16 08:55:02 2021 -0400
+
+    Trigger actions on master branch
+
+commit d1eef904766dbd647de6c240a57dbc98d46e33dd
+Author: Anthony Green <green@moxielogic.com>
+Date:   Fri Jul 16 08:29:08 2021 -0400
+
+    Migrate from travis-ci to github actions.
+
 commit f9ea41683444ebe11cfa45b05223899764df28fb
 Author: Anthony Green <green@moxielogic.com>
 Date:   Mon Jun 28 21:10:49 2021 -0400
