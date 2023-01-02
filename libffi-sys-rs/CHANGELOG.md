@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
+## [2.1.0] - 2023-01-02
 
 - Update libffi to 3.4.4: https://github.com/tov/libffi-rs/pull/63
 
