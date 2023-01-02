@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+- Bump version requirement of libffi-sys to 2.1.0
+- Copy size and alignment of structures on clone: https://github.com/tov/libffi-rs/pull/62
+
 ## [3.0.1] - 2022-09-02
 
 - Removed dependency on abort_on_panic: https://github.com/tov/libffi-rs/pull/58
