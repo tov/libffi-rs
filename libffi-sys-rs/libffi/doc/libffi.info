@@ -1,9 +1,9 @@
-This is libffi.info, produced by makeinfo version 6.7 from libffi.texi.
+This is libffi.info, produced by makeinfo version 6.8 from libffi.texi.
 
 This manual is for libffi, a portable foreign function interface
 library.
 
-   Copyright (C) 2008-2019, 2021 Anthony Green and Red Hat, Inc.
+   Copyright (C) 2008-2019, 2021, 2022 Anthony Green and Red Hat, Inc.
 
    Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -38,7 +38,7 @@ libffi
 This manual is for libffi, a portable foreign function interface
 library.
 
-   Copyright (C) 2008-2019, 2021 Anthony Green and Red Hat, Inc.
+   Copyright (C) 2008-2019, 2021, 2022 Anthony Green and Red Hat, Inc.
 
    Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -85,7 +85,7 @@ is found.  The calling convention is also sometimes called the "ABI" or
    Some programs may not know at the time of compilation what arguments
 are to be passed to a function.  For instance, an interpreter may be
 told at run-time about the number and types of arguments used to call a
-given function.  'Libffi' can be used in such programs to provide a
+given function.  'libffi' can be used in such programs to provide a
 bridge from the interpreter program to compiled code.
 
    The 'libffi' library provides a portable, high level programming
@@ -122,7 +122,7 @@ File: libffi.info,  Node: The Basics,  Next: Simple Example,  Up: Using libffi
 2.1 The Basics
 ==============
 
-'Libffi' assumes that you have a pointer to the function you wish to
+'libffi' assumes that you have a pointer to the function you wish to
 call and that you know the number and types of arguments to pass it, as
 well as the return type of the function.
 
@@ -213,9 +213,7 @@ function:
      AVALUES is a vector of 'void *' pointers that point to the memory
      locations holding the argument values for a call.  If CIF declares
      that the function has no arguments (i.e., NARGS was 0), then
-     AVALUES is ignored.  Note that argument values may be modified by
-     the callee (for instance, structs passed by value); the burden of
-     copying pass-by-value arguments is placed on the caller.
+     AVALUES is ignored.
 
      Note that while the return value must be register-sized, arguments
      should exactly match their declared type.  For example, if an
@@ -1033,26 +1031,26 @@ Index
 
 
 Tag Table:
-Node: Top1394
-Node: Introduction2923
-Node: Using libffi4555
-Node: The Basics5084
-Node: Simple Example10191
-Node: Types11222
-Node: Primitive Types11733
-Node: Structures13854
-Node: Size and Alignment14893
-Node: Arrays Unions Enums17090
-Node: Type Example20019
-Node: Complex21310
-Node: Complex Type Example22728
-Node: Multiple ABIs25780
-Node: The Closure API26151
-Node: Closure Example29977
-Node: Thread Safety31609
-Node: Memory Usage32410
-Node: Missing Features33605
-Node: Index33970
+Node: Top1400
+Node: Introduction2935
+Node: Using libffi4567
+Node: The Basics5096
+Node: Simple Example10024
+Node: Types11055
+Node: Primitive Types11566
+Node: Structures13687
+Node: Size and Alignment14726
+Node: Arrays Unions Enums16923
+Node: Type Example19852
+Node: Complex21143
+Node: Complex Type Example22561
+Node: Multiple ABIs25613
+Node: The Closure API25984
+Node: Closure Example29810
+Node: Thread Safety31442
+Node: Memory Usage32243
+Node: Missing Features33438
+Node: Index33803
 
 End Tag Table
 
