@@ -60,6 +60,9 @@ pub fn configure_libffi(prefix: PathBuf, build_dir: &Path) {
             "riscv64gc-unknown-linux-gnu" => "riscv64-unknown-linux-gnu",
             // Autoconf does not yet recognize illumos, but Solaris should be fine
             "x86_64-unknown-illumos" => "x86_64-unknown-solaris",
+            // configure.host does not extract `ios-sim` as OS.
+            // The sources for `ios-sim` should be the same as `ios`.
+            "aarch64-apple-ios-sim" => "aarch64-apple-ios",
             // Everything else should be fine to pass straight through
             other => other,
         };
