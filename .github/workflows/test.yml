@@ -22,6 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        toolchain: [i686-pc-windows-msvc, x86_64-pc-windows-msvc]
         target: [i686-pc-windows-msvc, x86_64-pc-windows-msvc, aarch64-pc-windows-msvc]
         channel: [1.48.0, stable, beta, nightly]
     runs-on: windows-latest
@@ -36,7 +37,7 @@ jobs:
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{ matrix.channel }}-${{ matrix.target }}
+          toolchain: ${{ matrix.channel }}-${{ matrix.toolchain }}
           target: ${{ matrix.target }}
           override: true
           profile: minimal
