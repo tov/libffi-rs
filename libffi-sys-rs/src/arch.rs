@@ -325,3 +325,21 @@ pub use riscv::*;
 
 #[cfg(target_arch = "riscv64")]
 pub use riscv::*;
+
+/// From libffi:src/s390/ffitarget.h
+/// See: <https://github.com/libffi/libffi/blob/c6dc125afba294b9b9613392c492ae18df3ede84/src/s390/ffitarget.h>
+mod s390x {
+    use crate::ffi_abi;
+
+    pub const ffi_abi_FFI_FIRST_ABI: ffi_abi = 0;
+    pub const ffi_abi_FFI_SYSV: ffi_abi = 1;
+    pub const ffi_abi_LAST_ABI: ffi_abi = 2;
+    pub const ffi_abi_FFI_DEFAULT_ABI: ffi_abi = ffi_abi_FFI_SYSV;
+
+    pub const FFI_GO_CLOSURES: u32 = 1;
+    pub const FFI_TRAMPOLINE_SIZE: usize = 32;
+    pub const FFI_NATIVE_RAW_API: u32 = 0;
+}
+
+#[cfg(target_arch = "s390x")]
+pub use s390x::*;
