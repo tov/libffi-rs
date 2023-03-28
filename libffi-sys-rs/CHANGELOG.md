@@ -12,9 +12,7 @@ The format is based on [Keep a Changelog] and this project adheres to
 
 - Add support for aarch64-apple-ios-sim: https://github.com/tov/libffi-rs/pull/64
 - Support aarch64 MSVC target: https://github.com/tov/libffi-rs/pull/65
-- Fix return type in call example code: https://github.com/tov/libffi-rs/pull/68
 - Add support for the s390x architecture: https://github.com/tov/libffi-rs/pull/70
-- Handle return type promotion in the high layer: https://github.com/tov/libffi-rs/pull/69
 
 ## [2.1.0] - 2023-01-02
 
