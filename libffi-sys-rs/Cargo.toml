@@ -1,6 +1,6 @@
 [package]
 name = "libffi-sys"
-version = "2.1.0"
+version = "2.2.0"
 authors = ["Jesse A. Tov <jesse.tov@gmail.com>"]
 links = "ffi"
 build = "build/build.rs"
