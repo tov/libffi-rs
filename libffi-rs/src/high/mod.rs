@@ -199,7 +199,7 @@ macro_rules! define_closure_mod {
                 }
             }
 
-            impl<'a, $( $T, )* R> $closure<'a, $( $T, )* R> {
+            impl<'a, $( $T, )* R: CType> $closure<'a, $( $T, )* R> {
                 /// Gets the C code pointer that is used to invoke the
                 /// closure.
                 pub fn code_ptr(&self) -> & $fnptr <'a, $( $T, )* R> {
@@ -221,12 +221,14 @@ macro_rules! define_closure_mod {
                 /// Constructs a typed closure callable from C from a CIF
                 /// describing the calling convention for the resulting
                 /// function, a callback for the function to call, and
-                /// userdata to pass to the callback.
+                /// userdata to pass to the callback.  Note that the return
+                /// type of the callback must follow the libffi implicit
+                /// extension rules.
                 pub fn from_parts<U>(cif: $cif<$( $T, )* R>,
-                                     callback: $callback<U, $( $T, )* R>,
+                                     callback: $callback<U, $( $T, )* R::RetType>,
                                      userdata: &'a U) -> Self
                 {
-                    let callback: middle::Callback<U, R>
+                    let callback: middle::Callback<U, R::RetType>
                         = unsafe { mem::transmute(callback) };
                     let closure
                         = middle::Closure::new(cif.untyped,
@@ -239,7 +241,7 @@ macro_rules! define_closure_mod {
                 }
             }
 
-            impl<'a, $( $T: Copy, )* R> $closure<'a, $( $T, )* R> {
+            impl<'a, $( $T: Copy, )* R: CType> $closure<'a, $( $T, )* R> {
                 /// Constructs a typed closure callable from C from a CIF
                 /// describing the calling convention for the resulting
                 /// function and the Rust closure to call.
@@ -255,7 +257,7 @@ macro_rules! define_closure_mod {
                 #[allow(non_snake_case)]
                 extern "C" fn static_callback<Callback>
                     (_cif:     &low::ffi_cif,
-                     result:   &mut R,
+                     result:   &mut R::RetType,
                      &($( &$T, )*):
                                &($( &$T, )*),
                      userdata: &Callback)
@@ -263,7 +265,7 @@ macro_rules! define_closure_mod {
                 {
                     abort_on_panic!("Cannot panic inside FFI callback", {
                         unsafe {
-                            ptr::write(result, userdata($( $T, )*));
+                            ptr::write(result, userdata($( $T, )*).into());
                         }
                     });
                 }
@@ -295,7 +297,7 @@ macro_rules! define_closure_mod {
                 }
             }
 
-            impl<'a, $( $T, )* R> $closure_mut<'a, $( $T, )* R> {
+            impl<'a, $( $T, )* R: CType> $closure_mut<'a, $( $T, )* R> {
                 /// Gets the C code pointer that is used to invoke the
                 /// closure.
                 pub fn code_ptr(&self) -> & $fnptr <'a, $( $T, )* R> {
@@ -307,12 +309,14 @@ macro_rules! define_closure_mod {
                 /// Constructs a typed closure callable from C from a CIF
                 /// describing the calling convention for the resulting
                 /// function, a callback for the function to call, and
-                /// userdata to pass to the callback.
+                /// userdata to pass to the callback.  Note that the return
+                /// type of the callback must follow the libffi implicit
+                /// extension rules.
                 pub fn from_parts<U>(cif:      $cif<$( $T, )* R>,
-                                     callback: $callback_mut<U, $( $T, )* R>,
+                                     callback: $callback_mut<U, $( $T, )* R::RetType>,
                                      userdata: &'a mut U) -> Self
                 {
-                    let callback: middle::CallbackMut<U, R>
+                    let callback: middle::CallbackMut<U, R::RetType>
                         = unsafe { mem::transmute(callback) };
                     let closure
                         = middle::Closure::new_mut(cif.untyped,
@@ -325,7 +329,7 @@ macro_rules! define_closure_mod {
                 }
             }
 
-            impl<'a, $( $T: Copy, )* R> $closure_mut<'a, $( $T, )* R> {
+            impl<'a, $( $T: Copy, )* R: CType> $closure_mut<'a, $( $T, )* R> {
                 /// Constructs a typed closure callable from C from a CIF
                 /// describing the calling convention for the resulting
                 /// function and the Rust closure to call.
@@ -342,7 +346,7 @@ macro_rules! define_closure_mod {
                 #[allow(non_snake_case)]
                 extern "C" fn static_callback<Callback>
                     (_cif:     &low::ffi_cif,
-                     result:   &mut R,
+                     result:   &mut R::RetType,
                      &($( &$T, )*):
                                &($( &$T, )*),
                      userdata: &mut Callback)
@@ -350,7 +354,7 @@ macro_rules! define_closure_mod {
                 {
                     abort_on_panic!("Cannot panic inside FFI callback", {
                         unsafe {
-                            ptr::write(result, userdata($( $T, )*));
+                            ptr::write(result, userdata($( $T, )*).into());
                         }
                     });
                 }
@@ -377,7 +381,7 @@ macro_rules! define_closure_mod {
                 }
             }
 
-            impl<$( $T: Copy, )* R> $closure_once<$( $T, )* R> {
+            impl<$( $T: Copy, )* R: CType> $closure_once<$( $T, )* R> {
                 /// Constructs a one-shot closure callable from C from a CIF
                 /// describing the calling convention for the resulting
                 /// function and the Rust closure to call.
@@ -393,7 +397,7 @@ macro_rules! define_closure_mod {
                 #[allow(non_snake_case)]
                 extern "C" fn static_callback<Callback>
                     (_cif:     &low::ffi_cif,
-                     result:   &mut R,
+                     result:   &mut R::RetType,
                      &($( &$T, )*):
                                &($( &$T, )*),
                      userdata: &mut Option<Callback>)
@@ -402,7 +406,7 @@ macro_rules! define_closure_mod {
                     if let Some(userdata) = userdata.take() {
                         abort_on_panic!("Cannot panic inside FFI callback", {
                             unsafe {
-                                ptr::write(result, userdata($( $T, )*));
+                                ptr::write(result, userdata($( $T, )*).into());
                             }
                         });
                     } else {
@@ -414,7 +418,7 @@ macro_rules! define_closure_mod {
                 }
             }
 
-            impl<$( $T, )* R> $closure_once<$( $T, )* R> {
+            impl<$( $T, )* R: CType> $closure_once<$( $T, )* R> {
                 /// Gets the C code pointer that is used to invoke the
                 /// closure.
                 pub fn code_ptr(&self) -> & $fnptr <'_, $( $T, )* R> {
@@ -426,14 +430,16 @@ macro_rules! define_closure_mod {
                 /// Constructs a one-shot closure callable from C from a CIF
                 /// describing the calling convention for the resulting
                 /// function, a callback for the function to call, and
-                /// userdata to pass to the callback.
+                /// userdata to pass to the callback.  Note that the return
+                /// type of the callback must follow the libffi implicit
+                /// extension rules.
                 pub fn from_parts<U: Any>(
                     cif:      $cif<$( $T, )* R>,
-                    callback: $callback_once<U, $( $T, )* R>,
+                    callback: $callback_once<U, $( $T, )* R::RetType>,
                     userdata: U)
                     -> Self
                 {
-                    let callback: middle::CallbackOnce<U, R>
+                    let callback: middle::CallbackOnce<U, R::RetType>
                         = unsafe { mem::transmute(callback) };
                     let closure
                         = middle::ClosureOnce::new(cif.untyped,

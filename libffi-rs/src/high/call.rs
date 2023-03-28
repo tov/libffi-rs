@@ -17,6 +17,7 @@
 //! assert!((result - 5f32).abs() < 0.0001);
 //! ```
 
+use std::convert::TryInto;
 use std::marker::PhantomData;
 
 use crate::middle;
@@ -78,7 +79,13 @@ pub unsafe fn call<R: super::CType>(fun: CodePtr, args: &[Arg]) -> R {
     let cif = middle::Cif::new(types, R::reify().into_middle());
 
     let values = args.iter().map(|arg| arg.value.clone()).collect::<Vec<_>>();
-    cif.call(fun, &values)
+    // If `R` is a small integer type, libffi implicitly extends it to
+    // `ffi_arg` or `ffi_sarg`.  To account for this, use `R::RetType`
+    // as return type for the low-level call, and convert the result back.
+    cif.call::<R::RetType>(fun, &values)
+        .try_into()
+        .ok()
+        .unwrap()
 }
 
 /// Performs a dynamic call to a C function.

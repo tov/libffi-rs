@@ -2,6 +2,7 @@
 
 use std::marker::PhantomData;
 
+use super::super::low;
 use super::super::middle;
 
 /// Represents a C type statically associated with a Rust type.
@@ -43,34 +44,44 @@ pub unsafe trait CType: Copy {
     /// We can use the resulting object to assemble a CIF to set up
     /// a call that uses type `T`.
     fn reify() -> Type<Self>;
+    /// The low-level libffi library implicitly extends small integer
+    /// return values to `ffi_arg` or `ffi_sarg`.  Track the possibly
+    /// extended variant of `T` as an associated type here.
+    type RetType: std::convert::From<Self> + std::convert::TryInto<Self>;
 }
 
 macro_rules! impl_ffi_type {
-    ($type_:ty, $cons:ident) => {
+    ($type_:ty, $ret_:ty, $cons:ident) => {
         unsafe impl CType for $type_ {
             fn reify() -> Type<Self> {
                 Type::make(middle::Type::$cons())
             }
+            type RetType = $ret_;
         }
     };
+    ($type_:ident, $ret_:ty) => {
+        impl_ffi_type!($type_, $ret_, $type_);
+    };
     ($type_:ident) => {
-        impl_ffi_type!($type_, $type_);
+        impl_ffi_type!($type_, $type_, $type_);
     };
 }
 
-impl_ffi_type!(u8);
-impl_ffi_type!(i8);
-impl_ffi_type!(u16);
-impl_ffi_type!(i16);
-impl_ffi_type!(u32);
-impl_ffi_type!(i32);
+// We assume that `ffi_arg` and `ffi_sarg` are either 32-bit or 64-bit
+// integer types on all supported platforms here.
+impl_ffi_type!(u8, low::ffi_arg);
+impl_ffi_type!(i8, low::ffi_sarg);
+impl_ffi_type!(u16, low::ffi_arg);
+impl_ffi_type!(i16, low::ffi_sarg);
+impl_ffi_type!(u32, low::ffi_arg);
+impl_ffi_type!(i32, low::ffi_sarg);
 impl_ffi_type!(u64);
 impl_ffi_type!(i64);
 impl_ffi_type!(f32);
 impl_ffi_type!(f64);
 impl_ffi_type!(usize);
 impl_ffi_type!(isize);
-impl_ffi_type!((), void);
+impl_ffi_type!((), (), void);
 
 // Why is the complex stuff even here? It doesn’t work yet because
 // libffi doesn’t support it, so it should probably go away and come
@@ -118,10 +129,12 @@ unsafe impl<T> CType for *const T {
     fn reify() -> Type<Self> {
         Type::make(middle::Type::pointer())
     }
+    type RetType = *const T;
 }
 
 unsafe impl<T> CType for *mut T {
     fn reify() -> Type<Self> {
         Type::make(middle::Type::pointer())
     }
+    type RetType = *mut T;
 }
