@@ -138,6 +138,7 @@ jobs:
         - aarch64-unknown-linux-gnu
         - armv7-unknown-linux-gnueabihf
         - riscv64gc-unknown-linux-gnu
+        - s390x-unknown-linux-gnu
         exclude:
         # Don't try to build with `--features system` when cross-compiling
         # It's probably possible to make this work for some of these architectures
@@ -150,6 +151,8 @@ jobs:
         - target: armv7-unknown-linux-gnueabihf
           features: "--features system"
         - target: riscv64gc-unknown-linux-gnu
+          features: "--features system"
+        - target: s390x-unknown-linux-gnu
           features: "--features system"
         # 1.48.0 is too old for riscv64gc-unknown-linux-gnu
         - target: riscv64gc-unknown-linux-gnu
@@ -198,6 +201,10 @@ jobs:
           elif [ "${{ matrix.target }}" == "riscv64gc-unknown-linux-gnu" ]; then
             GCC_ARCH=riscv64
             QEMU_ARCH=riscv64
+            ABI=gnu
+          elif [ "${{ matrix.target }}" == "s390x-unknown-linux-gnu" ]; then
+            GCC_ARCH=s390x
+            QEMU_ARCH=s390x
             ABI=gnu
           fi
 
