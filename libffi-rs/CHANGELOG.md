@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
+## [3.2.0] - 2023-03-28
 
 - Handle return type promotion in the high layer: https://github.com/tov/libffi-rs/pull/69
 - Fix return type in call example code: https://github.com/tov/libffi-rs/pull/68
