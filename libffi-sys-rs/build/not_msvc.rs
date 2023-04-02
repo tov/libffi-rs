@@ -74,6 +74,9 @@ pub fn configure_libffi(prefix: PathBuf, build_dir: &Path) {
         .cargo_metadata(false)
         .target(&target)
         .warnings(false)
+        // Work around a build failure with clang-16 and newer.  Can be removed
+        // once https://github.com/libffi/libffi/pull/764 is merged.
+        .flag_if_supported("-Wno-implicit-function-declaration")
         .host(&host);
     let c_compiler = c_cfg.get_compiler();
 
