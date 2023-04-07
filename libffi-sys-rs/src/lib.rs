@@ -133,6 +133,10 @@ pub struct ffi_cif {
     pub riscv_nfixedargs: c_uint,
     #[cfg(any(target_arch = "riscv", target_arch = "riscv64"))]
     pub riscv_unused: c_uint,
+    #[cfg(all(target_arch = "loongarch64"))]
+    pub loongarch_nfixedargs: c_uint,
+    #[cfg(all(target_arch = "loongarch64"))]
+    pub loongarch_unused: c_uint,
 }
 
 impl Default for ffi_cif {

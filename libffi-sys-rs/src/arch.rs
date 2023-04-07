@@ -343,3 +343,23 @@ mod s390x {
 
 #[cfg(target_arch = "s390x")]
 pub use s390x::*;
+
+/// From libffi:src/loongarch64/ffitarget.h.
+/// See: <https://github.com/libffi/libffi/blob/f24180be1367f942824365b131ae894b9c769c7d/src/loongarch64/ffitarget.h#L47>
+mod loongarch64 {
+    use crate::ffi_abi;
+
+    pub const ffi_abi_FFI_FIRST_ABI: ffi_abi = 0;
+    pub const ffi_abi_FFI_LP64S: ffi_abi = 1;
+    pub const ffi_abi_FFI_LP64F: ffi_abi = 2;
+    pub const ffi_abi_FFI_LP64D: ffi_abi = 3;
+    pub const ffi_abi_FFI_LAST_ABI: ffi_abi = 4;
+    pub const ffi_abi_FFI_DEFAULT_ABI: ffi_abi = ffi_abi_FFI_LP64D;
+
+    pub const FFI_GO_CLOSURES: u32 = 1;
+    pub const FFI_TRAMPOLINE_SIZE: usize = 24;
+    pub const FFI_NATIVE_RAW_API: u32 = 0;
+}
+
+#[cfg(target_arch = "loongarch64")]
+pub use loongarch64::*;
