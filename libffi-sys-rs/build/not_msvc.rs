@@ -47,7 +47,7 @@ pub fn configure_libffi(prefix: PathBuf, build_dir: &Path) {
     let mut command = Command::new("sh");
 
     command
-        .arg("configure")
+        .arg("./configure")
         .arg("--with-pic")
         .arg("--disable-shared")
         .arg("--disable-docs");
