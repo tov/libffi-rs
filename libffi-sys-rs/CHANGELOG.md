@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
+## [2.3.0] - 2023-04-26
 
 - Add support for loongarch64: https://github.com/tov/libffi-rs/pull/75
 - Fix the build process to always use the local "configure" script: https://github.com/tov/libffi-rs/pull/76
