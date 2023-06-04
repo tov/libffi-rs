@@ -17,9 +17,21 @@ pub fn build_and_link() {
             e
         );
     }
+
+    // On Linux, don't preserve the attributes of the source directory.
+    // Not all cp versions support --no-preserve=mode,ownership, so we
+    // first check if it's available.
+    let mut command = Command::new("cp");
+    let has_no_preserve_flag = {
+        let output = Command::new("cp").arg("--help").output().unwrap().stdout;
+        String::from_utf8(output).unwrap().contains("--no-preserve")
+    };
+    if has_no_preserve_flag {
+        command.arg("--no-preserve=mode,ownership");
+    };
     run_command(
         "Copying libffi into the build directory",
-        Command::new("cp").arg("-R").arg("libffi").arg(&build_dir),
+        command.arg("-R").arg("libffi").arg(&build_dir),
     );
 
     // Generate configure, run configure, make, make install
