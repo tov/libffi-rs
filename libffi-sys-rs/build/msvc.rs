@@ -97,6 +97,7 @@ pub fn pre_process_asm(include_dirs: &[&str], target: &str, target_arch: &str) -
     };
 
     let mut cmd = cc::windows_registry::find(target, "cl.exe").expect("Could not locate cl.exe");
+    cmd.env("INCLUDE", include_dirs.join(";"));
 
     // When cross-compiling we should provide MSVC includes as part of the INCLUDE env.var
     let build = cc::Build::new();
