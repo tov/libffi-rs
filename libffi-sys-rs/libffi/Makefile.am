@@ -106,7 +106,7 @@ libffi_convenience_la_LIBADD = $(libffi_la_LIBADD)
 libffi_convenience_la_DEPENDENCIES = $(libffi_la_DEPENDENCIES)
 nodist_libffi_convenience_la_SOURCES = $(nodist_libffi_la_SOURCES)
 
-LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/libtool-ldflags $(LDFLAGS))
+LTLDFLAGS = $(shell "$(SHELL)" $(top_srcdir)/libtool-ldflags $(LDFLAGS))
 
 AM_CFLAGS =
 if FFI_DEBUG

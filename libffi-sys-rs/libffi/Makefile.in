@@ -193,7 +193,7 @@ am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
 DEFAULT_INCLUDES = -I.@am__isrc@
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = "$(SHELL)" $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = src/$(DEPDIR)/closures.Plo \
 	src/$(DEPDIR)/debug.Plo src/$(DEPDIR)/java_raw_api.Plo \
@@ -608,7 +608,7 @@ EXTRA_libffi_convenience_la_SOURCES = $(EXTRA_libffi_la_SOURCES)
 libffi_convenience_la_LIBADD = $(libffi_la_LIBADD)
 libffi_convenience_la_DEPENDENCIES = $(libffi_la_DEPENDENCIES)
 nodist_libffi_convenience_la_SOURCES = $(nodist_libffi_la_SOURCES)
-LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/libtool-ldflags $(LDFLAGS))
+LTLDFLAGS = $(shell "$(SHELL)" $(top_srcdir)/libtool-ldflags $(LDFLAGS))
 AM_CFLAGS = $(am__append_3)
 @LIBFFI_BUILD_VERSIONED_SHLIB_FALSE@libffi_version_script = 
 @LIBFFI_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBFFI_BUILD_VERSIONED_SHLIB_TRUE@libffi_version_script = -Wl,--version-script,libffi.map
@@ -644,15 +644,15 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
-	    echo ' $(SHELL) ./config.status'; \
-	    $(SHELL) ./config.status;; \
+	    echo ' "$(SHELL)" ./config.status'; \
+	    "$(SHELL)" ./config.status;; \
 	  *) \
-	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__maybe_remake_depfiles)'; \
-	    cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__maybe_remake_depfiles);; \
+	    echo ' cd $(top_builddir) && "$(SHELL)" ./config.status $@ $(am__maybe_remake_depfiles)'; \
+	    cd $(top_builddir) && "$(SHELL)" ./config.status $@ $(am__maybe_remake_depfiles);; \
 	esac;
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
-	$(SHELL) ./config.status --recheck
+	"$(SHELL)" ./config.status --recheck
 
 $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	$(am__cd) $(srcdir) && $(AUTOCONF)
@@ -666,7 +666,7 @@ fficonfig.h: stamp-h1
 
 stamp-h1: $(srcdir)/fficonfig.h.in $(top_builddir)/config.status
 	@rm -f stamp-h1
-	cd $(top_builddir) && $(SHELL) ./config.status fficonfig.h
+	cd $(top_builddir) && "$(SHELL)" ./config.status fficonfig.h
 $(srcdir)/fficonfig.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps) 
 	($(am__cd) $(top_srcdir) && $(AUTOHEADER))
 	rm -f stamp-h1
@@ -675,7 +675,7 @@ $(srcdir)/fficonfig.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 distclean-hdr:
 	-rm -f fficonfig.h stamp-h1
 libffi.pc: $(top_builddir)/config.status $(srcdir)/libffi.pc.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
+	cd $(top_builddir) && "$(SHELL)" ./config.status $@
 
 clean-noinstLTLIBRARIES:
 	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)

@@ -437,8 +437,8 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	  *config.status*) \
 	    cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh;; \
 	  *) \
-	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__maybe_remake_depfiles)'; \
-	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__maybe_remake_depfiles);; \
+	    echo ' cd $(top_builddir) && "$(SHELL)" ./config.status $(subdir)/$@ $(am__maybe_remake_depfiles)'; \
+	    cd $(top_builddir) && "$(SHELL)" ./config.status $(subdir)/$@ $(am__maybe_remake_depfiles);; \
 	esac;
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
@@ -465,7 +465,7 @@ cscope cscopelist:
 check-DEJAGNU: site.exp
 	srcdir='$(srcdir)'; export srcdir; \
 	EXPECT=$(EXPECT); export EXPECT; \
-	if $(SHELL) -c "$(RUNTEST) --version" > /dev/null 2>&1; then \
+	if "$(SHELL)" -c "$(RUNTEST) --version" > /dev/null 2>&1; then \
 	  exit_status=0; l='$(DEJATOOL)'; for tool in $$l; do \
 	    if $(RUNTEST) $(RUNTESTDEFAULTFLAGS) $(AM_RUNTESTFLAGS) $(RUNTESTFLAGS); \
 	    then :; else exit_status=1; fi; \

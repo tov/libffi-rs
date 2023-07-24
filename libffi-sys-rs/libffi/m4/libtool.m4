@@ -87,7 +87,7 @@ _LT_SET_OPTIONS([$0], [$1])
 LIBTOOL_DEPS=$ltmain
 
 # Always use our own libtool.
-LIBTOOL='$(SHELL) $(top_builddir)/libtool'
+LIBTOOL='"$(SHELL)" $(top_builddir)/libtool'
 AC_SUBST(LIBTOOL)dnl
 
 _LT_SETUP
