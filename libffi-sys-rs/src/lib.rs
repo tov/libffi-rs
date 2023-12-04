@@ -137,6 +137,13 @@ pub struct ffi_cif {
     pub loongarch_nfixedargs: c_uint,
     #[cfg(all(target_arch = "loongarch64"))]
     pub loongarch_unused: c_uint,
+    #[cfg(any(
+        target_arch = "mips",
+        target_arch = "mips32r6",
+        target_arch = "mips64",
+        target_arch = "mips64r6"
+    ))]
+    pub mips_nfixedargs: c_uint,
 }
 
 impl Default for ffi_cif {
