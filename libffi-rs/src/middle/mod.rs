@@ -133,6 +133,40 @@ impl Cif {
         Cif { cif, args, result }
     }
 
+    /// Creates a new variadic [CIF](Cif) for the given argument and result
+    /// types.
+    ///
+    /// Takes ownership of the argument and result [`Type`]s, because
+    /// the resulting [`Cif`] retains references to them. Defaults to
+    /// the platform’s default calling convention; this can be adjusted
+    /// using [`Cif::set_abi`].
+    pub fn new_variadic<I>(args: I, fixed_args: usize, result: Type) -> Self
+    where
+        I: IntoIterator<Item = Type>,
+        I::IntoIter: ExactSizeIterator<Item = Type>,
+    {
+        let args = args.into_iter();
+        let nargs = args.len();
+        let args = types::TypeArray::new(args);
+        let mut cif: low::ffi_cif = Default::default();
+
+        unsafe {
+            low::prep_cif_var(
+                &mut cif,
+                low::ffi_abi_FFI_DEFAULT_ABI,
+                fixed_args,
+                nargs,
+                result.as_raw_ptr(),
+                args.as_raw_ptr(),
+            )
+        }
+        .expect("low::prep_cif_var");
+
+        // Note that cif retains references to args and result,
+        // which is why we hold onto them here.
+        Cif { cif, args, result }
+    }
+
     /// Calls a function with the given arguments.
     ///
     /// In particular, this method invokes function `fun` passing it
