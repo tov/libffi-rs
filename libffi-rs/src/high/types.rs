@@ -17,7 +17,8 @@ pub struct Type<T> {
 }
 
 impl<T> Type<T> {
-    fn make(untyped: middle::Type) -> Self {
+    /// Make a high type from a middle type.
+    pub fn make(untyped: middle::Type) -> Self {
         Type {
             untyped,
             _marker: PhantomData,
