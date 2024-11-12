@@ -139,6 +139,7 @@ jobs:
         - armv7-unknown-linux-gnueabihf
         - riscv64gc-unknown-linux-gnu
         - s390x-unknown-linux-gnu
+        - loongarch64-unknown-linux-gnu
         exclude:
         # Don't try to build with `--features system` when cross-compiling
         # It's probably possible to make this work for some of these architectures
@@ -154,11 +155,17 @@ jobs:
           features: "--features system"
         - target: s390x-unknown-linux-gnu
           features: "--features system"
+        - target: loongarch64-unknown-linux-gnu
+          features: "--features system"
+        # 1.70.0 is too old for loongarch64-unknown-linux-gnu
+        - target: loongarch64-unknown-linux-gnu
+          channel: 1.70.0
 
     runs-on: ubuntu-latest
     name: Linux - ${{ matrix.channel }} ${{ matrix.features }} ${{ matrix.target }}
     env:
       RUST_BACKTRACE: 1
+      TEST_RUNNER: cargo
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -174,63 +181,15 @@ jobs:
           default: true
       - name: Set-up Cross Compiling
         id: arch_attrs
-        run: |
-          # Get unique attributes for each architecture
-          if [ "${{ matrix.target }}" == "i686-unknown-linux-gnu" ]; then
-            GCC_ARCH=i686
-            ABI=gnu
-          elif [ "${{ matrix.target }}" == "powerpc64-unknown-linux-gnu" ]; then
-            GCC_ARCH=powerpc64
-            QEMU_ARCH=ppc64
-            ABI=gnu
-          elif [ "${{ matrix.target }}" == "powerpc64le-unknown-linux-gnu" ]; then
-            GCC_ARCH=powerpc64le
-            QEMU_ARCH=ppc64le
-            ABI=gnu
-          elif [ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]; then
-            GCC_ARCH=aarch64
-            QEMU_ARCH=aarch64
-            ABI=gnu
-          elif [ "${{ matrix.target }}" == "armv7-unknown-linux-gnueabihf" ]; then
-            GCC_ARCH=arm
-            QEMU_ARCH=arm
-            ABI=gnueabihf
-          elif [ "${{ matrix.target }}" == "riscv64gc-unknown-linux-gnu" ]; then
-            GCC_ARCH=riscv64
-            QEMU_ARCH=riscv64
-            ABI=gnu
-          elif [ "${{ matrix.target }}" == "s390x-unknown-linux-gnu" ]; then
-            GCC_ARCH=s390x
-            QEMU_ARCH=s390x
-            ABI=gnu
-          fi
-
-          # Install cross-compiler
-          sudo apt-get update
-          sudo apt-get install -y \
-            gcc-9-$(echo $GCC_ARCH | tr _ -)-linux-$ABI
-
-          # Convert target triple to uppercase and replace - with _
-          TARGET_TRIPLE=$(echo "${{ matrix.target }}" | tr - _)
-          TARGET_TRIPLE=${TARGET_TRIPLE^^}
-
-          CC=$GCC_ARCH-linux-$ABI-gcc-9
-
-          # Set cross-compiler as CC and set cargo target runner as qemu
-          echo "CC=$CC" >> $GITHUB_ENV
-          echo "CARGO_TARGET_${TARGET_TRIPLE}_LINKER=$CC" >> $GITHUB_ENV
-
-          # Don't need QEMU for i686
-          if [ "$QEMU_ARCH" != "" ]; then
-            sudo apt-get install -y qemu-user
-            echo "CARGO_TARGET_${TARGET_TRIPLE}_RUNNER=qemu-$QEMU_ARCH -L /usr/$GCC_ARCH-linux-$ABI/" >> $GITHUB_ENV
-          fi
         if: ${{ 'x86_64-unknown-linux-gnu' != matrix.target }}
+        run: |
+          cargo install cross --git https://github.com/cross-rs/cross --rev 7a2b4e408a5b61a61cf08d88e484d57be7af6cd4 --locked
+          echo "TEST_RUNNER=cross" >> $GITHUB_ENV
       - name: Test libffi-sys-rs
         run: |
           cd libffi-sys-rs
-          cargo test --target ${{ matrix.target }} ${{ matrix.features }}
+          ${{ env.TEST_RUNNER }} test --target ${{ matrix.target }} ${{ matrix.features }}
       - name: Test libffi-rs
         run: |
           cd libffi-rs
-          cargo test --target ${{ matrix.target }} ${{ matrix.features }}
+          ${{ env.TEST_RUNNER }} test --target ${{ matrix.target }} ${{ matrix.features }}
