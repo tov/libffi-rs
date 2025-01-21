@@ -251,7 +251,7 @@ mod powerpc {
             // ELFv1 is the used for powerpc64 when not targeting musl
             all(target_arch = "powerpc64", target_endian="big", not(target_env = "musl")),
             // Use empty flags when targeting a non-PowerPC target, too, just so code compiles.
-            not(all(target_arch = "powerpc64", target_endian="little"))
+            not(target_arch = "powerpc64")
         ))]
         mod elf {
             pub use super::elfv1::*;
