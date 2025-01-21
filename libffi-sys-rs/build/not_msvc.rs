@@ -70,6 +70,7 @@ pub fn configure_libffi(prefix: PathBuf, build_dir: &Path) {
         let cross_host = match target.as_str() {
             // Autoconf uses riscv64 while Rust uses riscv64gc for the architecture
             "riscv64gc-unknown-linux-gnu" => "riscv64-unknown-linux-gnu",
+            "riscv64gc-unknown-linux-musl" => "riscv64-unknown-linux-musl",
             // Autoconf does not yet recognize illumos, but Solaris should be fine
             "x86_64-unknown-illumos" => "x86_64-unknown-solaris",
             // configure.host does not extract `ios-sim` as OS.
