@@ -132,5 +132,9 @@ pub fn configure_libffi(prefix: PathBuf, build_dir: &Path) {
         command.arg("--prefix").arg(prefix);
     }
 
+    if cfg!(target_os = "aix") {
+        command.arg("--disable-multi-os-directory");
+    }
+
     run_command("Configuring libffi", &mut command);
 }
