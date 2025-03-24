@@ -378,9 +378,9 @@ pub unsafe fn call<R>(cif: *mut ffi_cif, fun: CodePtr, args: *mut *mut c_void) -
             let result = result.assume_init();
 
             if cfg!(target_endian = "big") {
-                call_return_small_big_endian_result((*(*cif).rtype).type_, &raw const result)
+                call_return_small_big_endian_result((*(*cif).rtype).type_, &result)
             } else {
-                (&raw const result).cast::<R>().read()
+                (&result as *const usize).cast::<R>().read()
             }
         }
     } else {
@@ -408,7 +408,10 @@ pub unsafe fn call<R>(cif: *mut ffi_cif, fun: CodePtr, args: *mut *mut c_void) -
 /// `result` must be a pointer to a `usize` and
 /// `mem::size_of::<R> <= mem::size_of::<usize>()`.
 unsafe fn call_return_small_big_endian_result<R>(type_tag: u16, result: *const usize) -> R {
-    if type_tag == raw::FFI_TYPE_FLOAT as u16 || type_tag == type_tag::STRUCT {
+    if type_tag == raw::FFI_TYPE_FLOAT as u16
+        || type_tag == raw::FFI_TYPE_STRUCT as u16
+        || type_tag == raw::FFI_TYPE_VOID as u16
+    {
         // SAFETY: Testing has shown that these types appear at `result`.
         unsafe { result.cast::<R>().read() }
     } else {
@@ -702,6 +705,7 @@ mod test {
     #[derive(Clone, Copy, Debug, PartialEq, Eq)]
     struct LargeStruct(u64, u64, u64, u64);
 
+    extern "C" fn return_nothing() {}
     extern "C" fn return_i8(a: i8) -> i8 {
         a
     }
@@ -750,25 +754,19 @@ mod test {
             )]
             {
                 let mut cif = ffi_cif::default();
-                let mut arg_ty_array = [&raw mut $ffitype];
+                let mut arg_ty_array: [*mut ffi_type; 1] = [&mut $ffitype];
                 let mut arg: $ty = $val;
-                let mut arg_array: [*mut c_void; 1] = [(&raw mut arg).cast()];
+                let mut arg_array: [*mut c_void; 1] = [&mut arg as *mut _ as *mut c_void];
 
-                // SAFETY:
-                // `cif` points to a properly aligned `ffi_cif`.
-                // The return value is a pointer to an `ffi_type`.
-                // `arg_array` contains 1 pointer to an `ffi_type`.
-                let result: $ty = unsafe {
-                    prep_cif(
-                        &raw mut cif,
-                        ffi_abi_FFI_DEFAULT_ABI,
-                        1,
-                        &raw mut $ffitype,
-                        arg_ty_array.as_mut_ptr()
-                    ).unwrap();
+                prep_cif(
+                    &mut cif,
+                    ffi_abi_FFI_DEFAULT_ABI,
+                    1,
+                    &mut $ffitype,
+                    arg_ty_array.as_mut_ptr(),
+                ).unwrap();
 
-                    call(&mut cif, CodePtr($fn as *mut _), arg_array.as_mut_ptr())
-                };
+                let result: $ty = call(&mut cif, CodePtr($fn as *mut _), arg_array.as_mut_ptr());
 
                 assert_eq!(result, $val);
             }
@@ -778,64 +776,84 @@ mod test {
     /// Test to ensure that values returned from functions called through libffi are correct.
     #[test]
     fn test_return_values() {
-        test_return_value!(i8, types::sint8, 0x55, return_i8);
-        test_return_value!(u8, types::uint8, 0xAA, return_u8);
-        test_return_value!(i16, types::sint16, 0x5555, return_i16);
-        test_return_value!(u16, types::uint16, 0xAAAA, return_u16);
-        test_return_value!(i32, types::sint32, 0x5555_5555, return_i32);
-        test_return_value!(u32, types::uint32, 0xAAAA_AAAA, return_u32);
-        test_return_value!(i64, types::sint64, 0x5555_5555_5555_5555, return_i64);
-        test_return_value!(u64, types::uint64, 0xAAAA_AAAA_AAAA_AAAA, return_u64);
-        test_return_value!(f32, types::float, core::f32::consts::E, return_f32);
-        test_return_value!(f64, types::double, core::f64::consts::PI, return_f64);
+        // Test a function returning nothing.
+        {
+            let mut cif = ffi_cif::default();
 
-        let mut dummy = 0;
-        test_return_value!(
-            *const c_void,
-            types::pointer,
-            (&raw mut dummy).cast(),
-            return_pointer
-        );
+            // SAFETY:
+            // `cif` points to a properly aligned `ffi_cif`.
+            // The return value is a pointer to an `ffi_type`.
+            // `nargs` is 0, so argument and argument type array are never read.
+            unsafe {
+                prep_cif(
+                    &mut cif,
+                    ffi_abi_FFI_DEFAULT_ABI,
+                    0,
+                    &mut types::void,
+                    ptr::null_mut(),
+                )
+                .unwrap();
+                call::<()>(&mut cif, CodePtr(return_nothing as *mut _), ptr::null_mut());
+            }
+        }
 
-        let mut small_struct_elements = [
-            &raw mut types::uint8,
-            &raw mut types::uint16,
-            ptr::null_mut(),
-        ];
-        let mut small_struct_type = ffi_type {
-            type_: type_tag::STRUCT,
-            elements: small_struct_elements.as_mut_ptr(),
-            ..Default::default()
-        };
-        test_return_value!(
-            SmallStruct,
-            small_struct_type,
-            SmallStruct(0xAA, 0x5555),
-            return_small_struct
-        );
+        unsafe {
+            test_return_value!(i8, types::sint8, 0x55, return_i8);
+            test_return_value!(u8, types::uint8, 0xAA, return_u8);
+            test_return_value!(i16, types::sint16, 0x5555, return_i16);
+            test_return_value!(u16, types::uint16, 0xAAAA, return_u16);
+            test_return_value!(i32, types::sint32, 0x5555_5555, return_i32);
+            test_return_value!(u32, types::uint32, 0xAAAA_AAAA, return_u32);
+            test_return_value!(i64, types::sint64, 0x5555_5555_5555_5555, return_i64);
+            test_return_value!(u64, types::uint64, 0xAAAA_AAAA_AAAA_AAAA, return_u64);
+            test_return_value!(f32, types::float, core::f32::consts::E, return_f32);
+            test_return_value!(f64, types::double, core::f64::consts::PI, return_f64);
 
-        let mut large_struct_elements = [
-            &raw mut types::uint64,
-            &raw mut types::uint64,
-            &raw mut types::uint64,
-            &raw mut types::uint64,
-            ptr::null_mut(),
-        ];
-        let mut large_struct_type = ffi_type {
-            type_: type_tag::STRUCT,
-            elements: large_struct_elements.as_mut_ptr(),
-            ..Default::default()
-        };
-        test_return_value!(
-            LargeStruct,
-            large_struct_type,
-            LargeStruct(
-                0x1234_5678_9abc_def0,
-                0x0fed_cba9_8765_4321,
-                0x5555_5555_5555_5555,
-                0xAAAA_AAAA_AAAA_AAAA,
-            ),
-            return_large_struct
-        );
+            let mut dummy = 0;
+            test_return_value!(
+                *const c_void,
+                types::pointer,
+                (&mut dummy as *mut i32).cast(),
+                return_pointer
+            );
+
+            let mut small_struct_elements =
+                [&mut types::uint8, &mut types::uint16, ptr::null_mut()];
+            let mut small_struct_type = ffi_type {
+                type_: type_tag::STRUCT,
+                elements: small_struct_elements.as_mut_ptr(),
+                ..Default::default()
+            };
+            test_return_value!(
+                SmallStruct,
+                small_struct_type,
+                SmallStruct(0xAA, 0x5555),
+                return_small_struct
+            );
+
+            let mut large_struct_elements = [
+                &mut types::uint64,
+                &mut types::uint64,
+                &mut types::uint64,
+                &mut types::uint64,
+                ptr::null_mut(),
+            ];
+            let mut large_struct_type = ffi_type {
+                type_: type_tag::STRUCT,
+                elements: large_struct_elements.as_mut_ptr(),
+                ..Default::default()
+            };
+            test_return_value!(
+                LargeStruct,
+                large_struct_type,
+                LargeStruct(
+                    0x1234_5678_9abc_def0,
+                    0x0fed_cba9_8765_4321,
+                    0x5555_5555_5555_5555,
+                    0xAAAA_AAAA_AAAA_AAAA,
+                ),
+                return_large_struct
+            );
+        }
     }
 }
