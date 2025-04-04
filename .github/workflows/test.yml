@@ -42,6 +42,11 @@ jobs:
           override: true
           profile: minimal
           default: true
+      - name: Downgrade dependencies for older Rust versions
+        run: |
+          cargo update --package libc --precise 0.2.65
+          cargo update --package cc --precise 1.0.3
+        if: ${{ '1.48.0' == matrix.channel }}
       - name: Test libffi-sys-rs
         run: |
           cd libffi-sys-rs
@@ -78,6 +83,12 @@ jobs:
           override: true
           profile: minimal
           default: true
+      - name: Downgrade dependencies for older Rust versions
+        shell: msys2 {0}
+        run: |
+          cargo update --package libc --precise 0.2.65
+          cargo update --package cc --precise 1.0.3
+        if: ${{ '1.48.0' == matrix.channel }}
       - name: Test libffi-sys-rs
         shell: msys2 {0}
         run: |
@@ -229,6 +240,11 @@ jobs:
             echo "CARGO_TARGET_${TARGET_TRIPLE}_RUNNER=qemu-$QEMU_ARCH -L /usr/$GCC_ARCH-linux-$ABI/" >> $GITHUB_ENV
           fi
         if: ${{ 'x86_64-unknown-linux-gnu' != matrix.target }}
+      - name: Downgrade dependencies for older Rust versions
+        run: |
+          cargo update --package libc --precise 0.2.65
+          cargo update --package cc --precise 1.0.3
+        if: ${{ '1.48.0' == matrix.channel }}
       - name: Test libffi-sys-rs
         run: |
           cd libffi-sys-rs
