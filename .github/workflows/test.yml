@@ -109,7 +109,7 @@ jobs:
         # channel: [1.48.0, stable, beta, nightly]
         channel: [stable, beta, nightly]
         features: ["--no-default-features", "--features system"]
-    runs-on: macos-latest
+    runs-on: macos-13
     name: macOS - ${{ matrix.channel }} ${{ matrix.features }}
     env:
       RUST_BACKTRACE: 1
