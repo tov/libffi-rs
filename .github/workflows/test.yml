@@ -147,7 +147,9 @@ jobs:
         - x86_64-unknown-linux-gnu
         - i686-unknown-linux-gnu
         - aarch64-unknown-linux-gnu
-        - armv7-unknown-linux-gnueabihf
+        # Disabled because it fails in GitHub Actions:
+        # `qemu: uncaught target signal 11 (Segmentation fault) - core dumped`
+        # - armv7-unknown-linux-gnueabihf
         - riscv64gc-unknown-linux-gnu
         - s390x-unknown-linux-gnu
         exclude:
