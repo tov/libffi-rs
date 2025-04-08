@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
+## [Unreleased]
+
+- Fix build for riscv64gc-unknown-linux-musl: https://github.com/tov/libffi-rs/commit/ed5f28d3d16e9a8177b7f79115f76f96ef150b09
+- Fix build for powerpc64-unknown-linux-musl: https://github.com/tov/libffi-rs/commit/f9fb3acd1a19a1a61b9164f0917498afea1d7b19
+- Add support for the sparcv9 architecture: https://github.com/tov/libffi-rs/commit/3bd44239750b50b7bc2f5e9586346dec6d13d0fe
+- Update libffi to v3.4.7: https://github.com/tov/libffi-rs/commit/80756374975bde22871363c4dd88693e9a00e66f
+
 ## [2.3.0] - 2023-04-26
 
 - Add support for loongarch64: https://github.com/tov/libffi-rs/pull/75
