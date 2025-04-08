@@ -129,9 +129,9 @@ pub struct ffi_cif {
     pub vfp_args: [c_schar; 16],
     #[cfg(any(target_arch = "powerpc", target_arch = "powerpc64"))]
     pub nfixedargs: c_uint,
-    #[cfg(any(target_arch = "riscv", target_arch = "riscv64"))]
+    #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
     pub riscv_nfixedargs: c_uint,
-    #[cfg(any(target_arch = "riscv", target_arch = "riscv64"))]
+    #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
     pub riscv_unused: c_uint,
     #[cfg(all(target_arch = "loongarch64"))]
     pub loongarch_nfixedargs: c_uint,
@@ -217,7 +217,7 @@ pub struct ffi_raw_closure {
     pub tramp: [c_char; FFI_TRAMPOLINE_SIZE],
     pub cif: *mut ffi_cif,
     // See: https://github.com/libffi/libffi/blob/3a7580da73b7f16f275277316d00e3497cbb5a8c/include/ffi.h.in#L364
-    #[cfg(not(target_arch = "i686"))]
+    #[cfg(not(target_arch = "x86"))]
     pub translate_args: Option<
         unsafe extern "C" fn(
             arg1: *mut ffi_cif,
@@ -226,7 +226,7 @@ pub struct ffi_raw_closure {
             arg4: *mut c_void,
         ),
     >,
-    #[cfg(not(target_arch = "i686"))]
+    #[cfg(not(target_arch = "x86"))]
     pub this_closure: *mut c_void,
     pub fun: Option<
         unsafe extern "C" fn(
@@ -247,9 +247,9 @@ impl Debug for ffi_raw_closure {
             .field("tramp", &&self.tramp[..])
             .field("cif", &self.cif);
 
-        #[cfg(not(target_arch = "i686"))]
+        #[cfg(not(target_arch = "x86"))]
         debug_struct.field("translate_args", &self.translate_args);
-        #[cfg(not(target_arch = "i686"))]
+        #[cfg(not(target_arch = "x86"))]
         debug_struct.field("this_closure", &self.this_closure);
 
         debug_struct
@@ -270,7 +270,7 @@ pub struct ffi_java_raw_closure {
     pub tramp: [c_char; FFI_TRAMPOLINE_SIZE],
     pub cif: *mut ffi_cif,
     // See: https://github.com/libffi/libffi/blob/3a7580da73b7f16f275277316d00e3497cbb5a8c/include/ffi.h.in#L390
-    #[cfg(not(target_arch = "i686"))]
+    #[cfg(not(target_arch = "x86"))]
     pub translate_args: Option<
         unsafe extern "C" fn(
             arg1: *mut ffi_cif,
@@ -279,7 +279,7 @@ pub struct ffi_java_raw_closure {
             arg4: *mut c_void,
         ),
     >,
-    #[cfg(not(target_arch = "i686"))]
+    #[cfg(not(target_arch = "x86"))]
     pub this_closure: *mut c_void,
     pub fun: Option<
         unsafe extern "C" fn(
@@ -300,9 +300,9 @@ impl Debug for ffi_java_raw_closure {
             .field("tramp", &&self.tramp[..])
             .field("cif", &self.cif);
 
-        #[cfg(not(target_arch = "i686"))]
+        #[cfg(not(target_arch = "x86"))]
         debug_struct.field("translate_args", &self.translate_args);
-        #[cfg(not(target_arch = "i686"))]
+        #[cfg(not(target_arch = "x86"))]
         debug_struct.field("this_closure", &self.this_closure);
 
         debug_struct
@@ -380,7 +380,7 @@ extern "C" {
     pub fn ffi_raw_size(cif: *mut ffi_cif) -> usize;
 
     // See: https://github.com/libffi/libffi/blob/3a7580da73b7f16f275277316d00e3497cbb5a8c/include/ffi.h.in#L286
-    #[cfg(not(target_arch = "i686"))]
+    #[cfg(not(target_arch = "x86"))]
     pub fn ffi_java_raw_call(
         cif: *mut ffi_cif,
         fn_: Option<unsafe extern "C" fn()>,
@@ -465,7 +465,7 @@ extern "C" {
     ) -> ffi_status;
 
     // See: https://github.com/libffi/libffi/blob/3a7580da73b7f16f275277316d00e3497cbb5a8c/include/ffi.h.in#L419
-    #[cfg(not(target_arch = "i686"))]
+    #[cfg(not(target_arch = "x86"))]
     pub fn ffi_prep_java_raw_closure(
         arg1: *mut ffi_java_raw_closure,
         cif: *mut ffi_cif,
@@ -481,7 +481,7 @@ extern "C" {
     ) -> ffi_status;
 
     // See: https://github.com/libffi/libffi/blob/3a7580da73b7f16f275277316d00e3497cbb5a8c/include/ffi.h.in#L419
-    #[cfg(not(target_arch = "i686"))]
+    #[cfg(not(target_arch = "x86"))]
     pub fn ffi_prep_java_raw_closure_loc(
         arg1: *mut ffi_java_raw_closure,
         cif: *mut ffi_cif,
