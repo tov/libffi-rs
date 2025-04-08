@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
+## [3.0.0] - 2025-04-08
 
 - Fix build for riscv64gc-unknown-linux-musl: https://github.com/tov/libffi-rs/commit/ed5f28d3d16e9a8177b7f79115f76f96ef150b09
 - Fix build for powerpc64-unknown-linux-musl: https://github.com/tov/libffi-rs/commit/f9fb3acd1a19a1a61b9164f0917498afea1d7b19
