@@ -14,6 +14,9 @@ The format is based on [Keep a Changelog] and this project adheres to
 
 ## [3.0.0] - 2025-04-08
 
+- Add constants for the MIPS family: https://github.com/tov/libffi-rs/commit/6e5190640b5f54646fd1fa6eeaae8a238d43c497
+- Don't preserve libffi mode and ownership on build: https://github.com/tov/libffi-rs/commit/ef98286d3cd01ddb29f441f0794fadddd420f5a3
+- Correct INCLUDE for msvc builds: https://github.com/tov/libffi-rs/commit/d930ae9b50620b830465b96b38eab9bb73c35b33
 - Fix build for riscv64gc-unknown-linux-musl: https://github.com/tov/libffi-rs/commit/ed5f28d3d16e9a8177b7f79115f76f96ef150b09
 - Fix build for powerpc64-unknown-linux-musl: https://github.com/tov/libffi-rs/commit/f9fb3acd1a19a1a61b9164f0917498afea1d7b19
 - Add support for the sparcv9 architecture: https://github.com/tov/libffi-rs/commit/3bd44239750b50b7bc2f5e9586346dec6d13d0fe
