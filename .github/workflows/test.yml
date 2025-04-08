@@ -1,236 +1,107 @@
-name: Build & Test
-on: [push, pull_request]
+name: Run tests
+on:
+  - push
+  - pull_request
+
+env:
+  RUST_BACKTRACE: 1
 
 jobs:
-  rustfmt:
-    name: Rustfmt
+  cargo-fmt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dtolnay/rust-toolchain@56f84321dbccf38fb67ce29ab63e4754056677e0
         with:
-          profile: minimal
-          toolchain: stable
+          toolchain: "1.78"
           components: rustfmt
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+      - name: Run rustfmt
+        run: 'cargo fmt --all --check'
 
   windows-msvc:
     strategy:
       fail-fast: false
       matrix:
-        toolchain: [i686-pc-windows-msvc, x86_64-pc-windows-msvc]
-        target: [i686-pc-windows-msvc, x86_64-pc-windows-msvc, aarch64-pc-windows-msvc]
-        channel: [1.78.0, stable]
+        toolchain:
+          - 1.78.0
+          - stable
     runs-on: windows-latest
-    name: Windows - ${{ matrix.target }} - ${{ matrix.channel }}
-    env:
-      RUST_BACKTRACE: 1
+    name: windows-msvc ${{ matrix.toolchain }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dtolnay/rust-toolchain@56f84321dbccf38fb67ce29ab63e4754056677e0
         with:
-          submodules: recursive
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.channel }}-${{ matrix.toolchain }}
-          target: ${{ matrix.target }}
-          override: true
-          profile: minimal
-          default: true
-      - name: Test libffi-sys-rs
-        run: |
-          cd libffi-sys-rs
-          cargo test
-      - name: Test libffi-rs
-        run: |
-          cd libffi-rs
-          cargo test
+          toolchain: ${{ matrix.toolchain }}
+      - name: Run tests
+        run: cargo test
 
   windows-gnu:
     strategy:
       fail-fast: false
       matrix:
-        channel: [1.78.0, stable]
+        toolchain:
+          - 1.78.0-gnu
+          - stable-gnu
     runs-on: windows-latest
-    name: Windows - x86_64-pc-windows-gnu - ${{ matrix.channel }}
-    env:
-      RUST_BACKTRACE: 1
+    name: windows-gnu ${{ matrix.toolchain }}
     steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Setup MSYS2
-        uses: msys2/setup-msys2@v2
+        uses: msys2/setup-msys2@61f9e5e925871ba6c9e3e8da24ede83ea27fa91f
         with:
           release: false
           path-type: inherit
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: dtolnay/rust-toolchain@56f84321dbccf38fb67ce29ab63e4754056677e0
         with:
-          submodules: recursive
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.channel }}-x86_64-pc-windows-gnu
-          target: x86_64-pc-windows-gnu
-          override: true
-          profile: minimal
-          default: true
-      - name: Test libffi-sys-rs
+          toolchain: ${{ matrix.toolchain }}
+      - name: Run tests
         shell: msys2 {0}
-        run: |
-          cd libffi-sys-rs
-          cargo test
-      - name: Test libffi-rs
-        shell: msys2 {0}
-        run: |
-          cd libffi-rs
-          cargo test
+        run: cargo test
 
   macos:
     strategy:
       fail-fast: false
       matrix:
-        channel: [1.78.0, stable]
-        features: ["--no-default-features", "--features system"]
-    runs-on: macos-latest
-    name: macOS - ${{ matrix.channel }} ${{ matrix.features }}
-    env:
-      RUST_BACKTRACE: 1
+        runner:
+          - macos-13
+          - macos-14
+        toolchain:
+          - 1.78.0
+          - stable
+        features:
+          - "--no-default-features"
+          - "--features system"
+    runs-on: ${{ matrix.runner }}
+    name: ${{ matrix.runner }} ${{ matrix.toolchain }} ${{ matrix.features }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Install dependencies
         run: brew install autoconf automake libtool libffi
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@56f84321dbccf38fb67ce29ab63e4754056677e0
         with:
-          toolchain: ${{ matrix.channel }}-x86_64-apple-darwin
-          target: x86_64-apple-darwin
-          override: true
-          profile: minimal
-          default: true
-      - name: Test libffi-sys-rs
-        run: |
-          cd libffi-sys-rs
-          cargo test ${{ matrix.features }}
-      - name: Test libffi-rs
-        run: |
-          cd libffi-rs
-          cargo test ${{ matrix.features }}
+          toolchain: ${{ matrix.toolchain }}
+      - name: Run tests
+        run: 'cargo test ${{ matrix.features }}'
 
   linux:
     strategy:
       fail-fast: false
       matrix:
-        channel: [1.78.0, stable]
-        features: ["--no-default-features", "--features system"]
-        target:
-        - x86_64-unknown-linux-gnu
-        - i686-unknown-linux-gnu
-        - aarch64-unknown-linux-gnu
-        - armv7-unknown-linux-gnueabihf
-        - riscv64gc-unknown-linux-gnu
-        - s390x-unknown-linux-gnu
-        exclude:
-        # Don't try to build with `--features system` when cross-compiling
-        # It's probably possible to make this work for some of these architectures
-        # (e.g. I got it working on my Ubuntu image for i686), but it complicates
-        # testing a bit
-        - target: i686-unknown-linux-gnu
-          features: "--features system"
-        - target: aarch64-unknown-linux-gnu
-          features: "--features system"
-        - target: armv7-unknown-linux-gnueabihf
-          features: "--features system"
-        - target: riscv64gc-unknown-linux-gnu
-          features: "--features system"
-        - target: s390x-unknown-linux-gnu
-          features: "--features system"
-        # 1.78.0 is too old for riscv64gc-unknown-linux-gnu
-        - target: riscv64gc-unknown-linux-gnu
-          channel: 1.78.0
-
+        runner:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+        toolchain:
+          - 1.78.0
+          - stable
+        features:
+          - "--no-default-features"
+          - "--features system"
     runs-on: ubuntu-latest
-    name: Linux - ${{ matrix.channel }} ${{ matrix.features }} ${{ matrix.target }}
-    env:
-      RUST_BACKTRACE: 1
+    name: ${{ matrix.runner }} ${{ matrix.toolchain }} ${{ matrix.features }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: dtolnay/rust-toolchain@56f84321dbccf38fb67ce29ab63e4754056677e0
         with:
-          submodules: recursive
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.channel }}
-          target: ${{ matrix.target }}
-          override: true
-          profile: minimal
-          default: true
-      - name: Set-up Cross Compiling
-        id: arch_attrs
-        run: |
-          # Get unique attributes for each architecture
-          if [ "${{ matrix.target }}" == "i686-unknown-linux-gnu" ]; then
-            GCC_ARCH=i686
-            ABI=gnu
-          elif [ "${{ matrix.target }}" == "powerpc64-unknown-linux-gnu" ]; then
-            GCC_ARCH=powerpc64
-            QEMU_ARCH=ppc64
-            ABI=gnu
-          elif [ "${{ matrix.target }}" == "powerpc64le-unknown-linux-gnu" ]; then
-            GCC_ARCH=powerpc64le
-            QEMU_ARCH=ppc64le
-            ABI=gnu
-          elif [ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]; then
-            GCC_ARCH=aarch64
-            QEMU_ARCH=aarch64
-            ABI=gnu
-          elif [ "${{ matrix.target }}" == "armv7-unknown-linux-gnueabihf" ]; then
-            GCC_ARCH=arm
-            QEMU_ARCH=arm
-            ABI=gnueabihf
-          elif [ "${{ matrix.target }}" == "riscv64gc-unknown-linux-gnu" ]; then
-            GCC_ARCH=riscv64
-            QEMU_ARCH=riscv64
-            ABI=gnu
-          elif [ "${{ matrix.target }}" == "s390x-unknown-linux-gnu" ]; then
-            GCC_ARCH=s390x
-            QEMU_ARCH=s390x
-            ABI=gnu
-          fi
-
-          # Install cross-compiler
-          sudo apt-get update
-          sudo apt-get install -y \
-            gcc-9-$(echo $GCC_ARCH | tr _ -)-linux-$ABI
-
-          # Convert target triple to uppercase and replace - with _
-          TARGET_TRIPLE=$(echo "${{ matrix.target }}" | tr - _)
-          TARGET_TRIPLE=${TARGET_TRIPLE^^}
-
-          CC=$GCC_ARCH-linux-$ABI-gcc-9
-
-          # Set cross-compiler as CC and set cargo target runner as qemu
-          echo "CC=$CC" >> $GITHUB_ENV
-          echo "CARGO_TARGET_${TARGET_TRIPLE}_LINKER=$CC" >> $GITHUB_ENV
-
-          # Don't need QEMU for i686
-          if [ "$QEMU_ARCH" != "" ]; then
-            sudo apt-get install -y qemu-user
-            echo "CARGO_TARGET_${TARGET_TRIPLE}_RUNNER=qemu-$QEMU_ARCH -L /usr/$GCC_ARCH-linux-$ABI/" >> $GITHUB_ENV
-          fi
-        if: ${{ 'x86_64-unknown-linux-gnu' != matrix.target }}
-      - name: Test libffi-sys-rs
-        run: |
-          cd libffi-sys-rs
-          cargo test --target ${{ matrix.target }} ${{ matrix.features }}
-      - name: Test libffi-rs
-        run: |
-          cd libffi-rs
-          cargo test --target ${{ matrix.target }} ${{ matrix.features }}
+          toolchain: ${{ matrix.toolchain }}
+      - name: Run tests
+        run: 'cargo test ${{ matrix.features }}'
