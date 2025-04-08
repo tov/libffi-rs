@@ -38,7 +38,7 @@
 //! See [the `libffi-sys` documentation] for more information about how it
 //! finds C libffi.
 //!
-//! This crate supports Rust version 1.48 and later.
+//! This crate supports Rust version 1.78 and later.
 //!
 //! # Organization
 //!
