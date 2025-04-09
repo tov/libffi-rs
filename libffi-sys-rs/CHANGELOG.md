@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
+## [3.2.0] - 2025-04-09
 
 - Fix out-of-bound reads on x84-64 for small integers: https://github.com/tov/libffi-rs/commit/fe3115a7627f77445530f072541ad31502fc6f03
 
