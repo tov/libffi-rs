@@ -694,7 +694,7 @@ pub unsafe fn prep_closure_mut<U, R>(
 
 #[cfg(test)]
 mod test {
-    use core::ptr;
+    use std::ptr::{addr_of_mut, null_mut};
 
     use super::*;
 
@@ -754,15 +754,15 @@ mod test {
             )]
             {
                 let mut cif = ffi_cif::default();
-                let mut arg_ty_array: [*mut ffi_type; 1] = [&mut $ffitype];
+                let mut arg_ty_array: [*mut ffi_type; 1] = [addr_of_mut!($ffitype)];
                 let mut arg: $ty = $val;
-                let mut arg_array: [*mut c_void; 1] = [&mut arg as *mut _ as *mut c_void];
+                let mut arg_array: [*mut c_void; 1] = [addr_of_mut!(arg).cast()];
 
                 prep_cif(
                     &mut cif,
                     ffi_abi_FFI_DEFAULT_ABI,
                     1,
-                    &mut $ffitype,
+                    addr_of_mut!($ffitype),
                     arg_ty_array.as_mut_ptr(),
                 ).unwrap();
 
@@ -789,11 +789,11 @@ mod test {
                     &mut cif,
                     ffi_abi_FFI_DEFAULT_ABI,
                     0,
-                    &mut types::void,
-                    ptr::null_mut(),
+                    addr_of_mut!(types::void),
+                    null_mut(),
                 )
                 .unwrap();
-                call::<()>(&mut cif, CodePtr(return_nothing as *mut _), ptr::null_mut());
+                call::<()>(&mut cif, CodePtr(return_nothing as *mut _), null_mut());
             }
         }
 
@@ -813,12 +813,15 @@ mod test {
             test_return_value!(
                 *const c_void,
                 types::pointer,
-                (&mut dummy as *mut i32).cast(),
+                addr_of_mut!(dummy).cast(),
                 return_pointer
             );
 
-            let mut small_struct_elements =
-                [&mut types::uint8, &mut types::uint16, ptr::null_mut()];
+            let mut small_struct_elements = [
+                addr_of_mut!(types::uint8),
+                addr_of_mut!(types::uint16),
+                null_mut(),
+            ];
             let mut small_struct_type = ffi_type {
                 type_: type_tag::STRUCT,
                 elements: small_struct_elements.as_mut_ptr(),
@@ -832,11 +835,11 @@ mod test {
             );
 
             let mut large_struct_elements = [
-                &mut types::uint64,
-                &mut types::uint64,
-                &mut types::uint64,
-                &mut types::uint64,
-                ptr::null_mut(),
+                addr_of_mut!(types::uint64),
+                addr_of_mut!(types::uint64),
+                addr_of_mut!(types::uint64),
+                addr_of_mut!(types::uint64),
+                null_mut(),
             ];
             let mut large_struct_type = ffi_type {
                 type_: type_tag::STRUCT,
