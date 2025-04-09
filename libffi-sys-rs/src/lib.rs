@@ -553,6 +553,41 @@ extern "C" {
 mod test {
     use super::*;
 
+    extern "C" fn cast_u8_u32(x: u8) -> u32 {
+        x as u32
+    }
+
+    #[test]
+    fn test_function_sign_extension() {
+        unsafe {
+            let mut cif: ffi_cif = Default::default();
+            let mut arg_types: Vec<*mut ffi_type> = vec![&mut ffi_type_uint8];
+
+            let prep_status = ffi_prep_cif(
+                &mut cif,
+                ffi_abi_FFI_DEFAULT_ABI,
+                1,
+                &mut ffi_type_uint32,
+                arg_types.as_mut_ptr(),
+            );
+
+            assert_eq!(prep_status, ffi_status_FFI_OK);
+
+            let mut rval = 0u32;
+            let func = &*(&(cast_u8_u32 as *mut extern "C" fn(u8) -> u32) as *const _
+                as *const extern "C" fn());
+
+            ffi_call(
+                &mut cif,
+                Some(*func),
+                &mut rval as *mut _ as *mut c_void,
+                vec![&mut 256 as *mut _ as *mut c_void].as_mut_ptr(),
+            );
+
+            assert_eq!(rval, 0);
+        }
+    }
+
     extern "C" fn add(x: u64, y: u64) -> u64 {
         x + y
     }
