@@ -221,10 +221,10 @@ am__depfiles_remade = src/$(DEPDIR)/closures.Plo \
 	src/microblaze/$(DEPDIR)/sysv.Plo src/mips/$(DEPDIR)/ffi.Plo \
 	src/mips/$(DEPDIR)/n32.Plo src/mips/$(DEPDIR)/o32.Plo \
 	src/moxie/$(DEPDIR)/eabi.Plo src/moxie/$(DEPDIR)/ffi.Plo \
-	src/nios2/$(DEPDIR)/ffi.Plo src/nios2/$(DEPDIR)/sysv.Plo \
 	src/or1k/$(DEPDIR)/ffi.Plo src/or1k/$(DEPDIR)/sysv.Plo \
 	src/pa/$(DEPDIR)/ffi.Plo src/pa/$(DEPDIR)/hpux32.Plo \
-	src/pa/$(DEPDIR)/linux.Plo src/powerpc/$(DEPDIR)/aix.Plo \
+	src/pa/$(DEPDIR)/hpux64.Plo src/pa/$(DEPDIR)/linux.Plo \
+	src/powerpc/$(DEPDIR)/aix.Plo \
 	src/powerpc/$(DEPDIR)/aix_closure.Plo \
 	src/powerpc/$(DEPDIR)/darwin.Plo \
 	src/powerpc/$(DEPDIR)/darwin_closure.Plo \
@@ -243,12 +243,12 @@ am__depfiles_remade = src/$(DEPDIR)/closures.Plo \
 	src/sparc/$(DEPDIR)/ffi64.Plo src/sparc/$(DEPDIR)/v8.Plo \
 	src/sparc/$(DEPDIR)/v9.Plo src/tile/$(DEPDIR)/ffi.Plo \
 	src/tile/$(DEPDIR)/tile.Plo src/vax/$(DEPDIR)/elfbsd.Plo \
-	src/vax/$(DEPDIR)/ffi.Plo src/x86/$(DEPDIR)/ffi.Plo \
-	src/x86/$(DEPDIR)/ffi64.Plo src/x86/$(DEPDIR)/ffiw64.Plo \
-	src/x86/$(DEPDIR)/sysv.Plo src/x86/$(DEPDIR)/sysv_intel.Plo \
-	src/x86/$(DEPDIR)/unix64.Plo src/x86/$(DEPDIR)/win64.Plo \
-	src/x86/$(DEPDIR)/win64_intel.Plo src/xtensa/$(DEPDIR)/ffi.Plo \
-	src/xtensa/$(DEPDIR)/sysv.Plo
+	src/vax/$(DEPDIR)/ffi.Plo src/wasm32/$(DEPDIR)/ffi.Plo \
+	src/x86/$(DEPDIR)/ffi.Plo src/x86/$(DEPDIR)/ffi64.Plo \
+	src/x86/$(DEPDIR)/ffiw64.Plo src/x86/$(DEPDIR)/sysv.Plo \
+	src/x86/$(DEPDIR)/sysv_intel.Plo src/x86/$(DEPDIR)/unix64.Plo \
+	src/x86/$(DEPDIR)/win64.Plo src/x86/$(DEPDIR)/win64_intel.Plo \
+	src/xtensa/$(DEPDIR)/ffi.Plo src/xtensa/$(DEPDIR)/sysv.Plo
 am__mv = mv -f
 CPPASCOMPILE = $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS)
@@ -376,7 +376,6 @@ am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
-ALLOCA = @ALLOCA@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AM_LTLDFLAGS = @AM_LTLDFLAGS@
@@ -470,6 +469,7 @@ ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
+ac_ct_READELF = @ac_ct_READELF@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -560,13 +560,14 @@ noinst_HEADERS = src/aarch64/ffitarget.h src/aarch64/internal.h		\
 	src/m32r/ffitarget.h src/m68k/ffitarget.h			\
 	src/m88k/ffitarget.h src/metag/ffitarget.h			\
 	src/microblaze/ffitarget.h src/mips/ffitarget.h			\
-	src/moxie/ffitarget.h src/nios2/ffitarget.h			\
+	src/moxie/ffitarget.h \
 	src/or1k/ffitarget.h src/pa/ffitarget.h				\
 	src/powerpc/ffitarget.h src/powerpc/asm.h			\
 	src/powerpc/ffi_powerpc.h src/riscv/ffitarget.h			\
 	src/s390/ffitarget.h src/s390/internal.h src/sh/ffitarget.h	\
 	src/sh64/ffitarget.h src/sparc/ffitarget.h			\
 	src/sparc/internal.h src/tile/ffitarget.h src/vax/ffitarget.h	\
+	src/wasm32/ffitarget.h \
 	src/x86/ffitarget.h src/x86/internal.h src/x86/internal64.h	\
 	src/x86/asmnames.h src/xtensa/ffitarget.h src/dlmalloc.c	\
 	src/kvx/ffitarget.h src/kvx/asm.h				\
@@ -584,9 +585,9 @@ EXTRA_libffi_la_SOURCES = src/aarch64/ffi.c src/aarch64/sysv.S		\
 	src/metag/ffi.c src/metag/sysv.S src/microblaze/ffi.c		\
 	src/microblaze/sysv.S src/mips/ffi.c src/mips/o32.S		\
 	src/mips/n32.S src/moxie/ffi.c src/moxie/eabi.S			\
-	src/nios2/ffi.c src/nios2/sysv.S src/or1k/ffi.c			\
+	src/or1k/ffi.c			\
 	src/or1k/sysv.S src/pa/ffi.c src/pa/linux.S src/pa/hpux32.S	\
-	src/powerpc/ffi.c src/powerpc/ffi_sysv.c			\
+	src/pa/hpux64.S src/powerpc/ffi.c src/powerpc/ffi_sysv.c	\
 	src/powerpc/ffi_linux64.c src/powerpc/sysv.S			\
 	src/powerpc/linux64.S src/powerpc/linux64_closure.S		\
 	src/powerpc/ppc_closure.S src/powerpc/aix.S			\
@@ -597,6 +598,7 @@ EXTRA_libffi_la_SOURCES = src/aarch64/ffi.c src/aarch64/sysv.S		\
 	src/sh64/sysv.S src/sparc/ffi.c src/sparc/ffi64.c		\
 	src/sparc/v8.S src/sparc/v9.S src/tile/ffi.c src/tile/tile.S	\
 	src/vax/ffi.c src/vax/elfbsd.S src/x86/ffi.c src/x86/sysv.S	\
+	src/wasm32/ffi.c \
 	src/x86/ffiw64.c src/x86/win64.S src/x86/ffi64.c		\
 	src/x86/unix64.S src/x86/sysv_intel.S src/x86/win64_intel.S	\
 	src/xtensa/ffi.c src/xtensa/sysv.S src/kvx/ffi.c		\
@@ -911,16 +913,6 @@ src/moxie/ffi.lo: src/moxie/$(am__dirstamp) \
 	src/moxie/$(DEPDIR)/$(am__dirstamp)
 src/moxie/eabi.lo: src/moxie/$(am__dirstamp) \
 	src/moxie/$(DEPDIR)/$(am__dirstamp)
-src/nios2/$(am__dirstamp):
-	@$(MKDIR_P) src/nios2
-	@: > src/nios2/$(am__dirstamp)
-src/nios2/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) src/nios2/$(DEPDIR)
-	@: > src/nios2/$(DEPDIR)/$(am__dirstamp)
-src/nios2/ffi.lo: src/nios2/$(am__dirstamp) \
-	src/nios2/$(DEPDIR)/$(am__dirstamp)
-src/nios2/sysv.lo: src/nios2/$(am__dirstamp) \
-	src/nios2/$(DEPDIR)/$(am__dirstamp)
 src/or1k/$(am__dirstamp):
 	@$(MKDIR_P) src/or1k
 	@: > src/or1k/$(am__dirstamp)
@@ -941,6 +933,8 @@ src/pa/ffi.lo: src/pa/$(am__dirstamp) src/pa/$(DEPDIR)/$(am__dirstamp)
 src/pa/linux.lo: src/pa/$(am__dirstamp) \
 	src/pa/$(DEPDIR)/$(am__dirstamp)
 src/pa/hpux32.lo: src/pa/$(am__dirstamp) \
+	src/pa/$(DEPDIR)/$(am__dirstamp)
+src/pa/hpux64.lo: src/pa/$(am__dirstamp) \
 	src/pa/$(DEPDIR)/$(am__dirstamp)
 src/powerpc/$(am__dirstamp):
 	@$(MKDIR_P) src/powerpc
@@ -1055,6 +1049,14 @@ src/x86/ffi.lo: src/x86/$(am__dirstamp) \
 	src/x86/$(DEPDIR)/$(am__dirstamp)
 src/x86/sysv.lo: src/x86/$(am__dirstamp) \
 	src/x86/$(DEPDIR)/$(am__dirstamp)
+src/wasm32/$(am__dirstamp):
+	@$(MKDIR_P) src/wasm32
+	@: > src/wasm32/$(am__dirstamp)
+src/wasm32/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/wasm32/$(DEPDIR)
+	@: > src/wasm32/$(DEPDIR)/$(am__dirstamp)
+src/wasm32/ffi.lo: src/wasm32/$(am__dirstamp) \
+	src/wasm32/$(DEPDIR)/$(am__dirstamp)
 src/x86/ffiw64.lo: src/x86/$(am__dirstamp) \
 	src/x86/$(DEPDIR)/$(am__dirstamp)
 src/x86/win64.lo: src/x86/$(am__dirstamp) \
@@ -1146,8 +1148,6 @@ mostlyclean-compile:
 	-rm -f src/mips/*.lo
 	-rm -f src/moxie/*.$(OBJEXT)
 	-rm -f src/moxie/*.lo
-	-rm -f src/nios2/*.$(OBJEXT)
-	-rm -f src/nios2/*.lo
 	-rm -f src/or1k/*.$(OBJEXT)
 	-rm -f src/or1k/*.lo
 	-rm -f src/pa/*.$(OBJEXT)
@@ -1168,6 +1168,8 @@ mostlyclean-compile:
 	-rm -f src/tile/*.lo
 	-rm -f src/vax/*.$(OBJEXT)
 	-rm -f src/vax/*.lo
+	-rm -f src/wasm32/*.$(OBJEXT)
+	-rm -f src/wasm32/*.lo
 	-rm -f src/x86/*.$(OBJEXT)
 	-rm -f src/x86/*.lo
 	-rm -f src/xtensa/*.$(OBJEXT)
@@ -1224,12 +1226,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/mips/$(DEPDIR)/o32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/moxie/$(DEPDIR)/eabi.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/moxie/$(DEPDIR)/ffi.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/nios2/$(DEPDIR)/ffi.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@src/nios2/$(DEPDIR)/sysv.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/or1k/$(DEPDIR)/ffi.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/or1k/$(DEPDIR)/sysv.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/pa/$(DEPDIR)/ffi.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/pa/$(DEPDIR)/hpux32.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/pa/$(DEPDIR)/hpux64.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/pa/$(DEPDIR)/linux.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/powerpc/$(DEPDIR)/aix.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/powerpc/$(DEPDIR)/aix_closure.Plo@am__quote@ # am--include-marker
@@ -1259,6 +1260,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/tile/$(DEPDIR)/tile.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/vax/$(DEPDIR)/elfbsd.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/vax/$(DEPDIR)/ffi.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/wasm32/$(DEPDIR)/ffi.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/x86/$(DEPDIR)/ffi.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/x86/$(DEPDIR)/ffi64.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/x86/$(DEPDIR)/ffiw64.Plo@am__quote@ # am--include-marker
@@ -1349,7 +1351,6 @@ clean-libtool:
 	-rm -rf src/microblaze/.libs src/microblaze/_libs
 	-rm -rf src/mips/.libs src/mips/_libs
 	-rm -rf src/moxie/.libs src/moxie/_libs
-	-rm -rf src/nios2/.libs src/nios2/_libs
 	-rm -rf src/or1k/.libs src/or1k/_libs
 	-rm -rf src/pa/.libs src/pa/_libs
 	-rm -rf src/powerpc/.libs src/powerpc/_libs
@@ -1360,6 +1361,7 @@ clean-libtool:
 	-rm -rf src/sparc/.libs src/sparc/_libs
 	-rm -rf src/tile/.libs src/tile/_libs
 	-rm -rf src/vax/.libs src/vax/_libs
+	-rm -rf src/wasm32/.libs src/wasm32/_libs
 	-rm -rf src/x86/.libs src/x86/_libs
 	-rm -rf src/xtensa/.libs src/xtensa/_libs
 
@@ -1766,8 +1768,6 @@ distclean-generic:
 	-rm -f src/mips/$(am__dirstamp)
 	-rm -f src/moxie/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/moxie/$(am__dirstamp)
-	-rm -f src/nios2/$(DEPDIR)/$(am__dirstamp)
-	-rm -f src/nios2/$(am__dirstamp)
 	-rm -f src/or1k/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/or1k/$(am__dirstamp)
 	-rm -f src/pa/$(DEPDIR)/$(am__dirstamp)
@@ -1788,6 +1788,8 @@ distclean-generic:
 	-rm -f src/tile/$(am__dirstamp)
 	-rm -f src/vax/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/vax/$(am__dirstamp)
+	-rm -f src/wasm32/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/wasm32/$(am__dirstamp)
 	-rm -f src/x86/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/x86/$(am__dirstamp)
 	-rm -f src/xtensa/$(DEPDIR)/$(am__dirstamp)
@@ -1852,12 +1854,11 @@ distclean: distclean-recursive
 	-rm -f src/mips/$(DEPDIR)/o32.Plo
 	-rm -f src/moxie/$(DEPDIR)/eabi.Plo
 	-rm -f src/moxie/$(DEPDIR)/ffi.Plo
-	-rm -f src/nios2/$(DEPDIR)/ffi.Plo
-	-rm -f src/nios2/$(DEPDIR)/sysv.Plo
 	-rm -f src/or1k/$(DEPDIR)/ffi.Plo
 	-rm -f src/or1k/$(DEPDIR)/sysv.Plo
 	-rm -f src/pa/$(DEPDIR)/ffi.Plo
 	-rm -f src/pa/$(DEPDIR)/hpux32.Plo
+	-rm -f src/pa/$(DEPDIR)/hpux64.Plo
 	-rm -f src/pa/$(DEPDIR)/linux.Plo
 	-rm -f src/powerpc/$(DEPDIR)/aix.Plo
 	-rm -f src/powerpc/$(DEPDIR)/aix_closure.Plo
@@ -1887,6 +1888,7 @@ distclean: distclean-recursive
 	-rm -f src/tile/$(DEPDIR)/tile.Plo
 	-rm -f src/vax/$(DEPDIR)/elfbsd.Plo
 	-rm -f src/vax/$(DEPDIR)/ffi.Plo
+	-rm -f src/wasm32/$(DEPDIR)/ffi.Plo
 	-rm -f src/x86/$(DEPDIR)/ffi.Plo
 	-rm -f src/x86/$(DEPDIR)/ffi64.Plo
 	-rm -f src/x86/$(DEPDIR)/ffiw64.Plo
@@ -1992,12 +1994,11 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f src/mips/$(DEPDIR)/o32.Plo
 	-rm -f src/moxie/$(DEPDIR)/eabi.Plo
 	-rm -f src/moxie/$(DEPDIR)/ffi.Plo
-	-rm -f src/nios2/$(DEPDIR)/ffi.Plo
-	-rm -f src/nios2/$(DEPDIR)/sysv.Plo
 	-rm -f src/or1k/$(DEPDIR)/ffi.Plo
 	-rm -f src/or1k/$(DEPDIR)/sysv.Plo
 	-rm -f src/pa/$(DEPDIR)/ffi.Plo
 	-rm -f src/pa/$(DEPDIR)/hpux32.Plo
+	-rm -f src/pa/$(DEPDIR)/hpux64.Plo
 	-rm -f src/pa/$(DEPDIR)/linux.Plo
 	-rm -f src/powerpc/$(DEPDIR)/aix.Plo
 	-rm -f src/powerpc/$(DEPDIR)/aix_closure.Plo
@@ -2027,6 +2028,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f src/tile/$(DEPDIR)/tile.Plo
 	-rm -f src/vax/$(DEPDIR)/elfbsd.Plo
 	-rm -f src/vax/$(DEPDIR)/ffi.Plo
+	-rm -f src/wasm32/$(DEPDIR)/ffi.Plo
 	-rm -f src/x86/$(DEPDIR)/ffi.Plo
 	-rm -f src/x86/$(DEPDIR)/ffi64.Plo
 	-rm -f src/x86/$(DEPDIR)/ffiw64.Plo

@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
+## [4.0.0] - 2025-04-08
+
+- Bump libffi-sys version requirement to 3.1
+- Bump MSRV to 1.78: https://github.com/tov/libffi-rs/commit/10818e3b6e780c69177049599ba35037fa624ce5
+
 ## [3.2.0] - 2023-03-28
 
 - Handle return type promotion in the high layer: https://github.com/tov/libffi-rs/pull/69

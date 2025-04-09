@@ -55,13 +55,14 @@ noinst_HEADERS = src/aarch64/ffitarget.h src/aarch64/internal.h		\
 	src/m32r/ffitarget.h src/m68k/ffitarget.h			\
 	src/m88k/ffitarget.h src/metag/ffitarget.h			\
 	src/microblaze/ffitarget.h src/mips/ffitarget.h			\
-	src/moxie/ffitarget.h src/nios2/ffitarget.h			\
+	src/moxie/ffitarget.h \
 	src/or1k/ffitarget.h src/pa/ffitarget.h				\
 	src/powerpc/ffitarget.h src/powerpc/asm.h			\
 	src/powerpc/ffi_powerpc.h src/riscv/ffitarget.h			\
 	src/s390/ffitarget.h src/s390/internal.h src/sh/ffitarget.h	\
 	src/sh64/ffitarget.h src/sparc/ffitarget.h			\
 	src/sparc/internal.h src/tile/ffitarget.h src/vax/ffitarget.h	\
+	src/wasm32/ffitarget.h \
 	src/x86/ffitarget.h src/x86/internal.h src/x86/internal64.h	\
 	src/x86/asmnames.h src/xtensa/ffitarget.h src/dlmalloc.c	\
 	src/kvx/ffitarget.h src/kvx/asm.h				\
@@ -79,9 +80,9 @@ EXTRA_libffi_la_SOURCES = src/aarch64/ffi.c src/aarch64/sysv.S		\
 	src/metag/ffi.c src/metag/sysv.S src/microblaze/ffi.c		\
 	src/microblaze/sysv.S src/mips/ffi.c src/mips/o32.S		\
 	src/mips/n32.S src/moxie/ffi.c src/moxie/eabi.S			\
-	src/nios2/ffi.c src/nios2/sysv.S src/or1k/ffi.c			\
+	src/or1k/ffi.c			\
 	src/or1k/sysv.S src/pa/ffi.c src/pa/linux.S src/pa/hpux32.S	\
-	src/powerpc/ffi.c src/powerpc/ffi_sysv.c			\
+	src/pa/hpux64.S src/powerpc/ffi.c src/powerpc/ffi_sysv.c	\
 	src/powerpc/ffi_linux64.c src/powerpc/sysv.S			\
 	src/powerpc/linux64.S src/powerpc/linux64_closure.S		\
 	src/powerpc/ppc_closure.S src/powerpc/aix.S			\
@@ -92,6 +93,7 @@ EXTRA_libffi_la_SOURCES = src/aarch64/ffi.c src/aarch64/sysv.S		\
 	src/sh64/sysv.S src/sparc/ffi.c src/sparc/ffi64.c		\
 	src/sparc/v8.S src/sparc/v9.S src/tile/ffi.c src/tile/tile.S	\
 	src/vax/ffi.c src/vax/elfbsd.S src/x86/ffi.c src/x86/sysv.S	\
+	src/wasm32/ffi.c \
 	src/x86/ffiw64.c src/x86/win64.S src/x86/ffi64.c		\
 	src/x86/unix64.S src/x86/sysv_intel.S src/x86/win64_intel.S	\
 	src/xtensa/ffi.c src/xtensa/sysv.S src/kvx/ffi.c		\

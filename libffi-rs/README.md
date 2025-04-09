@@ -22,7 +22,7 @@ you can add
 
 ```toml
 [dependencies]
-libffi = "3.2.0"
+libffi = "4.0.0"
 ```
 
 to your `Cargo.toml`.
@@ -34,13 +34,13 @@ feature in your `Cargo.toml`:
 
 ```toml
 [features]
-libffi = { version = "3.2.0", features = ["system"] }
+libffi = { version = "4.0.0", features = ["system"] }
 ```
 
 See [the `libffi-sys` documentation] for more information about how it
 finds C libffi.
 
-This crate supports Rust version 1.48 and later.
+This crate supports Rust version 1.78 and later.
 
 ### Examples
 

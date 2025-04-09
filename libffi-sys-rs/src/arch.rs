@@ -171,10 +171,10 @@ mod powerpc {
             pub const SOFT_FLOAT_FLAG: crate::ffi_abi = super::ffi_abi_FFI_SYSV_SOFT_FLOAT;
         }
 
-        #[cfg(target_env = "gnuspe")]
+        #[cfg(target_abi = "spe")]
         use no_fprs::*;
 
-        #[cfg(not(target_feature = "gnuspe"))]
+        #[cfg(not(target_abi = "spe"))]
         use fprs::*;
 
         mod struct_ret {
@@ -251,7 +251,7 @@ mod powerpc {
             // ELFv1 is the used for powerpc64 when not targeting musl
             all(target_arch = "powerpc64", target_endian="big", not(target_env = "musl")),
             // Use empty flags when targeting a non-PowerPC target, too, just so code compiles.
-            not(all(target_arch = "powerpc64", target_endian="little"))
+            not(target_arch = "powerpc64")
         ))]
         mod elf {
             pub use super::elfv1::*;
@@ -320,7 +320,7 @@ mod riscv {
     pub const FFI_NATIVE_RAW_API: u32 = 0;
 }
 
-#[cfg(target_arch = "riscv")]
+#[cfg(target_arch = "riscv32")]
 pub use riscv::*;
 
 #[cfg(target_arch = "riscv64")]
@@ -343,6 +343,24 @@ mod s390x {
 
 #[cfg(target_arch = "s390x")]
 pub use s390x::*;
+
+/// From libffi:src/sparc/ffitarget.h
+/// See: <https://github.com/libffi/libffi/blob/master/src/sparc/ffitarget.h>
+mod sparcv9 {
+    use crate::ffi_abi;
+
+    pub const ffi_abi_FFI_FIRST_ABI: ffi_abi = 0;
+    pub const ffi_abi_FFI_V9: ffi_abi = 1;
+    pub const ffi_abi_LAST_ABI: ffi_abi = 2;
+    pub const ffi_abi_FFI_DEFAULT_ABI: ffi_abi = ffi_abi_FFI_V9;
+
+    pub const FFI_GO_CLOSURES: u32 = 1;
+    pub const FFI_TRAMPOLINE_SIZE: usize = 24;
+    pub const FFI_NATIVE_RAW_API: u32 = 0;
+}
+
+#[cfg(target_arch = "sparc64")]
+pub use sparcv9::*;
 
 /// From libffi:src/loongarch64/ffitarget.h.
 /// See: <https://github.com/libffi/libffi/blob/f24180be1367f942824365b131ae894b9c769c7d/src/loongarch64/ffitarget.h#L47>

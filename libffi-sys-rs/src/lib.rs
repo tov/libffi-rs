@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/libffi-sys/2.3.0")]
+#![doc(html_root_url = "https://docs.rs/libffi-sys/3.2.0")]
 //! Low-level Rust bindings for [libffi](https://sourceware.org/libffi/)
 //!
 //! The C libffi library provides two main facilities: assembling calls
@@ -24,14 +24,14 @@
 //!
 //! ```toml
 //! [dependencies]
-//! libffi-sys = "2.3.0"
+//! libffi-sys = "3.2.0"
 //! ```
 //!
 //! to your `Cargo.toml`. If you want to use your system C libffi, then
 //!
 //! ```toml
 //! [dependencies.libffi-sys]
-//! version = "2.3.0"
+//! version = "3.2.0"
 //! features = ["system"]
 //! ```
 //!
@@ -129,9 +129,9 @@ pub struct ffi_cif {
     pub vfp_args: [c_schar; 16],
     #[cfg(any(target_arch = "powerpc", target_arch = "powerpc64"))]
     pub nfixedargs: c_uint,
-    #[cfg(any(target_arch = "riscv", target_arch = "riscv64"))]
+    #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
     pub riscv_nfixedargs: c_uint,
-    #[cfg(any(target_arch = "riscv", target_arch = "riscv64"))]
+    #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
     pub riscv_unused: c_uint,
     #[cfg(all(target_arch = "loongarch64"))]
     pub loongarch_nfixedargs: c_uint,
@@ -217,7 +217,7 @@ pub struct ffi_raw_closure {
     pub tramp: [c_char; FFI_TRAMPOLINE_SIZE],
     pub cif: *mut ffi_cif,
     // See: https://github.com/libffi/libffi/blob/3a7580da73b7f16f275277316d00e3497cbb5a8c/include/ffi.h.in#L364
-    #[cfg(not(target_arch = "i686"))]
+    #[cfg(not(target_arch = "x86"))]
     pub translate_args: Option<
         unsafe extern "C" fn(
             arg1: *mut ffi_cif,
@@ -226,7 +226,7 @@ pub struct ffi_raw_closure {
             arg4: *mut c_void,
         ),
     >,
-    #[cfg(not(target_arch = "i686"))]
+    #[cfg(not(target_arch = "x86"))]
     pub this_closure: *mut c_void,
     pub fun: Option<
         unsafe extern "C" fn(
@@ -247,9 +247,9 @@ impl Debug for ffi_raw_closure {
             .field("tramp", &&self.tramp[..])
             .field("cif", &self.cif);
 
-        #[cfg(not(target_arch = "i686"))]
+        #[cfg(not(target_arch = "x86"))]
         debug_struct.field("translate_args", &self.translate_args);
-        #[cfg(not(target_arch = "i686"))]
+        #[cfg(not(target_arch = "x86"))]
         debug_struct.field("this_closure", &self.this_closure);
 
         debug_struct
@@ -270,7 +270,7 @@ pub struct ffi_java_raw_closure {
     pub tramp: [c_char; FFI_TRAMPOLINE_SIZE],
     pub cif: *mut ffi_cif,
     // See: https://github.com/libffi/libffi/blob/3a7580da73b7f16f275277316d00e3497cbb5a8c/include/ffi.h.in#L390
-    #[cfg(not(target_arch = "i686"))]
+    #[cfg(not(target_arch = "x86"))]
     pub translate_args: Option<
         unsafe extern "C" fn(
             arg1: *mut ffi_cif,
@@ -279,7 +279,7 @@ pub struct ffi_java_raw_closure {
             arg4: *mut c_void,
         ),
     >,
-    #[cfg(not(target_arch = "i686"))]
+    #[cfg(not(target_arch = "x86"))]
     pub this_closure: *mut c_void,
     pub fun: Option<
         unsafe extern "C" fn(
@@ -300,9 +300,9 @@ impl Debug for ffi_java_raw_closure {
             .field("tramp", &&self.tramp[..])
             .field("cif", &self.cif);
 
-        #[cfg(not(target_arch = "i686"))]
+        #[cfg(not(target_arch = "x86"))]
         debug_struct.field("translate_args", &self.translate_args);
-        #[cfg(not(target_arch = "i686"))]
+        #[cfg(not(target_arch = "x86"))]
         debug_struct.field("this_closure", &self.this_closure);
 
         debug_struct
@@ -380,7 +380,7 @@ extern "C" {
     pub fn ffi_raw_size(cif: *mut ffi_cif) -> usize;
 
     // See: https://github.com/libffi/libffi/blob/3a7580da73b7f16f275277316d00e3497cbb5a8c/include/ffi.h.in#L286
-    #[cfg(not(target_arch = "i686"))]
+    #[cfg(not(target_arch = "x86"))]
     pub fn ffi_java_raw_call(
         cif: *mut ffi_cif,
         fn_: Option<unsafe extern "C" fn()>,
@@ -465,7 +465,7 @@ extern "C" {
     ) -> ffi_status;
 
     // See: https://github.com/libffi/libffi/blob/3a7580da73b7f16f275277316d00e3497cbb5a8c/include/ffi.h.in#L419
-    #[cfg(not(target_arch = "i686"))]
+    #[cfg(not(target_arch = "x86"))]
     pub fn ffi_prep_java_raw_closure(
         arg1: *mut ffi_java_raw_closure,
         cif: *mut ffi_cif,
@@ -481,7 +481,7 @@ extern "C" {
     ) -> ffi_status;
 
     // See: https://github.com/libffi/libffi/blob/3a7580da73b7f16f275277316d00e3497cbb5a8c/include/ffi.h.in#L419
-    #[cfg(not(target_arch = "i686"))]
+    #[cfg(not(target_arch = "x86"))]
     pub fn ffi_prep_java_raw_closure_loc(
         arg1: *mut ffi_java_raw_closure,
         cif: *mut ffi_cif,
@@ -551,7 +551,44 @@ extern "C" {
 
 #[cfg(test)]
 mod test {
+    use std::ptr::addr_of_mut;
+
     use super::*;
+
+    extern "C" fn cast_u8_u32(x: u8) -> u32 {
+        x as u32
+    }
+
+    #[test]
+    fn test_function_sign_extension() {
+        unsafe {
+            let mut cif: ffi_cif = Default::default();
+            let mut arg_types: Vec<*mut ffi_type> = vec![&mut ffi_type_uint8];
+
+            let prep_status = ffi_prep_cif(
+                &mut cif,
+                ffi_abi_FFI_DEFAULT_ABI,
+                1,
+                &mut ffi_type_uint32,
+                arg_types.as_mut_ptr(),
+            );
+
+            assert_eq!(prep_status, ffi_status_FFI_OK);
+
+            let mut rval = 0u32;
+            let func = &*(&(cast_u8_u32 as *mut extern "C" fn(u8) -> u32) as *const _
+                as *const extern "C" fn());
+
+            ffi_call(
+                &mut cif,
+                Some(*func),
+                &mut rval as *mut _ as *mut c_void,
+                vec![&mut 256 as *mut _ as *mut c_void].as_mut_ptr(),
+            );
+
+            assert_eq!(rval, 0);
+        }
+    }
 
     extern "C" fn add(x: u64, y: u64) -> u64 {
         x + y
@@ -562,13 +599,13 @@ mod test {
         unsafe {
             let mut cif: ffi_cif = Default::default();
             let mut arg_types: Vec<*mut ffi_type> =
-                vec![&mut ffi_type_uint64, &mut ffi_type_uint64];
+                vec![addr_of_mut!(ffi_type_uint64), addr_of_mut!(ffi_type_uint64)];
 
             let prep_status = ffi_prep_cif(
                 &mut cif,
                 ffi_abi_FFI_DEFAULT_ABI,
                 2,
-                &mut ffi_type_uint64,
+                addr_of_mut!(ffi_type_uint64),
                 arg_types.as_mut_ptr(),
             );
 
