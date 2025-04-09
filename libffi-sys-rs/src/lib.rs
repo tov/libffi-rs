@@ -551,6 +551,8 @@ extern "C" {
 
 #[cfg(test)]
 mod test {
+    use std::ptr::addr_of_mut;
+
     use super::*;
 
     extern "C" fn add(x: u64, y: u64) -> u64 {
@@ -562,13 +564,13 @@ mod test {
         unsafe {
             let mut cif: ffi_cif = Default::default();
             let mut arg_types: Vec<*mut ffi_type> =
-                vec![&mut ffi_type_uint64, &mut ffi_type_uint64];
+                vec![addr_of_mut!(ffi_type_uint64), addr_of_mut!(ffi_type_uint64)];
 
             let prep_status = ffi_prep_cif(
                 &mut cif,
                 ffi_abi_FFI_DEFAULT_ABI,
                 2,
-                &mut ffi_type_uint64,
+                addr_of_mut!(ffi_type_uint64),
                 arg_types.as_mut_ptr(),
             );
 

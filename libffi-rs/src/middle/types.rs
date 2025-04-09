@@ -10,6 +10,7 @@ use libc;
 use std::fmt;
 use std::mem;
 use std::ptr;
+use std::ptr::addr_of_mut;
 
 use crate::low;
 
@@ -235,47 +236,47 @@ impl Type {
     /// This is used only for the return type of a [CIF](super::Cif),
     /// not for an argument or struct member.
     pub fn void() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::void) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::void)) })
     }
 
     /// Returns the unsigned 8-bit numeric type.
     pub fn u8() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::uint8) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::uint8)) })
     }
 
     /// Returns the signed 8-bit numeric type.
     pub fn i8() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::sint8) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::sint8)) })
     }
 
     /// Returns the unsigned 16-bit numeric type.
     pub fn u16() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::uint16) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::uint16)) })
     }
 
     /// Returns the signed 16-bit numeric type.
     pub fn i16() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::sint16) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::sint16)) })
     }
 
     /// Returns the unsigned 32-bit numeric type.
     pub fn u32() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::uint32) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::uint32)) })
     }
 
     /// Returns the signed 32-bit numeric type.
     pub fn i32() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::sint32) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::sint32)) })
     }
 
     /// Returns the unsigned 64-bit numeric type.
     pub fn u64() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::uint64) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::uint64)) })
     }
 
     /// Returns the signed 64-bit numeric type.
     pub fn i64() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::sint64) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::sint64)) })
     }
 
     #[cfg(target_pointer_width = "16")]
@@ -366,23 +367,23 @@ impl Type {
 
     /// Returns the C `float` (32-bit floating point) type.
     pub fn f32() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::float) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::float)) })
     }
 
     /// Returns the C `double` (64-bit floating point) type.
     pub fn f64() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::double) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::double)) })
     }
 
     /// Returns the C `void*` type, for passing any kind of pointer.
     pub fn pointer() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::pointer) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::pointer)) })
     }
 
     /// Returns the C `long double` (extended-precision floating point) type.
     #[cfg(not(any(target_arch = "arm", target_arch = "aarch64")))]
     pub fn longdouble() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::longdouble) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::longdouble)) })
     }
 
     /// Returns the C `_Complex float` type.
@@ -390,7 +391,7 @@ impl Type {
     /// This item is enabled by `#[cfg(feature = "complex")]`.
     #[cfg(feature = "complex")]
     pub fn c32() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::complex_float) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::complex_float)) })
     }
 
     /// Returns the C `_Complex double` type.
@@ -398,7 +399,7 @@ impl Type {
     /// This item is enabled by `#[cfg(feature = "complex")]`.
     #[cfg(feature = "complex")]
     pub fn c64() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::complex_double) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::complex_double)) })
     }
 
     /// Returns the C `_Complex long double` type.
@@ -407,7 +408,7 @@ impl Type {
     #[cfg(feature = "complex")]
     #[cfg(not(all(target_arch = "arm")))]
     pub fn complex_longdouble() -> Self {
-        Type(unsafe { Unique::new(&mut low::types::complex_longdouble) })
+        Type(unsafe { Unique::new(addr_of_mut!(low::types::complex_longdouble)) })
     }
 
     /// Constructs a structure type whose fields have the given types.
