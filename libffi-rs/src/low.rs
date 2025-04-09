@@ -358,7 +358,7 @@ pub unsafe fn call<R>(cif: *mut ffi_cif, fun: CodePtr, args: *mut *mut c_void) -
     // There is no data type in rust that is guaranteed to be a full
     // register(?), but the assumption that usize is the full width of a
     // register holds for all tested architectures.
-    if size_of::<R>() < size_of::<usize>() {
+    if mem::size_of::<R>() < mem::size_of::<usize>() {
         // Alignments are a power of 2 (1, 2, 4, 8, etc). `result`'s alignment
         // is greater than or equal to that of `R`, so `result` should be
         // properly aligned for `R` since a larger alignment is always
@@ -423,7 +423,7 @@ unsafe fn call_return_small_big_endian_result<R>(type_tag: u16, result: *const u
         unsafe {
             result
                 .cast::<R>()
-                .add((size_of::<usize>() / size_of::<R>()) - 1)
+                .add((mem::size_of::<usize>() / mem::size_of::<R>()) - 1)
                 .read()
         }
     }
@@ -747,30 +747,25 @@ mod test {
     }
 
     macro_rules! test_return_value {
-        ($ty:ty, $ffitype:expr, $val:expr, $fn:ident) => {
-            #[allow(
-                clippy::float_cmp,
-                reason = "Comparing floats that are passed directly through a function in `assert_eq!`",
-            )]
-            {
-                let mut cif = ffi_cif::default();
-                let mut arg_ty_array: [*mut ffi_type; 1] = [addr_of_mut!($ffitype)];
-                let mut arg: $ty = $val;
-                let mut arg_array: [*mut c_void; 1] = [addr_of_mut!(arg).cast()];
+        ($ty:ty, $ffitype:expr, $val:expr, $fn:ident) => {{
+            let mut cif = ffi_cif::default();
+            let mut arg_ty_array: [*mut ffi_type; 1] = [addr_of_mut!($ffitype)];
+            let mut arg: $ty = $val;
+            let mut arg_array: [*mut c_void; 1] = [addr_of_mut!(arg).cast()];
 
-                prep_cif(
-                    &mut cif,
-                    ffi_abi_FFI_DEFAULT_ABI,
-                    1,
-                    addr_of_mut!($ffitype),
-                    arg_ty_array.as_mut_ptr(),
-                ).unwrap();
+            prep_cif(
+                &mut cif,
+                ffi_abi_FFI_DEFAULT_ABI,
+                1,
+                addr_of_mut!($ffitype),
+                arg_ty_array.as_mut_ptr(),
+            )
+            .unwrap();
 
-                let result: $ty = call(&mut cif, CodePtr($fn as *mut _), arg_array.as_mut_ptr());
+            let result: $ty = call(&mut cif, CodePtr($fn as *mut _), arg_array.as_mut_ptr());
 
-                assert_eq!(result, $val);
-            }
-        }
+            assert_eq!(result, $val);
+        }};
     }
 
     /// Test to ensure that values returned from functions called through libffi are correct.
