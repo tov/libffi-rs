@@ -119,13 +119,13 @@ pub struct ffi_cif {
     pub is_variadic: c_uint,
     #[cfg(all(target_arch = "aarch64", target_vendor = "apple"))]
     pub aarch64_nfixedargs: c_uint,
-    #[cfg(all(target_arch = "arm"))]
+    #[cfg(target_arch = "arm")]
     pub vfp_used: c_int,
-    #[cfg(all(target_arch = "arm"))]
+    #[cfg(target_arch = "arm")]
     pub vfp_reg_free: c_ushort,
-    #[cfg(all(target_arch = "arm"))]
+    #[cfg(target_arch = "arm")]
     pub vfp_nargs: c_ushort,
-    #[cfg(all(target_arch = "arm"))]
+    #[cfg(target_arch = "arm")]
     pub vfp_args: [c_schar; 16],
     #[cfg(any(target_arch = "powerpc", target_arch = "powerpc64"))]
     pub nfixedargs: c_uint,
@@ -133,9 +133,9 @@ pub struct ffi_cif {
     pub riscv_nfixedargs: c_uint,
     #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
     pub riscv_unused: c_uint,
-    #[cfg(all(target_arch = "loongarch64"))]
+    #[cfg(target_arch = "loongarch64")]
     pub loongarch_nfixedargs: c_uint,
-    #[cfg(all(target_arch = "loongarch64"))]
+    #[cfg(target_arch = "loongarch64")]
     pub loongarch_unused: c_uint,
     #[cfg(any(
         target_arch = "mips",
