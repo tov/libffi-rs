@@ -76,6 +76,13 @@ pub fn configure_libffi(prefix: PathBuf, build_dir: &Path) {
             // configure.host does not extract `ios-sim` as OS.
             // The sources for `ios-sim` should be the same as `ios`.
             "aarch64-apple-ios-sim" => "aarch64-apple-ios",
+
+            // MingW targets
+            "x86_64-pc-windows-gnu" | "x86_64-pc-windows-gnullvm" => "x86_64-w64-mingw32",
+
+            "i686-pc-windows-gnu" | "i686-pc-windows-gnullvm" => "i686-w64-mingw32",
+
+            "aarch64-pc-windows-gnullvm" => "aarch64-w64-mingw32",
             // Everything else should be fine to pass straight through
             other => other,
         };
