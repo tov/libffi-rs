@@ -18,7 +18,6 @@
 //! ```
 
 use core::convert::TryInto;
-use core::marker::PhantomData;
 
 use crate::middle;
 pub use middle::CodePtr;
@@ -33,8 +32,7 @@ pub struct Arg<'a> {
     // There should be some type T such that type_ is the middle-layer
     // value of Type<T> and value is T::reify().
     type_: middle::Type,
-    value: middle::Arg,
-    _marker: PhantomData<&'a ()>,
+    value: middle::Arg<'a>,
 }
 
 impl<'a> Arg<'a> {
@@ -45,7 +43,6 @@ impl<'a> Arg<'a> {
         Arg {
             type_: T::reify().into_middle(),
             value: middle::Arg::new(arg),
-            _marker: PhantomData,
         }
     }
 }
