@@ -30,15 +30,18 @@ pub use builder::Builder;
 /// struct accomplishes the necessary coercion.
 #[derive(Clone, Debug)]
 #[repr(C)]
-pub struct Arg(*mut c_void);
+pub struct Arg<'arg>(*mut c_void, PhantomData<&'arg c_void>);
 
-impl Arg {
+impl<'arg> Arg<'arg> {
     /// Coerces an argument reference into the [`Arg`] type.
     ///
     /// This is used to wrap each argument pointer before passing them
     /// to [`Cif::call`].
-    pub fn new<T>(r: &T) -> Self {
-        Arg(r as *const T as *mut c_void)
+    pub fn new<'argument, T>(r: &'argument T) -> Self
+    where
+        'argument: 'arg,
+    {
+        Arg(r as *const T as *mut c_void, PhantomData)
     }
 }
 
