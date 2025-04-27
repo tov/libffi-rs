@@ -9,6 +9,7 @@ license = "MIT/Apache-2.0"
 keywords = ["ffi", "libffi", "closure", "c"]
 categories = ["development-tools::ffi"]
 edition = "2018"
+rust-version = "1.78"
 
 [dependencies]
 libffi-sys = { path = "../libffi-sys-rs", version = "^3.2" }
