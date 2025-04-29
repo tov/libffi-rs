@@ -6,11 +6,11 @@
 //! and a result type, and libffi uses this to figure out how to set up
 //! a call to a function with those types.
 
+use core::mem;
+use core::ptr;
+use core::ptr::addr_of_mut;
 use libc;
 use std::fmt;
-use std::mem;
-use std::ptr;
-use std::ptr::addr_of_mut;
 
 use crate::low;
 

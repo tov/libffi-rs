@@ -1,4 +1,4 @@
-use std::any::Any;
+use core::any::Any;
 
 use super::types::Type;
 

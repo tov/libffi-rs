@@ -8,9 +8,9 @@
 //! aren’t checked. See the [`high`](crate::high) layer for closures
 //! with type-checked arguments.
 
-use std::any::Any;
-use std::marker::PhantomData;
-use std::os::raw::c_void;
+use core::any::Any;
+use core::ffi::c_void;
+use core::marker::PhantomData;
 
 use crate::low;
 pub use crate::low::{ffi_abi as FfiAbi, ffi_abi_FFI_DEFAULT_ABI, Callback, CallbackMut, CodePtr};
@@ -460,7 +460,7 @@ impl ClosureOnce {
 mod test {
     use super::*;
     use crate::low;
-    use std::os::raw::c_void;
+    use core::ffi::c_void;
 
     #[test]
     fn call() {
