@@ -111,8 +111,7 @@ macro_rules! define_closure_mod {
         pub mod $module {
             use std::any::Any;
             use std::marker::PhantomData;
-            use std::{mem, process, ptr};
-            use std::io::{self, Write};
+            use std::{mem, ptr};
 
             use super::*;
             use crate::{low, middle};
@@ -410,10 +409,19 @@ macro_rules! define_closure_mod {
                             }
                         });
                     } else {
-                        // There is probably a better way to abort here.
-                        let _ =
-                            io::stderr().write(b"FnOnce closure already used");
-                        process::exit(2);
+                        eprintln!(
+                            "FnOnce closure already used (userdata {:?})",
+                            userdata as *const Option<Callback>);
+
+                        // When testing we need to panic so that we can
+                        // catch it with #[should_panic].
+                        #[cfg(test)]
+                        panic!("FnOnce closure already used");
+
+                        // Otherwise, we exit to avoid panicking across
+                        // an FFI boundary.
+                        #[cfg(not(test))]
+                        std::process::exit(2);
                     }
                 }
             }
@@ -569,5 +577,23 @@ mod test {
         assert_eq!(5, counter.call(5));
         assert_eq!(6, counter.call(1));
         assert_eq!(8, counter.call(2));
+    }
+
+    #[test]
+    fn once_ok() {
+        let closure = ClosureOnce1::new(|x| x + 1);
+        let inc     = closure.code_ptr();
+
+        assert_eq!(4, inc.call(3));
+    }
+
+    #[test]
+    #[should_panic]
+    fn once_error() {
+        let closure = ClosureOnce1::new(|x| x + 1);
+        let inc     = closure.code_ptr();
+
+        assert_eq!(4, inc.call(3));
+        assert_eq!(5, inc.call(4));
     }
 }
