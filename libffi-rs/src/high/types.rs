@@ -1,6 +1,6 @@
 //! Representations of C types for the high layer.
 
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 use super::super::low;
 use super::super::middle;

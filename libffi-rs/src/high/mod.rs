@@ -93,7 +93,7 @@ macro_rules! abort_on_panic {
         // If this panics, `b` will be dropped, triggering the bomb.
         $body;
         // Defuse the bomb.
-        std::mem::forget(b);
+        core::mem::forget(b);
     }};
 }
 
@@ -109,8 +109,8 @@ macro_rules! define_closure_mod {
         /// CIF and closure types organized by function arity.
         #[allow(clippy::too_many_arguments)]
         pub mod $module {
-            use std::any::Any;
-            use std::marker::PhantomData;
+            use core::any::Any;
+            use core::marker::PhantomData;
             use std::{mem, process, ptr};
             use std::io::{self, Write};
 
