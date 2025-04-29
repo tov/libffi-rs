@@ -3,13 +3,13 @@ name = "libffi"
 version = "4.0.0"
 authors = ["Jesse A. Tov <jesse.tov@gmail.com>"]
 description = "Rust bindings for libffi"
-repository = "https://github.com/tov/libffi-rs"
+repository.workspace = true
 readme = "README.md"
-license = "MIT/Apache-2.0"
-keywords = ["ffi", "libffi", "closure", "c"]
+license.workspace = true
+keywords.workspace = true
 categories = ["development-tools::ffi"]
-edition = "2018"
-rust-version = "1.78"
+edition.workspace = true
+rust-version.workspace = true
 
 [dependencies]
 libffi-sys = { path = "../libffi-sys-rs", version = "^3.2" }
