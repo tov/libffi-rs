@@ -562,13 +562,13 @@ mod test {
     fn test_function_sign_extension() {
         unsafe {
             let mut cif: ffi_cif = Default::default();
-            let mut arg_types: Vec<*mut ffi_type> = vec![&mut ffi_type_uint8];
+            let mut arg_types: Vec<*mut ffi_type> = vec![addr_of_mut!(ffi_type_uint8)];
 
             let prep_status = ffi_prep_cif(
                 &mut cif,
                 ffi_abi_FFI_DEFAULT_ABI,
                 1,
-                &mut ffi_type_uint32,
+                addr_of_mut!(ffi_type_uint8),
                 arg_types.as_mut_ptr(),
             );
 
