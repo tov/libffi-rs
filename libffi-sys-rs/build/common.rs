@@ -15,6 +15,6 @@ pub fn run_command(which: &'static str, cmd: &mut Command) {
         Err(err) => {
             println!("cargo:warning={} failed with error {}", which, err);
             panic!("{}: {} ({:?})", which, err, cmd);
-        },
+        }
     }
 }
