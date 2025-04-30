@@ -339,15 +339,94 @@ pub unsafe fn prep_cif_var(
 ///
 /// assert_eq!(9, result);
 /// ```
+///
+/// # Safety
+/// libffi will read values from `args` based on the CIF, make sure that every
+/// pointer points to correct data types that are properly aligned.
+/// Additionally, the ffi function may perform actions that causes undefined
+/// behavior. Extensive testing is recommended when dealing with ffi functions.
+///
+/// It is also important that the return type `R` matches the type of the value
+/// returned from `fun` as a mismatch may lead to out-of-bounds reads, write,
+/// and misaligned memory accesses.
 pub unsafe fn call<R>(cif: *mut ffi_cif, fun: CodePtr, args: *mut *mut c_void) -> R {
-    let mut result = mem::MaybeUninit::<R>::uninit();
-    raw::ffi_call(
-        cif,
-        Some(*fun.as_safe_fun()),
-        result.as_mut_ptr() as *mut c_void,
-        args,
-    );
-    result.assume_init()
+    // libffi always writes *at least* a full register to the result pointer.
+    // Therefore, if the return value is smaller, we need to handle the return
+    // value with extra care to prevent out of bounds write and returning the
+    // correct value in big endian architectures.
+    //
+    // There is no data type in rust that is guaranteed to be a full
+    // register(?), but the assumption that usize is the full width of a
+    // register holds for all tested architectures.
+    if mem::size_of::<R>() < mem::size_of::<usize>() {
+        // Alignments are a power of 2 (1, 2, 4, 8, etc). `result`'s alignment
+        // is greater than or equal to that of `R`, so `result` should be
+        // properly aligned for `R` since a larger alignment is always
+        // divisible by any of the smaller alignments.
+        let mut result = mem::MaybeUninit::<usize>::uninit();
+
+        // SAFETY: It is up to the caller to ensure that the ffi_call is safe
+        // to perform.
+        unsafe {
+            raw::ffi_call(
+                cif,
+                Some(*fun.as_safe_fun()),
+                result.as_mut_ptr().cast::<c_void>(),
+                args,
+            );
+
+            let result = result.assume_init();
+
+            if cfg!(target_endian = "big") {
+                call_return_small_big_endian_result((*(*cif).rtype).type_, &result)
+            } else {
+                (&result as *const usize).cast::<R>().read()
+            }
+        }
+    } else {
+        let mut result = mem::MaybeUninit::<R>::uninit();
+
+        // SAFETY: It is up to the caller to ensure that the ffi_call is safe
+        // to perform.
+        unsafe {
+            raw::ffi_call(
+                cif,
+                Some(*fun.as_safe_fun()),
+                result.as_mut_ptr().cast::<c_void>(),
+                args,
+            );
+
+            result.assume_init()
+        }
+    }
+}
+
+/// Helper function to get the return value of a ffi call on big endian
+/// architectures.
+///
+/// # Safety
+/// `result` must be a pointer to a `usize` and
+/// `mem::size_of::<R> <= mem::size_of::<usize>()`.
+unsafe fn call_return_small_big_endian_result<R>(type_tag: u16, result: *const usize) -> R {
+    if type_tag == raw::FFI_TYPE_FLOAT as u16
+        || type_tag == raw::FFI_TYPE_STRUCT as u16
+        || type_tag == raw::FFI_TYPE_VOID as u16
+    {
+        // SAFETY: Testing has shown that these types appear at `result`.
+        unsafe { result.cast::<R>().read() }
+    } else {
+        // SAFETY: Consider `*result` an array with
+        // `size_of::<usize>() / size_of::<R>()` items of `R`. The following
+        // code reads the last element to get the least significant bits of
+        // `result` on big endian architectures. The most significant bits are
+        // zeroed by libffi.
+        unsafe {
+            result
+                .cast::<R>()
+                .add((mem::size_of::<usize>() / mem::size_of::<R>()) - 1)
+                .read()
+        }
+    }
 }
 
 /// Allocates a closure.
@@ -611,4 +690,168 @@ pub unsafe fn prep_closure_mut<U, R>(
         code.as_mut_ptr(),
     );
     status_to_result(status, ())
+}
+
+#[cfg(test)]
+mod test {
+    use std::ptr::{addr_of_mut, null_mut};
+
+    use super::*;
+
+    #[repr(C)]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+    struct SmallStruct(u8, u16);
+    #[repr(C)]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+    struct LargeStruct(u64, u64, u64, u64);
+
+    extern "C" fn return_nothing() {}
+    extern "C" fn return_i8(a: i8) -> i8 {
+        a
+    }
+    extern "C" fn return_u8(a: u8) -> u8 {
+        a
+    }
+    extern "C" fn return_i16(a: i16) -> i16 {
+        a
+    }
+    extern "C" fn return_u16(a: u16) -> u16 {
+        a
+    }
+    extern "C" fn return_i32(a: i32) -> i32 {
+        a
+    }
+    extern "C" fn return_u32(a: u32) -> u32 {
+        a
+    }
+    extern "C" fn return_i64(a: i64) -> i64 {
+        a
+    }
+    extern "C" fn return_u64(a: u64) -> u64 {
+        a
+    }
+    extern "C" fn return_pointer(a: *const c_void) -> *const c_void {
+        a
+    }
+    extern "C" fn return_f32(a: f32) -> f32 {
+        a
+    }
+    extern "C" fn return_f64(a: f64) -> f64 {
+        a
+    }
+    extern "C" fn return_small_struct(a: SmallStruct) -> SmallStruct {
+        a
+    }
+    extern "C" fn return_large_struct(a: LargeStruct) -> LargeStruct {
+        a
+    }
+
+    macro_rules! test_return_value {
+        ($ty:ty, $ffitype:expr, $val:expr, $fn:ident) => {{
+            let mut cif = ffi_cif::default();
+            let mut arg_ty_array: [*mut ffi_type; 1] = [addr_of_mut!($ffitype)];
+            let mut arg: $ty = $val;
+            let mut arg_array: [*mut c_void; 1] = [addr_of_mut!(arg).cast()];
+
+            prep_cif(
+                &mut cif,
+                ffi_abi_FFI_DEFAULT_ABI,
+                1,
+                addr_of_mut!($ffitype),
+                arg_ty_array.as_mut_ptr(),
+            )
+            .unwrap();
+
+            let result: $ty = call(&mut cif, CodePtr($fn as *mut _), arg_array.as_mut_ptr());
+
+            assert_eq!(result, $val);
+        }};
+    }
+
+    /// Test to ensure that values returned from functions called through libffi are correct.
+    #[test]
+    fn test_return_values() {
+        // Test a function returning nothing.
+        {
+            let mut cif = ffi_cif::default();
+
+            // SAFETY:
+            // `cif` points to a properly aligned `ffi_cif`.
+            // The return value is a pointer to an `ffi_type`.
+            // `nargs` is 0, so argument and argument type array are never read.
+            unsafe {
+                prep_cif(
+                    &mut cif,
+                    ffi_abi_FFI_DEFAULT_ABI,
+                    0,
+                    addr_of_mut!(types::void),
+                    null_mut(),
+                )
+                .unwrap();
+                call::<()>(&mut cif, CodePtr(return_nothing as *mut _), null_mut());
+            }
+        }
+
+        unsafe {
+            test_return_value!(i8, types::sint8, 0x55, return_i8);
+            test_return_value!(u8, types::uint8, 0xAA, return_u8);
+            test_return_value!(i16, types::sint16, 0x5555, return_i16);
+            test_return_value!(u16, types::uint16, 0xAAAA, return_u16);
+            test_return_value!(i32, types::sint32, 0x5555_5555, return_i32);
+            test_return_value!(u32, types::uint32, 0xAAAA_AAAA, return_u32);
+            test_return_value!(i64, types::sint64, 0x5555_5555_5555_5555, return_i64);
+            test_return_value!(u64, types::uint64, 0xAAAA_AAAA_AAAA_AAAA, return_u64);
+            test_return_value!(f32, types::float, core::f32::consts::E, return_f32);
+            test_return_value!(f64, types::double, core::f64::consts::PI, return_f64);
+
+            let mut dummy = 0;
+            test_return_value!(
+                *const c_void,
+                types::pointer,
+                addr_of_mut!(dummy).cast(),
+                return_pointer
+            );
+
+            let mut small_struct_elements = [
+                addr_of_mut!(types::uint8),
+                addr_of_mut!(types::uint16),
+                null_mut(),
+            ];
+            let mut small_struct_type = ffi_type {
+                type_: type_tag::STRUCT,
+                elements: small_struct_elements.as_mut_ptr(),
+                ..Default::default()
+            };
+            test_return_value!(
+                SmallStruct,
+                small_struct_type,
+                SmallStruct(0xAA, 0x5555),
+                return_small_struct
+            );
+
+            let mut large_struct_elements = [
+                addr_of_mut!(types::uint64),
+                addr_of_mut!(types::uint64),
+                addr_of_mut!(types::uint64),
+                addr_of_mut!(types::uint64),
+                null_mut(),
+            ];
+            let mut large_struct_type = ffi_type {
+                type_: type_tag::STRUCT,
+                elements: large_struct_elements.as_mut_ptr(),
+                ..Default::default()
+            };
+            test_return_value!(
+                LargeStruct,
+                large_struct_type,
+                LargeStruct(
+                    0x1234_5678_9abc_def0,
+                    0x0fed_cba9_8765_4321,
+                    0x5555_5555_5555_5555,
+                    0xAAAA_AAAA_AAAA_AAAA,
+                ),
+                return_large_struct
+            );
+        }
+    }
 }
