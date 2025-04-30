@@ -115,7 +115,7 @@ impl Cif {
         let args = args.into_iter();
         let nargs = args.len();
         let args = types::TypeArray::new(args);
-        let mut cif: low::ffi_cif = Default::default();
+        let mut cif = low::ffi_cif::default();
 
         unsafe {
             low::prep_cif(
@@ -265,7 +265,7 @@ pub struct Closure<'a> {
     _marker: PhantomData<&'a ()>,
 }
 
-impl<'a> Drop for Closure<'a> {
+impl Drop for Closure<'_> {
     fn drop(&mut self) {
         unsafe {
             low::closure_free(self.alloc);

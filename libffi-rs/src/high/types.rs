@@ -36,6 +36,7 @@ impl<T> Type<T> {
 ///
 /// In particular, for any type `T` that implements `CType`, we can
 /// get a `Type<T>` for describing that type.
+/// # Safety
 /// This trait is unsafe to implement because if the libffi type
 /// associated with a Rust type doesn’t match then we get
 /// undefined behavior.
