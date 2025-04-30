@@ -38,8 +38,8 @@
 //! let mut x = 0u64;
 //! let mut f = |y: u32| { x += y as u64; x };
 //!
-//! let closure = ClosureMut1::new(&mut f);
-//! let counter = closure.code_ptr();
+//! let mut closure = ClosureMut1::new(&mut f);
+//! let     counter = closure.code_ptr();
 //!
 //! assert_eq!(5, counter.call(5));
 //! assert_eq!(6, counter.call(1));
@@ -300,7 +300,7 @@ macro_rules! define_closure_mod {
             impl<'a, $( $T, )* R: CType> $closure_mut<'a, $( $T, )* R> {
                 /// Gets the C code pointer that is used to invoke the
                 /// closure.
-                pub fn code_ptr(&self) -> & $fnptr <'a, $( $T, )* R> {
+                pub fn code_ptr(&mut self) -> & $fnptr <'a, $( $T, )* R> {
                     unsafe {
                         self.untyped.instantiate_code_ptr()
                     }
@@ -536,7 +536,7 @@ mod test {
 
         let type_ = u64::reify();
         let cif = Cif1::new(type_.clone(), type_.clone());
-        let closure = ClosureMut1::new_with_cif(cif, &mut f);
+        let mut closure = ClosureMut1::new_with_cif(cif, &mut f);
 
         let counter = closure.code_ptr();
 
@@ -563,7 +563,7 @@ mod test {
             x
         };
 
-        let closure = ClosureMut1::new(&mut f);
+        let mut closure = ClosureMut1::new(&mut f);
         let counter = closure.code_ptr();
 
         assert_eq!(5, counter.call(5));
