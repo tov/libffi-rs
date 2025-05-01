@@ -156,6 +156,7 @@ unsafe fn ffi_type_clone(old: Type_) -> Owned<Type_> {
             size,
             ..
         } = *old;
+        // Create new
         ffi_type_struct_create_raw(ffi_type_array_clone(elements), size, alignment)
     } else {
         old

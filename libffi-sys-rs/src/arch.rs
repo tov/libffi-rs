@@ -157,11 +157,11 @@ mod powerpc {
         use crate::ffi_abi;
 
         pub const ffi_abi_FFI_FIRST_ABI: ffi_abi = 0;
-        pub const ffi_abi_FFI_SYSV_SOFT_FLOAT: ffi_abi = 0b000001;
-        pub const ffi_abi_FFI_SYSV_STRUCT_RET: ffi_abi = 0b000010;
-        pub const ffi_abi_FFI_SYSV_IBM_LONG_DOUBLE: ffi_abi = 0b000100;
-        pub const ffi_abi_FFI_SYSV: ffi_abi = 0b001000;
-        pub const ffi_abi_FFI_SYSV_LONG_DOUBLE_128: ffi_abi = 0b010000;
+        pub const ffi_abi_FFI_SYSV_SOFT_FLOAT: ffi_abi = 0b00_0001;
+        pub const ffi_abi_FFI_SYSV_STRUCT_RET: ffi_abi = 0b00_0010;
+        pub const ffi_abi_FFI_SYSV_IBM_LONG_DOUBLE: ffi_abi = 0b00_0100;
+        pub const ffi_abi_FFI_SYSV: ffi_abi = 0b00_1000;
+        pub const ffi_abi_FFI_SYSV_LONG_DOUBLE_128: ffi_abi = 0b01_0000;
 
         mod fprs {
             pub const SOFT_FLOAT_FLAG: crate::ffi_abi = 0b0;
@@ -224,10 +224,10 @@ mod powerpc {
         use crate::ffi_abi;
 
         pub const ffi_abi_FFI_FIRST_ABI: ffi_abi = 0;
-        pub const ffi_abi_FFI_LINUX_STRUCT_ALIGN: ffi_abi = 0b000001;
-        pub const ffi_abi_FFI_LINUX_LONG_DOUBLE_128: ffi_abi = 0b000010;
-        pub const ffi_abi_FFI_LINUX_LONG_DOUBLE_IEEE128: ffi_abi = 0b000100;
-        pub const ffi_abi_FFI_LINUX: ffi_abi = 0b001000;
+        pub const ffi_abi_FFI_LINUX_STRUCT_ALIGN: ffi_abi = 0b00_0001;
+        pub const ffi_abi_FFI_LINUX_LONG_DOUBLE_128: ffi_abi = 0b00_0010;
+        pub const ffi_abi_FFI_LINUX_LONG_DOUBLE_IEEE128: ffi_abi = 0b00_0100;
+        pub const ffi_abi_FFI_LINUX: ffi_abi = 0b00_1000;
 
         mod elfv1 {
             pub const STRUCT_ALIGN_FLAG: crate::ffi_abi = 0b0;

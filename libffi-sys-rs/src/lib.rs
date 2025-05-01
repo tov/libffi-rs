@@ -58,7 +58,7 @@ pub type ffi_abi = u32;
 pub type ffi_status = u32;
 pub type ffi_type_enum = u32;
 
-pub const FFI_64_BIT_MAX: u64 = 9223372036854775807;
+pub const FFI_64_BIT_MAX: u64 = 9_223_372_036_854_775_807;
 pub const FFI_CLOSURES: u32 = 1;
 pub const FFI_SIZEOF_ARG: usize = core::mem::size_of::<c_long>();
 // NOTE: This only differs from FFI_SIZEOF_ARG on ILP platforms, which Rust does not support
@@ -192,7 +192,7 @@ pub struct ffi_closure {
     pub user_data: *mut c_void,
 }
 
-/// Implements Debug manually since sometimes FFI_TRAMPOLINE_SIZE is too large
+/// Implements Debug manually since sometimes `FFI_TRAMPOLINE_SIZE` is too large
 impl Debug for ffi_closure {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.debug_struct("ffi_closure")
@@ -238,7 +238,7 @@ pub struct ffi_raw_closure {
     pub user_data: *mut c_void,
 }
 
-/// Implements Debug manually since sometimes FFI_TRAMPOLINE_SIZE is too large
+/// Implements Debug manually since sometimes `FFI_TRAMPOLINE_SIZE` is too large
 impl Debug for ffi_raw_closure {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut debug_struct = f.debug_struct("ffi_raw_closure");
@@ -291,7 +291,7 @@ pub struct ffi_java_raw_closure {
     pub user_data: *mut c_void,
 }
 
-/// Implements Debug manually since sometimes FFI_TRAMPOLINE_SIZE is too large
+/// Implements Debug manually since sometimes `FFI_TRAMPOLINE_SIZE` is too large
 impl Debug for ffi_java_raw_closure {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut debug_struct = f.debug_struct("ffi_java_raw_closure");
@@ -562,13 +562,13 @@ mod test {
     fn test_function_sign_extension() {
         unsafe {
             let mut cif: ffi_cif = Default::default();
-            let mut arg_types: Vec<*mut ffi_type> = vec![&mut ffi_type_uint8];
+            let mut arg_types: Vec<*mut ffi_type> = vec![addr_of_mut!(ffi_type_uint8)];
 
             let prep_status = ffi_prep_cif(
                 &mut cif,
                 ffi_abi_FFI_DEFAULT_ABI,
                 1,
-                &mut ffi_type_uint32,
+                addr_of_mut!(ffi_type_uint8),
                 arg_types.as_mut_ptr(),
             );
 
