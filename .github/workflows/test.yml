@@ -105,3 +105,20 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
       - name: Run tests
         run: 'cargo test ${{ matrix.features }}'
+
+  free-bsd:
+    runs-on: ubuntu-latest
+    name: FreeBSD
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test in FreeBSD
+        id: test
+        uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          prepare: |
+            pkg install -y libffi curl
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          run: |
+            . "$HOME/.cargo/env"
+            cargo test
