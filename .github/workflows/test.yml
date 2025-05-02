@@ -107,3 +107,11 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
       - name: Run tests
         run: 'cargo test ${{ matrix.features }}'
+
+  qemu:
+    runs-on: ubuntu-latest
+    name: QEMU (armv7, powerpc64, powerpc64le, riscv64, s390x, sparc64)
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Setup and run tests
+        run: 'scripts/qemutests.sh SETUP'
