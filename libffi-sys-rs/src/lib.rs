@@ -194,6 +194,8 @@ pub struct ffi_cif {
     pub riscv_nfixedargs: c_uint,
     #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
     pub riscv_unused: c_uint,
+    #[cfg(target_arch = "sparc64")]
+    pub nfixedargs: c_uint,
     #[cfg(target_arch = "loongarch64")]
     pub loongarch_nfixedargs: c_uint,
     #[cfg(target_arch = "loongarch64")]
@@ -627,7 +629,7 @@ extern "C" {
 
 #[cfg(test)]
 mod test {
-    use std::ptr::addr_of_mut;
+    use std::{mem::transmute, ptr::addr_of_mut};
 
     use super::*;
 
@@ -651,13 +653,12 @@ mod test {
 
             assert_eq!(prep_status, ffi_status_FFI_OK);
 
-            let mut rval = 0u32;
-            let func = &*(&(cast_u8_u32 as *mut extern "C" fn(u8) -> u32) as *const _
-                as *const extern "C" fn());
+            let mut rval: ffi_arg = 0;
+            let func = transmute::<extern "C" fn(u8) -> u32, extern "C" fn()>(cast_u8_u32);
 
             ffi_call(
                 &mut cif,
-                Some(*func),
+                Some(func),
                 &mut rval as *mut _ as *mut c_void,
                 vec![&mut 256 as *mut _ as *mut c_void].as_mut_ptr(),
             );
@@ -688,12 +689,11 @@ mod test {
             assert_eq!(prep_status, ffi_status_FFI_OK);
 
             let mut rval = 0u64;
-            let func = &*(&(add as *mut extern "C" fn(u64, u64) -> u64) as *const _
-                as *const extern "C" fn());
+            let func = transmute::<extern "C" fn(u64, u64) -> u64, extern "C" fn()>(add);
 
             ffi_call(
                 &mut cif,
-                Some(*func),
+                Some(func),
                 &mut rval as *mut _ as *mut c_void,
                 vec![
                     &mut 4u64 as *mut _ as *mut c_void,
