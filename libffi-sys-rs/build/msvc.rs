@@ -19,11 +19,11 @@ const BUILD_FILES_X86_64: &[&str] = &["x86/ffi.c", "x86/ffiw64.c"];
 const BUILD_FILES_AARCH64: &[&str] = &["aarch64/ffi.c"];
 
 fn add_file(build: &mut cc::Build, file: &str) {
-    build.file(format!("libffi/src/{}", file));
+    build.file(format!("libffi/src/{file}"));
 }
 
 fn unsupported(arch: &str) -> ! {
-    panic!("Unsupported architecture: {}", arch)
+    panic!("Unsupported architecture: {arch}")
 }
 
 pub fn build_and_link() {
@@ -83,8 +83,7 @@ pub fn probe_and_link() {
 
 pub fn pre_process_asm(include_dirs: &[&str], target: &str, target_arch: &str) -> String {
     let folder_name = match target_arch {
-        "x86" => "x86",
-        "x86_64" => "x86",
+        "x86" | "x86_64" => "x86",
         "aarch64" => "aarch64",
         _ => unsupported(target_arch),
     };
@@ -111,9 +110,9 @@ pub fn pre_process_asm(include_dirs: &[&str], target: &str, target_arch: &str) -
     }
 
     cmd.arg("/EP");
-    cmd.arg(format!("libffi/src/{}/{}.S", folder_name, file_name));
+    cmd.arg(format!("libffi/src/{folder_name}/{file_name}.S"));
 
-    let out_path = format!("libffi/src/{}/{}.asm", folder_name, file_name);
+    let out_path = format!("libffi/src/{folder_name}/{file_name}.asm");
     let asm_file = fs::File::create(&out_path).expect("Could not create output file");
 
     cmd.stdout(asm_file);

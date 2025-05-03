@@ -11,3 +11,14 @@ license = "MIT/Apache-2.0"
 keywords = ["ffi", "libffi", "closure", "c"]
 edition = "2021"
 rust-version = "1.78"
+
+[workspace.lints.clippy]
+complexity = "warn"
+correctness = "warn"
+module_inception = { level = "allow", priority = 1 }
+must_use_candidate = { level = "allow", priority = 1 }
+perf = "warn"
+style = "warn"
+suspicious = "warn"
+unreadable_literal = "warn"
+wildcard_imports = { level = "allow", priority = 1 }

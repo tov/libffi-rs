@@ -276,7 +276,7 @@ pub unsafe fn prep_cif(
 /// - `abi` — the calling convention to use
 /// - `nfixedargs` — the number of fixed arguments
 /// - `ntotalargs` — the total number of arguments, including fixed and
-///    var args
+///   var args
 /// - `rtype` — the result type
 /// - `atypes` — the argument types (length must be at least `nargs`)
 ///
@@ -308,7 +308,7 @@ pub unsafe fn prep_cif_var(
 /// # Arguments
 ///
 /// * `cif` — describes the argument and result types and the calling
-///           convention
+///   convention
 /// * `fun` — the function to call
 /// * `args` — the arguments to pass to `fun`
 ///
@@ -476,6 +476,9 @@ pub fn closure_alloc() -> (*mut ffi_closure, CodePtr) {
 ///     closure_free(closure_handle);
 /// }
 /// ```
+/// # Safety
+/// The closure cannot be null and must be a valid pointer to a closure allocated with
+/// [`closure_alloc`].
 pub unsafe fn closure_free(closure: *mut ffi_closure) {
     raw::ffi_closure_free(closure as *mut c_void);
 }
@@ -530,7 +533,7 @@ pub type RawCallback = unsafe extern "C" fn(
 /// - `cif` — the calling convention and types for calling the closure
 /// - `callback` — the function that the closure will invoke
 /// - `userdata` — the closed-over value, stored in the closure and
-///    passed to the callback upon invocation
+///   passed to the callback upon invocation
 /// - `code` — the closure’s code pointer, *i.e.*, the second component
 ///   returned by [`closure_alloc`].
 ///
@@ -622,7 +625,7 @@ pub unsafe fn prep_closure<U, R>(
 /// - `cif` — the calling convention and types for calling the closure
 /// - `callback` — the function that the closure will invoke
 /// - `userdata` — the closed-over value, stored in the closure and
-///    passed to the callback upon invocation
+///   passed to the callback upon invocation
 /// - `code` — the closure’s code pointer, *i.e.*, the second component
 ///   returned by [`closure_alloc`].
 ///
