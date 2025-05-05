@@ -61,14 +61,6 @@ pub fn build_and_link() {
     println!("cargo::rerun-if-changed=libffi/src");
 }
 
-pub fn probe_and_link() {
-    // At the time of writing it wasn't clear if MSVC builds will support
-    // dynamic linking of libffi; assuming it's even installed. To ensure
-    // existing MSVC setups continue to work, we just compile libffi from source
-    // and statically link it.
-    build_and_link();
-}
-
 pub fn pre_process_asm(include_dirs: &[&str], target_arch: &str) -> String {
     let folder_name = match target_arch {
         "x86" | "x86_64" => "x86",
