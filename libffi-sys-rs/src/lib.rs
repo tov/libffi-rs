@@ -427,13 +427,13 @@ extern "C" {
     #[cfg(not(all(target_arch = "arm", target_os = "linux", target_env = "gnu")))]
     pub static mut ffi_type_longdouble: ffi_type;
 
-    #[cfg(feature = "complex")]
+    #[cfg(all(feature = "complex", not(windows)))]
     pub static mut ffi_type_complex_float: ffi_type;
 
-    #[cfg(feature = "complex")]
+    #[cfg(all(feature = "complex", not(windows)))]
     pub static mut ffi_type_complex_double: ffi_type;
 
-    #[cfg(feature = "complex")]
+    #[cfg(all(feature = "complex", not(windows)))]
     #[cfg(not(all(target_arch = "arm", target_os = "linux", target_env = "gnu")))]
     pub static mut ffi_type_complex_longdouble: ffi_type;
 
