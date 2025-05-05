@@ -421,11 +421,8 @@ extern "C" {
     pub static mut ffi_type_sint64: ffi_type;
     pub static mut ffi_type_float: ffi_type;
     pub static mut ffi_type_double: ffi_type;
-    pub static mut ffi_type_pointer: ffi_type;
-
-    #[cfg(not(target_arch = "aarch64"))]
-    #[cfg(not(all(target_arch = "arm", target_os = "linux", target_env = "gnu")))]
     pub static mut ffi_type_longdouble: ffi_type;
+    pub static mut ffi_type_pointer: ffi_type;
 
     #[cfg(feature = "complex")]
     pub static mut ffi_type_complex_float: ffi_type;
@@ -434,7 +431,6 @@ extern "C" {
     pub static mut ffi_type_complex_double: ffi_type;
 
     #[cfg(feature = "complex")]
-    #[cfg(not(all(target_arch = "arm", target_os = "linux", target_env = "gnu")))]
     pub static mut ffi_type_complex_longdouble: ffi_type;
 
     pub fn ffi_raw_call(

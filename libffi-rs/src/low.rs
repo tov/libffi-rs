@@ -132,23 +132,18 @@ pub use raw::{
 /// becomes [`types::void`].
 pub mod types {
     pub use crate::raw::{
-        ffi_type_double as double, ffi_type_float as float, ffi_type_pointer as pointer,
-        ffi_type_sint16 as sint16, ffi_type_sint32 as sint32, ffi_type_sint64 as sint64,
-        ffi_type_sint8 as sint8, ffi_type_uint16 as uint16, ffi_type_uint32 as uint32,
-        ffi_type_uint64 as uint64, ffi_type_uint8 as uint8, ffi_type_void as void,
+        ffi_type_double as double, ffi_type_float as float, ffi_type_longdouble as longdouble,
+        ffi_type_pointer as pointer, ffi_type_sint16 as sint16, ffi_type_sint32 as sint32,
+        ffi_type_sint64 as sint64, ffi_type_sint8 as sint8, ffi_type_uint16 as uint16,
+        ffi_type_uint32 as uint32, ffi_type_uint64 as uint64, ffi_type_uint8 as uint8,
+        ffi_type_void as void,
     };
-
-    #[cfg(not(any(target_arch = "arm", target_arch = "aarch64")))]
-    pub use crate::raw::ffi_type_longdouble as longdouble;
 
     #[cfg(feature = "complex")]
     pub use crate::raw::{
         ffi_type_complex_double as complex_double, ffi_type_complex_float as complex_float,
+        ffi_type_complex_longdouble as complex_longdouble,
     };
-
-    #[cfg(feature = "complex")]
-    #[cfg(not(all(target_arch = "arm")))]
-    pub use crate::raw::ffi_type_complex_longdouble as complex_longdouble;
 }
 
 /// Type tags used in constructing and inspecting [`ffi_type`]s.
