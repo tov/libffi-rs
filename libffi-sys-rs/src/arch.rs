@@ -22,7 +22,7 @@ mod x86 {
         }
 
         mod msvc {
-            pub const ffi_abi_FFI_DEFAULT_ABI: crate::ffi_abi = super::ffi_abi_FFI_GNUW64;
+            pub const ffi_abi_FFI_DEFAULT_ABI: crate::ffi_abi = super::ffi_abi_FFI_WIN64;
         }
 
         #[cfg(target_env = "gnu")]

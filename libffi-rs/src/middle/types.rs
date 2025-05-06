@@ -387,24 +387,25 @@ impl Type {
 
     /// Returns the C `_Complex float` type.
     ///
-    /// This item is enabled by `#[cfg(feature = "complex")]`.
-    #[cfg(feature = "complex")]
+    /// This item is enabled by `#[cfg(all(feature = "complex", not(windows)))]`.
+    #[cfg(all(feature = "complex", not(windows)))]
     pub fn c32() -> Self {
         Type(unsafe { Unique::new(addr_of_mut!(low::types::complex_float)) })
     }
 
     /// Returns the C `_Complex double` type.
     ///
-    /// This item is enabled by `#[cfg(feature = "complex")]`.
-    #[cfg(feature = "complex")]
+    /// This item is enabled by `#[cfg(all(feature = "complex", not(windows)))]`.
+    #[cfg(all(feature = "complex", not(windows)))]
     pub fn c64() -> Self {
         Type(unsafe { Unique::new(addr_of_mut!(low::types::complex_double)) })
     }
 
     /// Returns the C `_Complex long double` type.
     ///
-    /// This item is enabled by `#[cfg(feature = "complex")]`.
-    #[cfg(feature = "complex")]
+    /// This item is enabled by `#[cfg(all(feature = "complex", not(windows)))]`.
+    #[cfg(all(feature = "complex", not(windows)))]
+    #[cfg(not(all(target_arch = "arm")))]
     pub fn complex_longdouble() -> Self {
         Type(unsafe { Unique::new(addr_of_mut!(low::types::complex_longdouble)) })
     }
