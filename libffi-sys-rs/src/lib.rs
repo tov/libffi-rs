@@ -215,7 +215,7 @@ impl Default for ffi_cif {
     }
 }
 
-#[repr(C, align(64))]
+#[repr(C)]
 #[derive(Copy, Clone)]
 pub union ffi_raw {
     pub sint: ffi_sarg,
@@ -233,7 +233,7 @@ impl Default for ffi_raw {
 
 pub type ffi_java_raw = ffi_raw;
 
-#[repr(C, align(64))]
+#[repr(C)]
 #[derive(Copy, Clone)]
 pub union ffi_trampoline {
     pub tramp: [c_char; FFI_TRAMPOLINE_SIZE],
@@ -248,7 +248,11 @@ pub union ffi_trampoline {
 /// `ffi_closure` should not be created manually. Instead, [`ffi_closure_alloc`]
 /// should be invoked to allocate memory for the `ffi_closure` before its fields
 /// are populated by [`ffi_prep_closure`].
-#[repr(C)]
+///
+/// **Caution** Do not use this struct directly as its fields may differ to
+/// those used by libffi. `ffi_closure` should not be generated manually, but
+/// allocated by `ffi_closure_alloc` and passed around as a pointer.
+#[repr(C, align(8))]
 #[derive(Copy, Clone)]
 pub struct ffi_closure {
     pub tramp: ffi_trampoline,
@@ -262,6 +266,9 @@ pub struct ffi_closure {
         ),
     >,
     pub user_data: *mut c_void,
+    // https://github.com/libffi/libffi/blob/252c0f463641e6100169c3f0a4a590d7df438278/include/ffi.h.in#L337
+    #[cfg(all(target_env = "msvc", target_arch = "x86"))]
+    pub _padding: *mut c_void,
 }
 
 /// Implements Debug manually since sometimes `FFI_TRAMPOLINE_SIZE` is too large
@@ -427,13 +434,13 @@ extern "C" {
     #[cfg(not(all(target_arch = "arm", target_os = "linux", target_env = "gnu")))]
     pub static mut ffi_type_longdouble: ffi_type;
 
-    #[cfg(feature = "complex")]
+    #[cfg(all(feature = "complex", not(windows)))]
     pub static mut ffi_type_complex_float: ffi_type;
 
-    #[cfg(feature = "complex")]
+    #[cfg(all(feature = "complex", not(windows)))]
     pub static mut ffi_type_complex_double: ffi_type;
 
-    #[cfg(feature = "complex")]
+    #[cfg(all(feature = "complex", not(windows)))]
     #[cfg(not(all(target_arch = "arm", target_os = "linux", target_env = "gnu")))]
     pub static mut ffi_type_complex_longdouble: ffi_type;
 

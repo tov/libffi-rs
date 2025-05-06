@@ -1,87 +1,67 @@
 use crate::common::*;
 
-const INCLUDE_DIRS: &[&str] = &["libffi", "libffi/include", "include/msvc"];
+const INCLUDE_DIRS: &[&str] = &["libffi", "libffi/include"];
 
-// libffi expects us to include the same folder in case of x86 and x86_64 architectures
-const INCLUDE_DIRS_X86: &[&str] = &["libffi/src/x86"];
-const INCLUDE_DIRS_X86_64: &[&str] = &["libffi/src/x86"];
-const INCLUDE_DIRS_AARCH64: &[&str] = &["libffi/src/aarch64"];
+// headers for both 32-bit and 64-bit x86 are placed in libffi/src/x86
+const INCLUDE_DIRS_X86: &[&str] = &["libffi/src/x86", "include/msvc/x86"];
+const INCLUDE_DIRS_X86_64: &[&str] = &["libffi/src/x86", "include/msvc/x86_64"];
+const INCLUDE_DIRS_AARCH64: &[&str] = &["libffi/src/aarch64", "include/msvc/aarch64"];
 
 const BUILD_FILES: &[&str] = &[
-    "tramp.c",
-    "closures.c",
-    "prep_cif.c",
-    "raw_api.c",
-    "types.c",
+    "libffi/src/tramp.c",
+    "libffi/src/closures.c",
+    "libffi/src/prep_cif.c",
+    "libffi/src/raw_api.c",
+    "libffi/src/types.c",
 ];
-const BUILD_FILES_X86: &[&str] = &["x86/ffi.c"];
-const BUILD_FILES_X86_64: &[&str] = &["x86/ffi.c", "x86/ffiw64.c"];
-const BUILD_FILES_AARCH64: &[&str] = &["aarch64/ffi.c"];
-
-fn add_file(build: &mut cc::Build, file: &str) {
-    build.file(format!("libffi/src/{file}"));
-}
+const BUILD_FILES_X86: &[&str] = &["libffi/src/x86/ffi.c"];
+const BUILD_FILES_X86_64: &[&str] = &["libffi/src/x86/ffiw64.c"];
+const BUILD_FILES_AARCH64: &[&str] = &["libffi/src/aarch64/ffi.c"];
 
 fn unsupported(arch: &str) -> ! {
     panic!("Unsupported architecture: {arch}")
 }
 
 pub fn build_and_link() {
-    let target = env::var("TARGET").unwrap();
     let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
 
     // we should collect all include dirs together with platform specific ones
     // to pass them over to the asm pre-processing step
-    let mut all_includes = vec![];
-    for each_include in INCLUDE_DIRS {
-        all_includes.push(*each_include);
-    }
-    for each_include in match target_arch.as_str() {
+    let mut all_includes: Vec<&str> = Vec::from_iter(INCLUDE_DIRS.iter().copied());
+
+    all_includes.extend(match target_arch.as_str() {
         "x86" => INCLUDE_DIRS_X86,
         "x86_64" => INCLUDE_DIRS_X86_64,
         "aarch64" => INCLUDE_DIRS_AARCH64,
         _ => unsupported(&target_arch),
-    } {
-        all_includes.push(*each_include);
-    }
+    });
 
-    let asm_path = pre_process_asm(all_includes.as_slice(), &target, &target_arch);
-    let mut build = cc::Build::new();
+    let asm_path = pre_process_asm(all_includes.as_slice(), &target_arch);
 
-    for each_include in all_includes {
-        build.include(each_include);
-    }
-
-    for each_source in BUILD_FILES {
-        add_file(&mut build, each_source);
-    }
-    for each_source in match target_arch.as_str() {
-        "x86" => BUILD_FILES_X86,
-        "x86_64" => BUILD_FILES_X86_64,
-        "aarch64" => BUILD_FILES_AARCH64,
-        _ => unsupported(&target_arch),
-    } {
-        add_file(&mut build, each_source);
-    }
-
-    build
+    cc::Build::new()
+        .includes(&all_includes)
+        .files(BUILD_FILES)
+        .files(match target_arch.as_str() {
+            "x86" => BUILD_FILES_X86,
+            "x86_64" => BUILD_FILES_X86_64,
+            "aarch64" => BUILD_FILES_AARCH64,
+            _ => unsupported(&target_arch),
+        })
         .file(asm_path)
         .define("WIN32", None)
         .define("_LIB", None)
         .define("FFI_BUILDING", None)
+        .define("FFI_STATIC_BUILD", None)
+        .pic(true)
         .warnings(false)
         .compile("libffi");
+
+    println!("cargo::rerun-if-changed=build/");
+    println!("cargo::rerun-if-changed=libffi/include");
+    println!("cargo::rerun-if-changed=libffi/src");
 }
 
-pub fn probe_and_link() {
-    // At the time of writing it wasn't clear if MSVC builds will support
-    // dynamic linking of libffi; assuming it's even installed. To ensure
-    // existing MSVC setups continue to work, we just compile libffi from source
-    // and statically link it.
-    build_and_link();
-}
-
-pub fn pre_process_asm(include_dirs: &[&str], target: &str, target_arch: &str) -> String {
+pub fn pre_process_asm(include_dirs: &[&str], target_arch: &str) -> String {
     let folder_name = match target_arch {
         "x86" | "x86_64" => "x86",
         "aarch64" => "aarch64",
@@ -95,27 +75,20 @@ pub fn pre_process_asm(include_dirs: &[&str], target: &str, target_arch: &str) -
         _ => unsupported(target_arch),
     };
 
-    let mut cmd = cc::windows_registry::find(target, "cl.exe").expect("Could not locate cl.exe");
-    cmd.env("INCLUDE", include_dirs.join(";"));
+    let in_file = format!("libffi/src/{folder_name}/{file_name}.S");
+    let out_dir = env::var("OUT_DIR").unwrap();
+    let out_path = format!("{out_dir}/processed_asm.asm");
+    let out_file = fs::File::create(&out_path).unwrap();
 
-    // When cross-compiling we should provide MSVC includes as part of the INCLUDE env.var
-    let build = cc::Build::new();
-    for (key, value) in build.get_compiler().env() {
-        if key.to_string_lossy() == "INCLUDE" {
-            cmd.env(
-                "INCLUDE",
-                format!("{};{}", value.to_string_lossy(), include_dirs.join(";")),
-            );
-        }
-    }
+    let mut cmd = cc::Build::new()
+        .includes(include_dirs)
+        .get_compiler()
+        .to_command();
 
     cmd.arg("/EP");
-    cmd.arg(format!("libffi/src/{folder_name}/{file_name}.S"));
+    cmd.arg(in_file);
 
-    let out_path = format!("libffi/src/{folder_name}/{file_name}.asm");
-    let asm_file = fs::File::create(&out_path).expect("Could not create output file");
-
-    cmd.stdout(asm_file);
+    cmd.stdout(out_file);
 
     run_command("Pre-process ASM", &mut cmd);
 
