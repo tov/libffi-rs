@@ -196,13 +196,13 @@ pub mod type_tag {
     use core::ffi::c_ushort;
 
     /// Indicates a structure type.
-    pub const STRUCT: c_ushort = raw::ffi_type_enum_STRUCT as c_ushort;
+    pub const STRUCT: c_ushort = raw::ffi_type_enum_STRUCT;
 
     /// Indicates a complex number type.
     ///
     /// This item is enabled by `#[cfg(all(feature = "complex", not(windows)))]`.
     #[cfg(all(feature = "complex", not(windows)))]
-    pub const COMPLEX: c_ushort = raw::ffi_type_enum_COMPLEX as c_ushort;
+    pub const COMPLEX: c_ushort = raw::ffi_type_enum_COMPLEX;
 }
 
 /// Initalizes a CIF (Call Interface) with the given ABI
@@ -410,9 +410,9 @@ pub unsafe fn call<R>(cif: *mut ffi_cif, fun: CodePtr, args: *mut *mut c_void) -
 /// `result` must be a pointer to a `usize` and
 /// `mem::size_of::<R> <= mem::size_of::<usize>()`.
 unsafe fn call_return_small_big_endian_result<R>(type_tag: u16, result: *const usize) -> R {
-    if type_tag == raw::FFI_TYPE_FLOAT as u16
-        || type_tag == raw::FFI_TYPE_STRUCT as u16
-        || type_tag == raw::FFI_TYPE_VOID as u16
+    if type_tag == raw::FFI_TYPE_FLOAT
+        || type_tag == raw::FFI_TYPE_STRUCT
+        || type_tag == raw::FFI_TYPE_VOID
     {
         // SAFETY: Testing has shown that these types appear at `result`.
         unsafe { result.cast::<R>().read() }
