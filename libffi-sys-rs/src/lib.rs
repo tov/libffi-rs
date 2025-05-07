@@ -66,7 +66,7 @@ pub type ffi_sarg = c_long;
 pub type ffi_abi = u32;
 /// The return type of `libffi`'s functions that may return an error.
 pub type ffi_status = u32;
-pub type ffi_type_enum = u32;
+pub type ffi_type_enum = u16;
 
 pub const FFI_64_BIT_MAX: u64 = 9_223_372_036_854_775_807;
 pub const FFI_CLOSURES: u32 = 1;
@@ -74,23 +74,23 @@ pub const FFI_SIZEOF_ARG: usize = core::mem::size_of::<c_long>();
 // NOTE: This only differs from FFI_SIZEOF_ARG on ILP platforms, which Rust does not support
 pub const FFI_SIZEOF_JAVA_RAW: usize = FFI_SIZEOF_ARG;
 
-pub const FFI_TYPE_VOID: u32 = 0;
-pub const FFI_TYPE_INT: u32 = 1;
-pub const FFI_TYPE_FLOAT: u32 = 2;
-pub const FFI_TYPE_DOUBLE: u32 = 3;
-pub const FFI_TYPE_LONGDOUBLE: u32 = 4;
-pub const FFI_TYPE_UINT8: u32 = 5;
-pub const FFI_TYPE_SINT8: u32 = 6;
-pub const FFI_TYPE_UINT16: u32 = 7;
-pub const FFI_TYPE_SINT16: u32 = 8;
-pub const FFI_TYPE_UINT32: u32 = 9;
-pub const FFI_TYPE_SINT32: u32 = 10;
-pub const FFI_TYPE_UINT64: u32 = 11;
-pub const FFI_TYPE_SINT64: u32 = 12;
-pub const FFI_TYPE_STRUCT: u32 = 13;
-pub const FFI_TYPE_POINTER: u32 = 14;
-pub const FFI_TYPE_COMPLEX: u32 = 15;
-pub const FFI_TYPE_LAST: u32 = 15;
+pub const FFI_TYPE_VOID: u16 = 0;
+pub const FFI_TYPE_INT: u16 = 1;
+pub const FFI_TYPE_FLOAT: u16 = 2;
+pub const FFI_TYPE_DOUBLE: u16 = 3;
+pub const FFI_TYPE_LONGDOUBLE: u16 = 4;
+pub const FFI_TYPE_UINT8: u16 = 5;
+pub const FFI_TYPE_SINT8: u16 = 6;
+pub const FFI_TYPE_UINT16: u16 = 7;
+pub const FFI_TYPE_SINT16: u16 = 8;
+pub const FFI_TYPE_UINT32: u16 = 9;
+pub const FFI_TYPE_SINT32: u16 = 10;
+pub const FFI_TYPE_UINT64: u16 = 11;
+pub const FFI_TYPE_SINT64: u16 = 12;
+pub const FFI_TYPE_STRUCT: u16 = 13;
+pub const FFI_TYPE_POINTER: u16 = 14;
+pub const FFI_TYPE_COMPLEX: u16 = 15;
+pub const FFI_TYPE_LAST: u16 = 15;
 
 pub const ffi_status_FFI_OK: ffi_status = 0;
 pub const ffi_status_FFI_BAD_TYPEDEF: ffi_status = 1;
@@ -140,7 +140,7 @@ pub const ffi_type_enum_COMPLEX: ffi_type_enum = 15;
 ///
 /// let mut custom_struct_description = libffi_sys::ffi_type {
 ///     // `libffi::low::type_tag::STRUCT` can be used instead if using libffi
-///     type_: libffi_sys::FFI_TYPE_STRUCT as u16,
+///     type_: libffi_sys::FFI_TYPE_STRUCT,
 ///     elements: elements_array.as_mut_ptr(),
 ///     ..Default::default()
 /// };
