@@ -4,6 +4,7 @@ use libffi::high::Closure2;
 
 mod c {
     use core::ffi::{c_int, c_void};
+
     use libffi::high::FnPtr2;
 
     pub type Callback<'a> = FnPtr2<'a, *const c_void, *const c_void, c_int>;
@@ -14,9 +15,7 @@ mod c {
 }
 
 fn qsort<T: Ord>(array: &mut [T]) {
-    use core::cmp::Ordering::*;
-    use core::ffi::c_void;
-    use core::mem;
+    use core::{cmp::Ordering::*, ffi::c_void, mem};
 
     let lambda = |x: *const c_void, y: *const c_void| {
         let x = unsafe { &*(x as *const T) };

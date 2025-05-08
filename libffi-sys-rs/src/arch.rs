@@ -92,17 +92,14 @@ mod x86 {
     pub const FFI_GO_CLOSURES: u32 = 1;
 }
 
-#[cfg(all(target_arch = "x86_64", windows))]
-pub use x86::x86_win64::*;
-
-#[cfg(all(target_arch = "x86_64", unix))]
-pub use x86::x86_64::*;
-
-#[cfg(all(target_arch = "x86", windows))]
-pub use x86::x86_win32::*;
-
 #[cfg(all(target_arch = "x86", unix))]
 pub use x86::x86::*;
+#[cfg(all(target_arch = "x86_64", unix))]
+pub use x86::x86_64::*;
+#[cfg(all(target_arch = "x86", windows))]
+pub use x86::x86_win32::*;
+#[cfg(all(target_arch = "x86_64", windows))]
+pub use x86::x86_win64::*;
 
 /// From libffi:src/arm/ffitarget.h.
 /// See: <https://github.com/libffi/libffi/blob/252c0f463641e6100169c3f0a4a590d7df438278/src/arm/ffitarget.h#L41>
@@ -183,11 +180,10 @@ mod powerpc {
             pub const SOFT_FLOAT_FLAG: crate::ffi_abi = super::ffi_abi_FFI_SYSV_SOFT_FLOAT;
         }
 
-        #[cfg(target_abi = "spe")]
-        use no_fprs::*;
-
         #[cfg(not(target_abi = "spe"))]
         use fprs::*;
+        #[cfg(target_abi = "spe")]
+        use no_fprs::*;
 
         mod struct_ret {
             pub const STRUCT_RET_FLAG: crate::ffi_abi = super::ffi_abi_FFI_SYSV_STRUCT_RET;
@@ -197,11 +193,10 @@ mod powerpc {
             pub const STRUCT_RET_FLAG: crate::ffi_abi = 0b0;
         }
 
-        #[cfg(target_os = "netbsd")]
-        use struct_ret::*;
-
         #[cfg(not(target_os = "netbsd"))]
         use no_struct_ret::*;
+        #[cfg(target_os = "netbsd")]
+        use struct_ret::*;
 
         mod long_double_64 {
             pub const LONG_DOUBLE_128_FLAG: crate::ffi_abi = 0b0;
@@ -215,11 +210,10 @@ mod powerpc {
         // IEEE128 is not supported on BSD or when targeting musl:
         // https://github.com/rust-lang/llvm-project/blob/cb7f903994646c5b9223e0bb6cee3792190991f7/clang/lib/Basic/Targets/PPC.h#L379
 
-        #[cfg(any(target_os = "netbsd", target_os = "freebsd", target_env = "musl"))]
-        use long_double_64::*;
-
         #[cfg(not(any(target_os = "netbsd", target_os = "freebsd", target_env = "musl")))]
         use long_double_128::*;
+        #[cfg(any(target_os = "netbsd", target_os = "freebsd", target_env = "musl"))]
+        use long_double_64::*;
 
         pub const ffi_abi_FFI_DEFAULT_ABI: ffi_abi = ffi_abi_FFI_SYSV
             | ffi_abi_FFI_SYSV_IBM_LONG_DOUBLE
@@ -293,11 +287,10 @@ mod powerpc {
         // IEEE128 is not supported on BSD or when targeting musl:
         // https://github.com/rust-lang/llvm-project/blob/cb7f903994646c5b9223e0bb6cee3792190991f7/clang/lib/Basic/Targets/PPC.h#L417
 
-        #[cfg(any(target_os = "netbsd", target_os = "freebsd", target_env = "musl"))]
-        use long_double_64::*;
-
         #[cfg(not(any(target_os = "netbsd", target_os = "freebsd", target_env = "musl")))]
         use long_double_128::*;
+        #[cfg(any(target_os = "netbsd", target_os = "freebsd", target_env = "musl"))]
+        use long_double_64::*;
 
         pub const ffi_abi_FFI_DEFAULT_ABI: ffi_abi =
             ffi_abi_FFI_LINUX | STRUCT_ALIGN_FLAG | LONG_DOUBLE_128_FLAG;
@@ -309,7 +302,6 @@ mod powerpc {
 
 #[cfg(target_arch = "powerpc")]
 pub use powerpc::powerpc::*;
-
 #[cfg(target_arch = "powerpc64")]
 pub use powerpc::powerpc64::*;
 
@@ -334,7 +326,6 @@ mod riscv {
 
 #[cfg(target_arch = "riscv32")]
 pub use riscv::*;
-
 #[cfg(target_arch = "riscv64")]
 pub use riscv::*;
 
@@ -414,9 +405,8 @@ mod mips {
     }
 
     pub mod mips {
-        use crate::ffi_abi;
-
         pub use super::common::*;
+        use crate::ffi_abi;
 
         pub const ffi_abi_FFI_DEFAULT_ABI: ffi_abi = ffi_abi_FFI_O32;
 
@@ -424,9 +414,8 @@ mod mips {
     }
 
     pub mod mips64 {
-        use crate::ffi_abi;
-
         pub use super::common::*;
+        use crate::ffi_abi;
 
         pub const ffi_abi_FFI_DEFAULT_ABI: ffi_abi = ffi_abi_FFI_N64;
 
@@ -436,6 +425,5 @@ mod mips {
 
 #[cfg(any(target_arch = "mips", target_arch = "mips32r6"))]
 pub use mips::mips::*;
-
 #[cfg(any(target_arch = "mips64", target_arch = "mips64r6"))]
 pub use mips::mips64::*;
