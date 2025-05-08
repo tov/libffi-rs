@@ -34,8 +34,8 @@ jobs:
     runs-on: windows-latest
     name: windows-msvc ${{ matrix.toolchain }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - uses: dtolnay/rust-toolchain@56f84321dbccf38fb67ce29ab63e4754056677e0
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.toolchain }}
       - name: Run tests
@@ -55,13 +55,13 @@ jobs:
     runs-on: windows-latest
     name: windows-gnu ${{ matrix.toolchain }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@v4
       - name: Setup MSYS2
         uses: msys2/setup-msys2@61f9e5e925871ba6c9e3e8da24ede83ea27fa91f
         with:
           release: false
           path-type: inherit
-      - uses: dtolnay/rust-toolchain@56f84321dbccf38fb67ce29ab63e4754056677e0
+      - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.toolchain }}
       - name: Run tests
@@ -85,10 +85,10 @@ jobs:
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.runner }} ${{ matrix.toolchain }} ${{ matrix.features }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@v4
       - name: Install dependencies
         run: brew install autoconf automake libtool libffi
-      - uses: dtolnay/rust-toolchain@56f84321dbccf38fb67ce29ab63e4754056677e0
+      - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.toolchain }}
       - name: Run tests
@@ -111,8 +111,8 @@ jobs:
     runs-on: ubuntu-latest
     name: ${{ matrix.runner }} ${{ matrix.toolchain }} ${{ matrix.features }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - uses: dtolnay/rust-toolchain@56f84321dbccf38fb67ce29ab63e4754056677e0
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.toolchain }}
       - name: Run tests
@@ -139,6 +139,6 @@ jobs:
     runs-on: ubuntu-latest
     name: QEMU (armv7, powerpc64, powerpc64le, riscv64, s390x, sparc64)
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@v4
       - name: Setup and run tests
         run: 'scripts/qemutests.sh SETUP'
