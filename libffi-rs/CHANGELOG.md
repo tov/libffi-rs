@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
+## [4.1.0] - 2025-05-09
 
 - Update to 2021 edition: https://github.com/tov/libffi-rs/pull/121
 - Set rust-version to 1.78: https://github.com/tov/libffi-rs/pull/120
