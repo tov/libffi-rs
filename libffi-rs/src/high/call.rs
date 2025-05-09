@@ -81,7 +81,10 @@ pub unsafe fn call<R: super::CType>(fun: CodePtr, args: &[Arg]) -> R {
     let types = args.iter().map(|arg| arg.type_.clone());
     let cif = middle::Cif::new(types, R::reify().into_middle());
 
-    let values = args.iter().map(|arg| arg.value.clone()).collect::<Vec<_>>();
+    let values = args
+        .iter()
+        .map(|arg| arg.value.clone())
+        .collect::<alloc::vec::Vec<_>>();
     // If `R` is a small integer type, libffi implicitly extends it to
     // `ffi_arg` or `ffi_sarg`.  To account for this, use `R::RetType`
     // as return type for the low-level call, and convert the result back.

@@ -8,6 +8,7 @@
 //! aren’t checked. See the [`high`](crate::high) layer for closures
 //! with type-checked arguments.
 
+use alloc::boxed::Box;
 use core::any::Any;
 use core::ffi::c_void;
 use core::marker::PhantomData;
@@ -456,7 +457,7 @@ impl ClosureOnce {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "std"))]
 mod test {
     use super::*;
     use crate::low;
@@ -464,7 +465,7 @@ mod test {
 
     #[test]
     fn call() {
-        let cif = Cif::new(vec![Type::i64(), Type::i64()], Type::i64());
+        let cif = Cif::new(alloc::vec![Type::i64(), Type::i64()], Type::i64());
         let f = |m: i64, n: i64| -> i64 {
             unsafe { cif.call(CodePtr(add_it as *mut c_void), &[arg(&m), arg(&n)]) }
         };
@@ -480,7 +481,7 @@ mod test {
 
     #[test]
     fn closure() {
-        let cif = Cif::new(vec![Type::u64()], Type::u64());
+        let cif = Cif::new(alloc::vec![Type::u64()], Type::u64());
         let env: u64 = 5;
         let closure = Closure::new(cif, callback, &env);
 
@@ -502,7 +503,7 @@ mod test {
 
     #[test]
     fn rust_lambda() {
-        let cif = Cif::new(vec![Type::u64(), Type::u64()], Type::u64());
+        let cif = Cif::new(std::vec![Type::u64(), Type::u64()], Type::u64());
         let env = |x: u64, y: u64| x + y;
         let closure = Closure::new(cif, callback2, &env);
 
@@ -527,9 +528,9 @@ mod test {
     #[test]
     fn clone_cif() {
         let cif = Cif::new(
-            vec![
-                Type::structure(vec![
-                    Type::structure(vec![Type::u64(), Type::u8(), Type::f64()]),
+            alloc::vec![
+                Type::structure(alloc::vec![
+                    Type::structure(alloc::vec![Type::u64(), Type::u8(), Type::f64()]),
                     Type::i8(),
                     Type::i64(),
                 ]),
@@ -540,7 +541,7 @@ mod test {
         let clone_cif = cif.clone();
 
         unsafe {
-            let args = std::slice::from_raw_parts(cif.cif.arg_types, cif.cif.nargs as usize);
+            let args = core::slice::from_raw_parts(cif.cif.arg_types, cif.cif.nargs as usize);
             let struct_arg = args
                 .first()
                 .expect("CIF arguments slice was empty")
@@ -548,7 +549,7 @@ mod test {
                 .expect("CIF first argument was null");
             // Get slice of length 1 to get the first element
             let struct_size = struct_arg.size;
-            let struct_parts = std::slice::from_raw_parts(struct_arg.elements, 1);
+            let struct_parts = core::slice::from_raw_parts(struct_arg.elements, 1);
             let substruct_size = struct_parts
                 .first()
                 .expect("CIF struct argument's elements slice was empty")
@@ -557,7 +558,7 @@ mod test {
                 .size;
 
             let clone_args =
-                std::slice::from_raw_parts(clone_cif.cif.arg_types, clone_cif.cif.nargs as usize);
+                core::slice::from_raw_parts(clone_cif.cif.arg_types, clone_cif.cif.nargs as usize);
             let clone_struct_arg = clone_args
                 .first()
                 .expect("CIF arguments slice was empty")
@@ -565,7 +566,7 @@ mod test {
                 .expect("CIF first argument was null");
             // Get slice of length 1 to get the first element
             let clone_struct_size = clone_struct_arg.size;
-            let clone_struct_parts = std::slice::from_raw_parts(clone_struct_arg.elements, 1);
+            let clone_struct_parts = core::slice::from_raw_parts(clone_struct_arg.elements, 1);
             let clone_substruct_size = clone_struct_parts
                 .first()
                 .expect("Cloned CIF struct argument's elements slice was empty")

@@ -50,6 +50,10 @@
 #![allow(non_upper_case_globals)]
 #![allow(improper_ctypes)]
 #![allow(unused_imports)]
+#![no_std]
+
+#[cfg(feature = "std")]
+extern crate std;
 
 use core::ffi::{c_char, c_int, c_long, c_schar, c_uint, c_ulong, c_ushort, c_void};
 use core::fmt::{self, Debug, Formatter};
@@ -623,9 +627,10 @@ extern "C" {
     ) -> ffi_status;
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "std"))]
 mod test {
     use std::{mem::transmute, ptr::addr_of_mut};
+    use std::{vec, vec::Vec};
 
     use super::*;
 

@@ -49,7 +49,7 @@ pub unsafe trait CType: Copy {
     /// The low-level libffi library implicitly extends small integer
     /// return values to `ffi_arg` or `ffi_sarg`.  Track the possibly
     /// extended variant of `T` as an associated type here.
-    type RetType: std::convert::From<Self> + std::convert::TryInto<Self>;
+    type RetType: core::convert::From<Self> + core::convert::TryInto<Self>;
 }
 
 macro_rules! impl_ffi_type {

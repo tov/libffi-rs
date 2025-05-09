@@ -6,11 +6,11 @@
 //! and a result type, and libffi uses this to figure out how to set up
 //! a call to a function with those types.
 
+use core::fmt;
 use core::mem;
 use core::ptr;
 use core::ptr::addr_of_mut;
 use libc;
-use std::fmt;
 
 use crate::low;
 
@@ -449,7 +449,7 @@ impl TypeArray {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "std"))]
 mod test {
     use super::*;
 
@@ -465,12 +465,12 @@ mod test {
 
     #[test]
     fn create_struct() {
-        Type::structure(vec![Type::i64(), Type::i64(), Type::u64()]);
+        Type::structure(alloc::vec![Type::i64(), Type::i64(), Type::u64()]);
     }
 
     #[test]
     fn clone_struct() {
-        let _ = Type::structure(vec![Type::i64(), Type::i64(), Type::u64()])
+        let _ = Type::structure(alloc::vec![Type::i64(), Type::i64(), Type::u64()])
             .clone()
             .clone();
     }

@@ -13,11 +13,13 @@ edition.workspace = true
 rust-version.workspace = true
 
 [features]
+default = ["std"]
+std = []
 system = []
 complex = []
 
 [package.metadata.docs.rs]
-features = ["system"]
+features = ["std", "system"]
 
 [build-dependencies]
 cc = "1.0"
