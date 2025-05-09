@@ -442,7 +442,6 @@ extern "C" {
     pub static mut ffi_type_complex_double: ffi_type;
 
     #[cfg(all(feature = "complex", not(windows)))]
-    #[cfg(not(all(target_arch = "arm", target_os = "linux", target_env = "gnu")))]
     pub static mut ffi_type_complex_longdouble: ffi_type;
 
     pub fn ffi_raw_call(

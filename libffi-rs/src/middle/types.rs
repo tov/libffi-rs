@@ -405,7 +405,6 @@ impl Type {
     ///
     /// This item is enabled by `#[cfg(all(feature = "complex", not(windows)))]`.
     #[cfg(all(feature = "complex", not(windows)))]
-    #[cfg(not(all(target_arch = "arm")))]
     pub fn complex_longdouble() -> Self {
         Type(unsafe { Unique::new(addr_of_mut!(low::types::complex_longdouble)) })
     }
