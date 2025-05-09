@@ -139,18 +139,11 @@ pub mod types {
         ffi_type_void as void,
     };
 
-    #[cfg(not(any(target_arch = "arm", target_arch = "aarch64")))]
-    pub use crate::raw::ffi_type_longdouble as longdouble;
-
     #[cfg(all(feature = "complex", not(windows)))]
     pub use crate::raw::{
         ffi_type_complex_double as complex_double, ffi_type_complex_float as complex_float,
         ffi_type_complex_longdouble as complex_longdouble,
     };
-
-    #[cfg(all(feature = "complex", not(windows)))]
-    #[cfg(not(all(target_arch = "arm")))]
-    pub use crate::raw::ffi_type_complex_longdouble as complex_longdouble;
 }
 
 /// Type tags used in constructing and inspecting [`ffi_type`]s.
