@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/libffi-sys/3.2.0")]
+#![doc(html_root_url = "https://docs.rs/libffi-sys/3.3.0")]
 //! Low-level Rust bindings for [libffi](https://sourceware.org/libffi/)
 //!
 //! The C libffi library provides two main facilities: assembling calls
@@ -30,14 +30,14 @@
 //!
 //! ```toml
 //! [dependencies]
-//! libffi-sys = "3.2.0"
+//! libffi-sys = "3.3.0"
 //! ```
 //!
 //! to your `Cargo.toml`. If you want to use your system C libffi, then
 //!
 //! ```toml
 //! [dependencies.libffi-sys]
-//! version = "3.2.0"
+//! version = "3.3.0"
 //! features = ["system"]
 //! ```
 //!
