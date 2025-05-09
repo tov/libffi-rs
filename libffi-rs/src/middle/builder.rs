@@ -58,7 +58,7 @@ use super::types::Type;
 /// ```
 #[derive(Clone, Debug)]
 pub struct Builder {
-    args: Vec<Type>,
+    args: alloc::vec::Vec<Type>,
     res: Type,
     abi: super::FfiAbi,
 }
@@ -73,7 +73,7 @@ impl Builder {
     /// Constructs a `Builder`.
     pub fn new() -> Self {
         Builder {
-            args: vec![],
+            args: alloc::vec![],
             res: Type::void(),
             abi: super::ffi_abi_FFI_DEFAULT_ABI,
         }

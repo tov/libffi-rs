@@ -697,7 +697,7 @@ pub unsafe fn prep_closure_mut<U, R>(
     status_to_result(status, ())
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "std"))]
 mod test {
     use std::ptr::{addr_of_mut, null_mut};
 
