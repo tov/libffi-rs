@@ -28,7 +28,7 @@ jobs:
           - 1.78.0
           - stable
     runs-on: windows-latest
-    name: windows-msvc ${{ matrix.toolchain }}
+    name: ${{ matrix.runner }} ${{ matrix.toolchain }} ${{ matrix.features }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
