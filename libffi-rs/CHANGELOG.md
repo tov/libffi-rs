@@ -8,13 +8,6 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
-
-- Update to 2021 edition: https://github.com/tov/libffi-rs/pull/121
-- Set rust-version to 1.78: https://github.com/tov/libffi-rs/pull/120
-- Enable long double for all targets: https://github.com/tov/libffi-rs/pull/130
-- Fixed out-of-bounds write in low::call: https://github.com/tov/libffi-rs/pull/108
-
 ## [4.0.0] - 2025-04-08
 
 - Bump libffi-sys version requirement to 3.1

@@ -8,18 +8,6 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
-
-- Update to 2021 edition: https://github.com/tov/libffi-rs/pull/121
-- Set rust-version to 1.78: https://github.com/tov/libffi-rs/pull/120
-- Enable long double for all targets: https://github.com/tov/libffi-rs/pull/130
-- Fix build on mingw: https://github.com/tov/libffi-rs/pull/118
-- Fix Sparcv9: https://github.com/tov/libffi-rs/pull/129
-- Marked deprecated libffi functions as deprecated: https://github.com/tov/libffi-rs/pull/128
-- Updated trampoline sizes for x86_win32, x86, aarch64 (non-Apple): https://github.com/tov/libffi-rs/pull/127
-- Added correct default ABI for ARM with hardware floats: https://github.com/tov/libffi-rs/pull/127
-- Added Windows ABI to aarch64 and set it as the default ABI for Windows: https://github.com/tov/libffi-rs/pull/127
-
 ## [3.2.0] - 2025-04-09
 
 - Fix out-of-bound reads on x84-64 for small integers: https://github.com/tov/libffi-rs/commit/fe3115a7627f77445530f072541ad31502fc6f03
