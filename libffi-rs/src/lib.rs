@@ -87,6 +87,11 @@
 //!
 
 #![deny(missing_docs)]
+#![no_std]
+
+extern crate alloc;
+#[cfg(feature = "std")]
+extern crate std;
 
 /// Raw definitions imported from the C library (via bindgen).
 ///
