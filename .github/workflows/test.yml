@@ -27,6 +27,10 @@ jobs:
         toolchain:
           - 1.78.0
           - stable
+        features:
+          - "--no-default-features"
+          - "--features std"
+          - "--features std,system"
     runs-on: windows-latest
     name: ${{ matrix.runner }} ${{ matrix.toolchain }} ${{ matrix.features }}
     steps:
@@ -35,7 +39,7 @@ jobs:
         with:
           toolchain: ${{ matrix.toolchain }}
       - name: Run tests
-        run: cargo test
+        run: cargo test ${{ matrix.features }}
 
   windows-gnu:
     strategy:
@@ -44,6 +48,10 @@ jobs:
         toolchain:
           - 1.78.0-gnu
           - stable-gnu
+        features:
+          - "--no-default-features"
+          - "--features std"
+          - "--features std,system"
     runs-on: windows-latest
     name: windows-gnu ${{ matrix.toolchain }}
     steps:
@@ -58,7 +66,7 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
       - name: Run tests
         shell: msys2 {0}
-        run: cargo test
+        run: cargo test ${{ matrix.features }}
 
   macos:
     strategy:
@@ -72,7 +80,8 @@ jobs:
           - stable
         features:
           - "--no-default-features"
-          - "--features system"
+          - "--features std"
+          - "--features std,system"
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.runner }} ${{ matrix.toolchain }} ${{ matrix.features }}
     steps:
@@ -97,7 +106,8 @@ jobs:
           - stable
         features:
           - "--no-default-features"
-          - "--features system"
+          - "--features std"
+          - "--features std,system"
     runs-on: ubuntu-latest
     name: ${{ matrix.runner }} ${{ matrix.toolchain }} ${{ matrix.features }}
     steps:
