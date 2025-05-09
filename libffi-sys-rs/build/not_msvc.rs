@@ -40,14 +40,9 @@ pub fn build_and_link() {
     // Generate configure, run configure, make, make install
     configure_libffi(prefix, &build_dir);
 
-    let make_command = if cfg!(target_os = "aix") {
-        "gmake"
-    } else {
-        "make"
-    };
     run_command(
         "Building libffi",
-        Command::new(make_command)
+        Command::new("make")
             .env_remove("DESTDIR")
             .arg("install")
             .current_dir(build_dir),
