@@ -145,7 +145,6 @@ pub fn configure_libffi(prefix: PathBuf, build_dir: &Path) {
 
     if cfg!(target_os = "aix") {
         command.arg("--disable-multi-os-directory");
-        command.arg("--disable-dependency-tracking");
     }
 
     run_command("Configuring libffi", &mut command);
