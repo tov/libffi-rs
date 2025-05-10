@@ -1,5 +1,4 @@
-use core::marker::PhantomData;
-use core::ops::Deref;
+use core::{marker::PhantomData, ops::Deref};
 
 pub struct Unique<T> {
     contents: *mut T,

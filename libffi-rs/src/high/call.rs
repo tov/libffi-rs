@@ -17,11 +17,11 @@
 //! assert!((result - 5f32).abs() < 0.0001);
 //! ```
 
-use core::convert::TryInto;
-use core::marker::PhantomData;
+use core::{convert::TryInto, marker::PhantomData};
+
+pub use middle::CodePtr;
 
 use crate::middle;
-pub use middle::CodePtr;
 
 /// Encapsulates an argument with its type information.
 ///

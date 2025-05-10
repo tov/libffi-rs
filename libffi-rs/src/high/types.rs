@@ -2,8 +2,7 @@
 
 use core::marker::PhantomData;
 
-use super::super::low;
-use super::super::middle;
+use super::super::{low, middle};
 
 /// Represents a C type statically associated with a Rust type.
 ///

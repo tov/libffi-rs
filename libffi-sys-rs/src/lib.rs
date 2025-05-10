@@ -51,9 +51,11 @@
 #![allow(improper_ctypes)]
 #![allow(unused_imports)]
 
-use core::ffi::{c_char, c_int, c_long, c_schar, c_uint, c_ulong, c_ushort, c_void};
-use core::fmt::{self, Debug, Formatter};
-use core::mem::zeroed;
+use core::{
+    ffi::{c_char, c_int, c_long, c_schar, c_uint, c_ulong, c_ushort, c_void},
+    fmt::{self, Debug, Formatter},
+    mem::zeroed,
+};
 
 mod arch;
 pub use arch::*;

@@ -6,15 +6,13 @@
 //! and a result type, and libffi uses this to figure out how to set up
 //! a call to a function with those types.
 
-use core::mem;
-use core::ptr;
-use core::ptr::addr_of_mut;
-use libc;
+use core::{mem, ptr, ptr::addr_of_mut};
 use std::fmt;
 
-use crate::low;
+use libc;
 
 use super::util::Unique;
+use crate::low;
 
 // Internally we represent types and type arrays using raw pointers,
 // since this is what libffi understands. Below we wrap them with

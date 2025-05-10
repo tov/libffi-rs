@@ -1,5 +1,6 @@
-use crate::common::*;
 use std::process::Command;
+
+use crate::common::*;
 
 pub fn build_and_link() {
     let out_dir = env::var("OUT_DIR").unwrap();

@@ -7,8 +7,10 @@
 //! avoided drastic renaming in favor of hewing close to the libffi API.
 //! See [`middle`](crate::middle) for an easier-to-use approach.
 
-use core::ffi::{c_uint, c_void};
-use core::mem;
+use core::{
+    ffi::{c_uint, c_void},
+    mem,
+};
 
 use crate::raw;
 
@@ -131,18 +133,17 @@ pub use raw::{
 /// removing the `ffi_type_` prefix. For example, [`raw::ffi_type_void`]
 /// becomes [`types::void`].
 pub mod types {
+    #[cfg(feature = "complex")]
+    pub use crate::raw::{
+        ffi_type_complex_double as complex_double, ffi_type_complex_float as complex_float,
+        ffi_type_complex_longdouble as complex_longdouble,
+    };
     pub use crate::raw::{
         ffi_type_double as double, ffi_type_float as float, ffi_type_longdouble as longdouble,
         ffi_type_pointer as pointer, ffi_type_sint16 as sint16, ffi_type_sint32 as sint32,
         ffi_type_sint64 as sint64, ffi_type_sint8 as sint8, ffi_type_uint16 as uint16,
         ffi_type_uint32 as uint32, ffi_type_uint64 as uint64, ffi_type_uint8 as uint8,
         ffi_type_void as void,
-    };
-
-    #[cfg(feature = "complex")]
-    pub use crate::raw::{
-        ffi_type_complex_double as complex_double, ffi_type_complex_float as complex_float,
-        ffi_type_complex_longdouble as complex_longdouble,
     };
 }
 
@@ -185,8 +186,9 @@ pub mod types {
 /// my_struct.elements = elements.as_mut_ptr();
 /// ```
 pub mod type_tag {
-    use crate::raw;
     use core::ffi::c_ushort;
+
+    use crate::raw;
 
     /// Indicates a structure type.
     pub const STRUCT: c_ushort = raw::ffi_type_enum_STRUCT as c_ushort;
