@@ -32,7 +32,7 @@ jobs:
           - "--features std"
           - "--features std,system"
     runs-on: windows-latest
-    name: ${{ matrix.runner }} ${{ matrix.toolchain }} ${{ matrix.features }}
+    name: windows-msvc ${{ matrix.toolchain }} ${{ matrix.features }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -53,7 +53,7 @@ jobs:
           - "--features std"
           - "--features std,system"
     runs-on: windows-latest
-    name: windows-gnu ${{ matrix.toolchain }}
+    name: windows-gnu ${{ matrix.toolchain }} ${{ matrix.features }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup MSYS2

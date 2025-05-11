@@ -76,6 +76,33 @@ pub use types::{CType, Type};
 pub mod call;
 pub use call::*;
 
+#[cfg(not(feature = "std"))]
+unsafe fn segfault() {
+    core::ptr::null_mut::<i32>().write(42);
+}
+
+#[cfg(not(feature = "std"))]
+macro_rules! abort_on_panic {
+    ($msg:literal, $body:expr) => {
+        // Aborts when dropped (which will only happen due to an unwinding panic).
+        struct Bomb;
+        impl Drop for Bomb {
+            fn drop(&mut self) {
+                // We do our best to ignore errors that occur during printing.
+                // If this panics anyway, that'll still just be a double-panic which leads to abort.
+                // TODO: Print out error
+                unsafe { segfault() };
+            }
+        }
+
+        let b = Bomb;
+        // If this panics, `b` will be dropped, triggering the bomb.
+        $body;
+        // Defuse the bomb.
+        core::mem::forget(b);
+    };
+}
+#[cfg(feature = "std")]
 macro_rules! abort_on_panic {
     ($msg:literal, $body:expr) => {{
         // Aborts when dropped (which will only happen due to an unwinding panic).
@@ -84,6 +111,7 @@ macro_rules! abort_on_panic {
             fn drop(&mut self) {
                 // We do our best to ignore errors that occur during printing.
                 // If this panics anyway, that'll still just be a double-panic which leads to abort.
+                use crate::std::io::Write;
                 let _ = writeln!(std::io::stderr(), $msg);
                 std::process::abort();
             }
@@ -111,8 +139,7 @@ macro_rules! define_closure_mod {
         pub mod $module {
             use core::any::Any;
             use core::marker::PhantomData;
-            use std::{mem, process, ptr};
-            use std::io::{self, Write};
+            use core::{mem, ptr};
 
             use super::*;
             use crate::{low, middle};
@@ -129,7 +156,7 @@ macro_rules! define_closure_mod {
                 #[allow(non_snake_case)]
                 pub fn new($( $T: Type<$T>, )* result: Type<R>) -> Self {
                     let cif = middle::Cif::new(
-                        std::vec![$( $T.into_middle() ),*].into_iter(),
+                        alloc::vec![$( $T.into_middle() ),*].into_iter(),
                         result.into_middle());
                     $cif { untyped: cif, _marker: PhantomData }
                 }
@@ -411,9 +438,19 @@ macro_rules! define_closure_mod {
                         });
                     } else {
                         // There is probably a better way to abort here.
-                        let _ =
-                            io::stderr().write(b"FnOnce closure already used");
-                        process::exit(2);
+                        #[cfg(feature = "std")]
+                        {
+                            use std::io::Write;
+                            let _ =
+                                std::io::stderr().write(b"FnOnce closure already used");
+                            std::process::exit(2);
+                        }
+                        #[cfg(not(feature = "std"))]
+                        {
+                            unsafe {
+                                segfault();
+                            }
+                        }
                     }
                 }
             }
@@ -510,7 +547,7 @@ define_closure_mod!(arity12 Cif12 FnPtr12
                     Closure12 ClosureMut12 ClosureOnce12;
                     A B C D E F G H I J K L);
 
-#[cfg(test)]
+#[cfg(all(test, feature = "std"))]
 mod test {
     use super::*;
 
