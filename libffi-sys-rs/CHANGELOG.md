@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog] and this project adheres to
 [Keep a Changelog]: http://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: http://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
+## [3.3.1] - 2025-05-11
 
 - Re-release on ubuntu to fix build issues on unix systems
 
