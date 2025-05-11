@@ -12,13 +12,16 @@ use core::mem;
 
 use crate::raw;
 
-/// The two kinds of errors reported by libffi.
+/// The errors reported by libffi.
+#[non_exhaustive]
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
     /// Given a bad or unsupported type representation.
     Typedef,
     /// Given a bad or unsupported ABI.
     Abi,
+    /// Given a bad or unsupported argument type.
+    ArgType,
 }
 
 /// The [`std::result::Result`] type specialized for libffi [`Error`]s.
@@ -30,6 +33,8 @@ fn status_to_result<R>(status: raw::ffi_status, good: R) -> Result<R> {
         Ok(good)
     } else if status == raw::ffi_status_FFI_BAD_TYPEDEF {
         Err(Error::Typedef)
+    } else if status == raw::ffi_status_FFI_BAD_ARGTYPE {
+        Err(Error::ArgType)
     }
     // If we don't recognize the status, that is an ABI error:
     else {
