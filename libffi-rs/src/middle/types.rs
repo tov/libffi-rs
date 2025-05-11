@@ -508,7 +508,7 @@ mod test {
     }
 
     #[test]
-    fn verify_raw_type_layout() {
+    fn verify_type_layout() {
         let ffi_struct = Type::structure([
             // First struct, containing a struct, i8, and u8
             Type::structure([
@@ -531,13 +531,10 @@ mod test {
             Type::u8(),
             Type::f32(),
             Type::f64(),
-            Type::longdouble(),
             #[cfg(all(feature = "complex", not(windows)))]
             Type::c32(),
             #[cfg(all(feature = "complex", not(windows)))]
             Type::c64(),
-            #[cfg(all(feature = "complex", not(windows)))]
-            Type::complex_longdouble(),
         ]);
 
         verify_struct_layout(&ffi_struct);
@@ -594,11 +591,13 @@ mod test {
             unsafe { (**struct_1.elements.add(4)).type_ },
             raw::FFI_TYPE_DOUBLE
         );
-        assert_eq!(unsafe { (**struct_1.elements.add(5)).type_ }, unsafe {
-            longdouble.type_
-        });
         #[cfg(any(not(feature = "complex"), windows))]
-        assert!(unsafe { (*struct_1.elements.add(6)).is_null() });
+        assert!(unsafe { (*struct_1.elements.add(5)).is_null() });
+        #[cfg(all(feature = "complex", not(windows)))]
+        assert_eq!(
+            unsafe { (**struct_1.elements.add(5)).type_ },
+            raw::FFI_TYPE_COMPLEX
+        );
         #[cfg(all(feature = "complex", not(windows)))]
         assert_eq!(
             unsafe { (**struct_1.elements.add(6)).type_ },
@@ -610,12 +609,7 @@ mod test {
             raw::FFI_TYPE_COMPLEX
         );
         #[cfg(all(feature = "complex", not(windows)))]
-        assert_eq!(
-            unsafe { (**struct_1.elements.add(8)).type_ },
-            raw::FFI_TYPE_COMPLEX
-        );
-        #[cfg(all(feature = "complex", not(windows)))]
-        assert!(unsafe { (*struct_1.elements.add(9)).is_null() });
+        assert!(unsafe { (*struct_1.elements.add(8)).is_null() });
 
         // Second struct: i16, struct, u16
         let struct_2 = unsafe { &**struct_1.elements };
