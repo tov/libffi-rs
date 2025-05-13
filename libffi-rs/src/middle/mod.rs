@@ -82,6 +82,9 @@ pub struct Cif {
     result: Type,
 }
 
+unsafe impl Send for Cif {}
+unsafe impl Sync for Cif {}
+
 // To clone a Cif we need to clone the types and then make sure the new
 // ffi_cif refers to the clones of the types.
 impl Clone for Cif {

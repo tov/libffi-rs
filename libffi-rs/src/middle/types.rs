@@ -53,11 +53,17 @@ type Owned<T> = T;
 /// ```
 pub struct Type(Unique<low::ffi_type>);
 
+unsafe impl Send for Type {}
+unsafe impl Sync for Type {}
+
 /// Represents a sequence of C types.
 ///
 /// This can be used to construct a struct type or as the arguments
 /// when creating a [`Cif`].
 pub struct TypeArray(Unique<*mut low::ffi_type>);
+
+unsafe impl Send for TypeArray {}
+unsafe impl Sync for TypeArray {}
 
 impl fmt::Debug for Type {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {

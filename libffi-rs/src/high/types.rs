@@ -13,7 +13,7 @@ use super::super::middle;
 #[derive(Clone, Debug)]
 pub struct Type<T> {
     untyped: middle::Type,
-    _marker: PhantomData<*mut T>,
+    _marker: PhantomData<fn() -> T>,
 }
 
 impl<T> Type<T> {
