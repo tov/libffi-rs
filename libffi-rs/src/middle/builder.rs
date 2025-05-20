@@ -59,7 +59,7 @@ use super::types::Type;
 #[derive(Clone, Debug)]
 pub struct Builder {
     args: alloc::vec::Vec<Type>,
-    res: Type,
+    res: Option<Type>,
     abi: super::FfiAbi,
 }
 
@@ -74,7 +74,7 @@ impl Builder {
     pub fn new() -> Self {
         Builder {
             args: alloc::vec![],
-            res: Type::void(),
+            res: None,
             abi: super::ffi_abi_FFI_DEFAULT_ABI,
         }
     }
@@ -96,7 +96,7 @@ impl Builder {
 
     /// Sets the result type.
     pub fn res(mut self, type_: Type) -> Self {
-        self.res = type_;
+        self.res = Some(type_);
         self
     }
 

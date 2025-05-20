@@ -153,7 +153,7 @@ pub const ffi_type_enum_COMPLEX: ffi_type_enum = 15;
 /// // `CustomStruct` as an argument or receive a `CustomStruct` as response.
 /// ```
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct ffi_type {
     pub size: usize,
     pub alignment: c_ushort,
