@@ -6,14 +6,15 @@
 //! and a result type, and libffi uses this to figure out how to set up
 //! a call to a function with those types.
 
-use core::fmt;
-use core::mem;
+extern crate alloc;
+use alloc::boxed::Box;
+use alloc::vec::Vec;
+
+use core::iter::once;
 use core::ptr::{addr_of_mut, null_mut};
-use libc;
+use core::{fmt, slice};
 
-use crate::low;
-
-use super::util::Unique;
+use crate::low::{ffi_type, type_tag};
 
 // Use types defined in Rust when executing miri
 #[cfg(all(miri, feature = "complex", not(windows)))]
@@ -31,17 +32,6 @@ use crate::low::types::{
     double, float, longdouble, pointer, sint16, sint32, sint64, sint8, uint16, uint32, uint64,
     uint8, void,
 };
-
-// Internally we represent types and type arrays using raw pointers,
-// since this is what libffi understands. Below we wrap them with
-// types that implement Drop and Clone.
-
-type Type_ = *mut low::ffi_type;
-type TypeArray_ = *mut Type_;
-
-// Informal indication that the object should be considered owned by
-// the given reference.
-type Owned<T> = T;
 
 /// Represents a single C type.
 ///
@@ -62,406 +52,775 @@ type Owned<T> = T;
 /// ```
 /// use libffi::middle::Type;
 ///
-/// let my_struct = Type::structure(vec![
-///     Type::u64(),
-///     Type::u16(),
+/// let my_struct = Type::structure([
+///     Type::U64,
+///     Type::U16,
 /// ]);
 /// ```
-pub struct Type(Unique<low::ffi_type>);
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Type {
+    /// Represents a `i8`
+    I8,
+    /// Represents a `u8`
+    U8,
+    /// Represents a `i16`
+    I16,
+    /// Represents a `u16`
+    U16,
+    /// Represents a `i32`
+    I32,
+    /// Represents a `u32`
+    U32,
+    /// Represents a `i64`
+    I64,
+    /// Represents a `u64`
+    U64,
+    /// Represents a `isize`
+    Isize,
+    /// Represents a `usize`
+    Usize,
+    /// Represents a pointer
+    Pointer,
+    /// Represents a `f32`
+    F32,
+    /// Represents a `f64`
+    F64,
+    /// Represents a `long double`.
+    LongDouble,
+    /// Returns the C `_Complex float` type.
+    ///
+    /// This item is enabled by `#[cfg(all(feature = "complex", not(windows)))]`.
+    #[cfg(all(feature = "complex", not(windows)))]
+    ComplexFloat,
+    /// Returns the C `_Complex double` type.
+    ///
+    /// This item is enabled by `#[cfg(all(feature = "complex", not(windows)))]`.
+    #[cfg(all(feature = "complex", not(windows)))]
+    ComplexDouble,
+    /// Returns the C `_Complex double` type.
+    ///
+    /// This item is enabled by `#[cfg(all(feature = "complex", not(windows)))]`.
+    #[cfg(all(feature = "complex", not(windows)))]
+    ComplexLongDouble,
+    /// Represents a `repr(C)` structure.
+    ///
+    /// It is recommended to create a `Type::Structure` using [`Type::structure`].
+    Structure(Box<[Type]>),
+}
 
-/// Represents a sequence of C types.
-///
-/// This can be used to construct a struct type or as the arguments
-/// when creating a [`Cif`].
-pub struct TypeArray(Unique<*mut low::ffi_type>);
-
-impl fmt::Debug for Type {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_fmt(format_args!("Type({:?})", *self.0))
+const fn signed_data_to_scalar_type<T: Sized>() -> Type {
+    match core::mem::size_of::<T>() {
+        1 => Type::I8,
+        2 => Type::I16,
+        4 => Type::I32,
+        8 => Type::I64,
+        _ => panic!("Unsupported int size"),
     }
 }
 
-impl fmt::Debug for TypeArray {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_fmt(format_args!("TypeArray({:?})", *self.0))
+const fn unsigned_data_to_scalar_type<T: Sized>() -> Type {
+    match core::mem::size_of::<T>() {
+        1 => Type::U8,
+        2 => Type::U16,
+        4 => Type::U32,
+        8 => Type::U64,
+        _ => panic!("Unsupported int size"),
     }
-}
-
-/// Computes the length of a raw `TypeArray_` by searching for the
-/// null terminator.
-unsafe fn ffi_type_array_len(mut array: TypeArray_) -> usize {
-    let mut count = 0;
-    while !(*array).is_null() {
-        count += 1;
-        array = array.offset(1);
-    }
-    count
-}
-
-/// Creates an empty `TypeArray_` with null terminator.
-unsafe fn ffi_type_array_create_empty(len: usize) -> Owned<TypeArray_> {
-    let array = libc::malloc((len + 1) * mem::size_of::<Type_>()) as TypeArray_;
-    assert!(
-        !array.is_null(),
-        "ffi_type_array_create_empty: out of memory"
-    );
-    *array.add(len) = null_mut::<low::ffi_type>() as Type_;
-    array
-}
-
-/// Creates a null-terminated array of Type_. Takes ownership of
-/// the elements.
-unsafe fn ffi_type_array_create<I>(elements: I) -> Owned<TypeArray_>
-where
-    I: ExactSizeIterator<Item = Type>,
-{
-    let size = elements.len();
-    let new = ffi_type_array_create_empty(size);
-    for (i, element) in elements.enumerate() {
-        *new.add(i) = *element.0;
-        mem::forget(element);
-    }
-
-    new
-}
-
-/// Creates a struct type from a raw array of element types.
-unsafe fn ffi_type_struct_create_raw(
-    elements: Owned<TypeArray_>,
-    size: usize,
-    alignment: u16,
-) -> Owned<Type_> {
-    let new = libc::malloc(mem::size_of::<low::ffi_type>()) as Type_;
-    assert!(!new.is_null(), "ffi_type_struct_create_raw: out of memory");
-
-    (*new).size = size;
-    (*new).alignment = alignment;
-    (*new).type_ = low::type_tag::STRUCT;
-    (*new).elements = elements;
-
-    new
-}
-
-/// Creates a struct `ffi_type` with the given elements. Takes ownership
-/// of the elements.
-unsafe fn ffi_type_struct_create<I>(elements: I) -> Owned<Type_>
-where
-    I: ExactSizeIterator<Item = Type>,
-{
-    ffi_type_struct_create_raw(ffi_type_array_create(elements), 0, 0)
-}
-
-/// Makes a copy of a type array.
-unsafe fn ffi_type_array_clone(old: TypeArray_) -> Owned<TypeArray_> {
-    let size = ffi_type_array_len(old);
-    let new = ffi_type_array_create_empty(size);
-
-    for i in 0..size {
-        *new.add(i) = ffi_type_clone(*old.add(i));
-    }
-
-    new
-}
-
-/// Makes a copy of a type.
-unsafe fn ffi_type_clone(old: Type_) -> Owned<Type_> {
-    if (*old).type_ == low::type_tag::STRUCT {
-        let low::ffi_type {
-            alignment,
-            elements,
-            size,
-            ..
-        } = *old;
-        // Create new
-        ffi_type_struct_create_raw(ffi_type_array_clone(elements), size, alignment)
-    } else {
-        old
-    }
-}
-
-/// Destroys a `TypeArray_` and all of its elements.
-unsafe fn ffi_type_array_destroy(victim: Owned<TypeArray_>) {
-    let mut current = victim;
-    while !(*current).is_null() {
-        ffi_type_destroy(*current);
-        current = current.offset(1);
-    }
-
-    libc::free(victim as *mut libc::c_void);
-}
-
-/// Destroys a `Type_` if it was dynamically allocated.
-unsafe fn ffi_type_destroy(victim: Owned<Type_>) {
-    if (*victim).type_ == low::type_tag::STRUCT {
-        ffi_type_array_destroy((*victim).elements);
-        libc::free(victim as *mut libc::c_void);
-    }
-}
-
-impl Drop for Type {
-    fn drop(&mut self) {
-        unsafe { ffi_type_destroy(*self.0) }
-    }
-}
-
-impl Drop for TypeArray {
-    fn drop(&mut self) {
-        unsafe { ffi_type_array_destroy(*self.0) }
-    }
-}
-
-impl Clone for Type {
-    fn clone(&self) -> Self {
-        Type(unsafe { Unique::new(ffi_type_clone(*self.0)) })
-    }
-}
-
-impl Clone for TypeArray {
-    fn clone(&self) -> Self {
-        TypeArray(unsafe { Unique::new(ffi_type_array_clone(*self.0)) })
-    }
-}
-
-macro_rules! match_size_signed {
-    ( $name:ident ) => {
-        match mem::size_of::<core::ffi::$name>() {
-            1 => Self::i8(),
-            2 => Self::i16(),
-            4 => Self::i32(),
-            8 => Self::i64(),
-            _ => panic!("Unsupported integer size"),
-        }
-    };
-}
-
-macro_rules! match_size_unsigned {
-    ( $name:ident ) => {
-        match mem::size_of::<core::ffi::$name>() {
-            1 => Self::u8(),
-            2 => Self::u16(),
-            4 => Self::u32(),
-            8 => Self::u64(),
-            _ => panic!("Unsupported integer size"),
-        }
-    };
 }
 
 impl Type {
-    /// Returns the representation of the C `void` type.
-    ///
-    /// This is used only for the return type of a [CIF](super::Cif),
-    /// not for an argument or struct member.
-    pub fn void() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(void)) })
+    /// Returns the `Type` that corresponds to `c_schar`.
+    pub const C_SCHAR: Self = signed_data_to_scalar_type::<core::ffi::c_schar>();
+    /// Returns the `Type` that corresponds to `c_uchar`.
+    pub const C_UCHAR: Self = signed_data_to_scalar_type::<core::ffi::c_uchar>();
+    /// Returns the `Type` that corresponds to `c_short`.
+    pub const C_SHORT: Self = signed_data_to_scalar_type::<core::ffi::c_short>();
+    /// Returns the `Type` that corresponds to `c_ushort`.
+    pub const C_USHORT: Self = signed_data_to_scalar_type::<core::ffi::c_ushort>();
+    /// Returns the `Type` that corresponds to `c_int`.
+    pub const C_INT: Self = signed_data_to_scalar_type::<core::ffi::c_int>();
+    /// Returns the `Type` that corresponds to `c_uint`.
+    pub const C_UINT: Self = signed_data_to_scalar_type::<core::ffi::c_uint>();
+    /// Returns the `Type` that corresponds to `c_long`.
+    pub const C_LONG: Self = signed_data_to_scalar_type::<core::ffi::c_long>();
+    /// Returns the `Type` that corresponds to `c_ulong`.
+    pub const C_ULONG: Self = signed_data_to_scalar_type::<core::ffi::c_ulong>();
+    /// Returns the `Type` that corresponds to `c_longlong`.
+    pub const C_LONGLONG: Self = signed_data_to_scalar_type::<core::ffi::c_longlong>();
+    /// Returns the `Type` that corresponds to `c_ulonglong`.
+    pub const C_ULONGLONG: Self = signed_data_to_scalar_type::<core::ffi::c_ulonglong>();
+
+    /// Returns the signed 8-bit numeric type.
+    #[deprecated = "Refer to `Type::I8` directly. This function will be removed in a future version."]
+    pub const fn i8() -> Self {
+        Self::I8
     }
 
     /// Returns the unsigned 8-bit numeric type.
-    pub fn u8() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(uint8)) })
-    }
-
-    /// Returns the signed 8-bit numeric type.
-    pub fn i8() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(sint8)) })
-    }
-
-    /// Returns the unsigned 16-bit numeric type.
-    pub fn u16() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(uint16)) })
+    #[deprecated = "Refer to `Type::U8` directly. This function will be removed in a future version."]
+    pub const fn u8() -> Self {
+        Self::U8
     }
 
     /// Returns the signed 16-bit numeric type.
-    pub fn i16() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(sint16)) })
+    #[deprecated = "Refer to `Type::I16` directly. This function will be removed in a future version."]
+    pub const fn i16() -> Self {
+        Self::I16
     }
 
-    /// Returns the unsigned 32-bit numeric type.
-    pub fn u32() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(uint32)) })
+    /// Returns the unsigned 16-bit numeric type.
+    #[deprecated = "Refer to `Type::U16` directly. This function will be removed in a future version."]
+    pub const fn u16() -> Self {
+        Self::U16
     }
 
     /// Returns the signed 32-bit numeric type.
-    pub fn i32() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(sint32)) })
+    #[deprecated = "Refer to `Type::I32` directly. This function will be removed in a future version."]
+    pub const fn i32() -> Self {
+        Self::I32
+    }
+
+    /// Returns the unsigned 32-bit numeric type.
+    #[deprecated = "Refer to `Type::U32` directly. This function will be removed in a future version."]
+    pub const fn u32() -> Self {
+        Self::U32
+    }
+    /// Returns the signed 64-bit numeric type.
+    #[deprecated = "Refer to `Type::I64` directly. This function will be removed in a future version."]
+    pub const fn i64() -> Self {
+        Self::I64
     }
 
     /// Returns the unsigned 64-bit numeric type.
-    pub fn u64() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(uint64)) })
+    #[deprecated = "Refer to `Type::U64` directly. This function will be removed in a future version."]
+    pub const fn u64() -> Self {
+        Self::U64
     }
 
-    /// Returns the signed 64-bit numeric type.
-    pub fn i64() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(sint64)) })
-    }
-
-    #[cfg(target_pointer_width = "16")]
-    /// Returns the C equivalent of Rust `usize` (`u16`).
-    pub fn usize() -> Self {
-        Self::u16()
-    }
-
-    #[cfg(target_pointer_width = "16")]
-    /// Returns the C equivalent of Rust `isize` (`i16`).
-    pub fn isize() -> Self {
-        Self::i16()
-    }
-
-    #[cfg(target_pointer_width = "32")]
-    /// Returns the C equivalent of Rust `usize` (`u32`).
-    pub fn usize() -> Self {
-        Self::u32()
-    }
-
-    #[cfg(target_pointer_width = "32")]
-    /// Returns the C equivalent of Rust `isize` (`i32`).
-    pub fn isize() -> Self {
-        Self::i32()
-    }
-
-    #[cfg(target_pointer_width = "64")]
-    /// Returns the C equivalent of Rust `usize` (`u64`).
-    pub fn usize() -> Self {
-        Self::u64()
-    }
-
-    #[cfg(target_pointer_width = "64")]
     /// Returns the C equivalent of Rust `isize` (`i64`).
-    pub fn isize() -> Self {
-        Self::i64()
+    #[deprecated = "Refer to `Type::Isize` directly. This function will be removed in a future version."]
+    pub const fn isize() -> Self {
+        Self::Isize
     }
 
-    /// Returns the C `signed char` type.
-    pub fn c_schar() -> Self {
-        match_size_signed!(c_schar)
-    }
-
-    /// Returns the C `unsigned char` type.
-    pub fn c_uchar() -> Self {
-        match_size_unsigned!(c_uchar)
-    }
-
-    /// Returns the C `short` type.
-    pub fn c_short() -> Self {
-        match_size_signed!(c_short)
-    }
-
-    /// Returns the C `unsigned short` type.
-    pub fn c_ushort() -> Self {
-        match_size_unsigned!(c_ushort)
-    }
-
-    /// Returns the C `int` type.
-    pub fn c_int() -> Self {
-        match_size_signed!(c_int)
-    }
-
-    /// Returns the C `unsigned int` type.
-    pub fn c_uint() -> Self {
-        match_size_unsigned!(c_uint)
-    }
-
-    /// Returns the C `long` type.
-    pub fn c_long() -> Self {
-        match_size_signed!(c_long)
-    }
-
-    /// Returns the C `unsigned long` type.
-    pub fn c_ulong() -> Self {
-        match_size_unsigned!(c_ulong)
-    }
-
-    /// Returns the C `longlong` type.
-    pub fn c_longlong() -> Self {
-        match_size_signed!(c_longlong)
-    }
-
-    /// Returns the C `unsigned longlong` type.
-    pub fn c_ulonglong() -> Self {
-        match_size_unsigned!(c_ulonglong)
-    }
-
-    /// Returns the C `float` (32-bit floating point) type.
-    pub fn f32() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(float)) })
-    }
-
-    /// Returns the C `double` (64-bit floating point) type.
-    pub fn f64() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(double)) })
+    /// Returns the C equivalent of Rust `usize` (`u64`).
+    #[deprecated = "Refer to `Type::Usize` directly. This function will be removed in a future version."]
+    pub const fn usize() -> Self {
+        Self::Usize
     }
 
     /// Returns the C `void*` type, for passing any kind of pointer.
-    pub fn pointer() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(pointer)) })
+    #[deprecated = "Refer to `Type::Pointer` directly. This function will be removed in a future version."]
+    pub const fn pointer() -> Self {
+        Self::Pointer
+    }
+
+    /// Returns the C `signed char` type.
+    #[deprecated = "Use `Type::C_SCHAR` instead. This function will be removed in a future version."]
+    pub const fn c_schar() -> Self {
+        signed_data_to_scalar_type::<core::ffi::c_schar>()
+    }
+
+    /// Returns the C `unsigned char` type.
+    #[deprecated = "Use `Type::C_UCHAR` instead. This function will be removed in a future version."]
+    pub const fn c_uchar() -> Self {
+        unsigned_data_to_scalar_type::<core::ffi::c_uchar>()
+    }
+
+    /// Returns the C `short` type.
+    #[deprecated = "Use `Type::C_SHORT` instead. This function will be removed in a future version."]
+    pub const fn c_short() -> Self {
+        signed_data_to_scalar_type::<core::ffi::c_short>()
+    }
+
+    /// Returns the C `unsigned short` type.
+    #[deprecated = "Use `Type::C_USHORT` instead. This function will be removed in a future version."]
+    pub const fn c_ushort() -> Self {
+        unsigned_data_to_scalar_type::<core::ffi::c_ushort>()
+    }
+
+    /// Returns the C `int` type.
+    #[deprecated = "Use `Type::C_INT` instead. This function will be removed in a future version."]
+    pub const fn c_int() -> Self {
+        signed_data_to_scalar_type::<core::ffi::c_int>()
+    }
+
+    /// Returns the C `unsigned int` type.
+    #[deprecated = "Use `Type::C_UINT` instead. This function will be removed in a future version."]
+    pub const fn c_uint() -> Self {
+        unsigned_data_to_scalar_type::<core::ffi::c_uint>()
+    }
+
+    /// Returns the C `long` type.
+    #[deprecated = "Use `Type::LONG` instead. This function will be removed in a future version."]
+    pub const fn c_long() -> Self {
+        signed_data_to_scalar_type::<core::ffi::c_long>()
+    }
+
+    /// Returns the C `unsigned long` type.
+    #[deprecated = "Use `Type::ULONG` instead. This function will be removed in a future version."]
+    pub const fn c_ulong() -> Self {
+        unsigned_data_to_scalar_type::<core::ffi::c_ulong>()
+    }
+
+    /// Returns the C `longlong` type.
+    #[deprecated = "Use `Type::LONGLONG` instead. This function will be removed in a future version."]
+    pub const fn c_longlong() -> Self {
+        signed_data_to_scalar_type::<core::ffi::c_longlong>()
+    }
+
+    /// Returns the C `unsigned longlong` type.
+    #[deprecated = "Use `Type::ULONGLONG` instead. This function will be removed in a future version."]
+    pub const fn c_ulonglong() -> Self {
+        unsigned_data_to_scalar_type::<core::ffi::c_ulonglong>()
+    }
+
+    /// Returns the C `float` (32-bit floating point) type.
+    #[deprecated = "Refer to `Type::F32` directly. This function will be removed in a future version."]
+    pub const fn f32() -> Self {
+        Self::F32
+    }
+
+    /// Returns the C `double` (64-bit floating point) type.
+    #[deprecated = "Refer to `Type::F64` directly. This function will be removed in a future version."]
+    pub const fn f64() -> Self {
+        Self::F64
     }
 
     /// Returns the C `long double` (extended-precision floating point) type.
-    pub fn longdouble() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(longdouble)) })
+    #[deprecated = "Refer to `Type::LongDouble` directly. This function will be removed in a future version."]
+    pub const fn longdouble() -> Self {
+        Self::LongDouble
     }
 
     /// Returns the C `_Complex float` type.
     ///
     /// This item is enabled by `#[cfg(all(feature = "complex", not(windows)))]`.
     #[cfg(all(feature = "complex", not(windows)))]
-    pub fn c32() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(complex_float)) })
+    #[deprecated = "Refer to `Type::ComplexFloat` directly. This function will be removed in a future version."]
+    pub const fn c32() -> Self {
+        Self::ComplexFloat
     }
 
     /// Returns the C `_Complex double` type.
     ///
     /// This item is enabled by `#[cfg(all(feature = "complex", not(windows)))]`.
     #[cfg(all(feature = "complex", not(windows)))]
-    pub fn c64() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(complex_double)) })
+    #[deprecated = "Refer to `Type::ComplexDouble` directly. This function will be removed in a future version."]
+    pub const fn c64() -> Self {
+        Self::ComplexDouble
     }
 
     /// Returns the C `_Complex long double` type.
     ///
     /// This item is enabled by `#[cfg(all(feature = "complex", not(windows)))]`.
     #[cfg(all(feature = "complex", not(windows)))]
-    pub fn complex_longdouble() -> Self {
-        Type(unsafe { Unique::new(addr_of_mut!(complex_longdouble)) })
+    #[deprecated = "Refer to `Type::ComplexLongDouble` directly. This function will be removed in a future version."]
+    pub const fn complex_longdouble() -> Self {
+        Self::ComplexLongDouble
     }
 
     /// Constructs a structure type whose fields have the given types.
+    ///
+    /// # Example
+    ///
+    /// Creating a `Type` for the following C structure:
+    ///
+    /// ```c
+    /// struct ForeignStruct {
+    ///     uint64_t id;
+    ///     void *ptr;
+    /// };
+    /// ```
+    ///
+    /// ```
+    /// use libffi::middle::Type;
+    ///
+    /// let ty = Type::structure([
+    ///     Type::U64,
+    ///     Type::Pointer,
+    /// ]);
+    /// ```
     pub fn structure<I>(fields: I) -> Self
     where
         I: IntoIterator<Item = Type>,
-        I::IntoIter: ExactSizeIterator<Item = Type>,
     {
-        Type(unsafe { Unique::new(ffi_type_struct_create(fields.into_iter())) })
-    }
-
-    /// Gets a raw pointer to the underlying [`low::ffi_type`].
-    ///
-    /// This method may be useful for interacting with the
-    /// [`low`](crate::low) and [`raw`](crate::raw) layers.
-    pub fn as_raw_ptr(&self) -> *mut low::ffi_type {
-        *self.0
+        Self::Structure(fields.into_iter().collect())
     }
 }
 
-impl TypeArray {
-    /// Constructs an array the given `Type`s.
-    pub fn new<I>(elements: I) -> Self
+/// Type used to manage an array of `FfiType`s for a [`Cif`].
+///
+/// This is only intended to be used to manage the array for a [`Cif`]'s
+/// argument types. The pointer this struct contains is only intended to pass on
+/// to libffi, and this crate makes no guarantees that it is safe to create
+/// references from the pointer.
+///
+/// # Usage restrictions
+///
+/// * `FfiTypeArray` should only be owned and used by **one** [`Cif`].
+/// * [`FfiTypeArray::as_ffi_ptr`] should **only** be used to store the array in
+///   a [`Cif`] so it can be used by libffi.
+/// * There are further restrictions on [`FfiType`].
+///
+/// [`Cif`]: `crate::middle::Cif`
+#[repr(transparent)]
+pub(crate) struct FfiTypeArray(*mut [FfiType]);
+
+impl FfiTypeArray {
+    /// Create a new `FfiTypeArray` from `Type`s.
+    pub fn new<I>(types: I) -> Self
     where
         I: IntoIterator<Item = Type>,
-        I::IntoIter: ExactSizeIterator<Item = Type>,
     {
-        TypeArray(unsafe { Unique::new(ffi_type_array_create(elements.into_iter())) })
+        let type_slice: Box<[FfiType]> = types.into_iter().map(|ty| FfiType::new(&ty)).collect();
+
+        let type_slice_ptr = Box::into_raw(type_slice);
+
+        Self(type_slice_ptr)
     }
 
-    /// Gets a raw pointer to the underlying C array of
-    /// [`low::ffi_type`]s.
+    /// Get the length of the slice.
     ///
-    /// The C array is null-terminated.
+    /// # Safety
     ///
-    /// This method may be useful for interacting with the
-    /// [`low`](crate::low) and [`raw`](crate::raw) layers.
-    pub fn as_raw_ptr(&self) -> *mut *mut low::ffi_type {
-        *self.0
+    /// This function creates a `&[FfiType]` reference from the `*mut [FfiType]`
+    /// pointer in `self.0`. The following rules must be followed:
+    ///
+    /// * `self.0` must be a valid, properly aligned, non-null pointer
+    /// * `self.0` must not be mutated while `len` is being called
+    pub unsafe fn len(&self) -> usize {
+        // When MSRV is increased to >= 1.79, this can be changed to
+        // `self.0.len()`. That change should make this function safe as there
+        // will no longer be a need to create a reference from a pointer.
+        #[allow(clippy::needless_borrow)]
+        unsafe {
+            (&(*self.0)).len()
+        }
+    }
+
+    /// Get a pointer to the underlying `ffi_type` array.
+    ///
+    /// Note that the pointer can only be used as long as `self` is alive. The
+    /// pointer should not be used for anything other than storing it in a
+    /// [`Cif`] which is then passed to libffi.
+    ///
+    /// [`Cif`]: `crate::middle::Cif`
+    pub fn as_ffi_ptr(&self) -> *mut *mut ffi_type {
+        unsafe { (*self.0).as_mut_ptr().cast::<*mut ffi_type>() }
+    }
+}
+
+impl Clone for FfiTypeArray {
+    fn clone(&self) -> Self {
+        // Create a new boxed slice with a clone of every `FfiType` stored in
+        // this `FfiTypeArray`. Note that `self.0` is a fat pointer that stores
+        // the number of elements in the slice, which is why we can simply
+        // iterate over `*self.0`.
+        let slice_clone: Box<[FfiType]> = unsafe { (*self.0).iter() }.cloned().collect();
+
+        let slice_clone_ptr = Box::into_raw(slice_clone);
+
+        Self(slice_clone_ptr)
+    }
+}
+
+impl Drop for FfiTypeArray {
+    fn drop(&mut self) {
+        // Convert `self.0` back to the boxed slice to deallocate the memory
+        // allocated for the slice.
+        let _drop = unsafe { Box::from_raw(self.0) };
+    }
+}
+
+impl core::fmt::Debug for FfiTypeArray {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_list().entries(unsafe { &(*self.0) }).finish()
+    }
+}
+
+/// Type used to manage `ffi_type`s used in the `middle` module.
+///
+/// `FfiType` owns and is responsible for managing the memory of its `ffi_type`.
+/// For structs `FfiType` also allocates the memory required for the
+/// `ffi_type`'s `elements` field, and is responsible for freeing it when the
+/// `FfiType` is dropped. On PowerPC, `long double`s and complex numbers are
+/// handled in the same way as structs to avoid thread safety issues.
+///
+/// # Usage restrictions
+///
+/// The following restrictions must be followed to ensure safe and sound usage
+/// of `FfiType`:
+///
+/// * `FfiType` should only be owned and used by **one** [`Cif`],
+///   [`FfiTypeArray`], or [`FfiType`].
+/// * `ffi_prep_cif` must be called from the [`Cif`] using this `FfiType` before
+///   it can be used to make function calls. It is not necessarily safe to
+///   substitute an `FfiType` with another even though they represent identical
+///   types.
+/// * [`FfiType::as_ffi_ptr`] should **only** be used to pass a pointer to C
+///   libffi functions. This crate does not guarantee that it is sound to create
+///   references from `FfiType`'s pointers.
+///   * Libffi may write to the `ffi_type` on initialization, but according to
+///     its documentation, will not perform any modifications after
+///     initialization.
+///
+/// Thread safety restrictions are based on [libffi's manual][threadsafety-url].
+///
+/// # Complex number structure
+///
+/// Complex numbers' `elements` array consists of a pointer to a `ffi_type` that
+/// defines the type of numbers stored in the complex type followed by a NULL.
+/// In Rust, the `elements` array for `complex_float` would look like this:
+///
+/// ```
+/// use libffi::low::types::float;
+/// use std::ptr::{addr_of_mut, null_mut};
+///
+/// let complex_float_elements = [unsafe { addr_of_mut!(float) }, null_mut()];
+/// ```
+///
+/// For the definition of the built-in complex types, see
+/// https://github.com/libffi/libffi/blob/v3.4.7/src/types.c#L102.
+///
+/// [threadsafety-url]: https://github.com/libffi/libffi/blob/v3.4.7/doc/libffi.texi#L949
+#[repr(transparent)]
+pub(crate) struct FfiType(*mut ffi_type);
+
+// Required as Rust 1.78 needs unsafe blocks when getting pointers to
+// `static mut`s. When MSRV is bumped to 1.82 or higher, this can be dropped in
+// favor of `&raw mut` to get the pointers.
+#[allow(unused_unsafe)]
+impl FfiType {
+    const IS_POWERPC: bool = cfg!(any(target_arch = "powerpc", target_arch = "powerpc64"));
+
+    /// Get a `FfiType` for a `void` return type.
+    ///
+    /// This needs to be a function and not a constant as `const_refs_to_static`
+    /// is not stable on Rust 1.78.
+    pub fn void() -> Self {
+        Self(unsafe { addr_of_mut!(void) })
+    }
+
+    /// Creates a new `FfiType` from a [`Type`].
+    ///
+    /// `ffi_prep_cif` must be called from the [`Cif`] using this `FfiType`
+    /// before it can be used to make function calls. It is not necessarily safe
+    /// to substitute an `FfiType` with another even though they represent
+    /// identical types.
+    ///
+    /// For basic data types provided by libffi (integers, floats, pointers), no
+    /// allocation is needed. Instead, the static `ffi_type`s exported by libffi
+    /// are used.
+    ///
+    /// On PowerPC, `long double`s and complex numbers are cloned to ensure that
+    /// there are no thread safety issues.
+    ///
+    /// For structs, a new `ffi_type` is allocated along with an array of
+    /// `ffi_type` elements.
+    pub fn new(ty: &Type) -> Self {
+        match (ty, Self::IS_POWERPC) {
+            (Type::I8, _) => Self(unsafe { addr_of_mut!(sint8) }),
+            (Type::U8, _) => Self(unsafe { addr_of_mut!(uint8) }),
+            (Type::I16, _) => Self(unsafe { addr_of_mut!(sint16) }),
+            (Type::U16, _) => Self(unsafe { addr_of_mut!(uint16) }),
+            (Type::I32, _) => Self(unsafe { addr_of_mut!(sint32) }),
+            (Type::U32, _) => Self(unsafe { addr_of_mut!(uint32) }),
+            (Type::I64, _) => Self(unsafe { addr_of_mut!(sint64) }),
+            (Type::U64, _) => Self(unsafe { addr_of_mut!(uint64) }),
+            (Type::Isize, _) => {
+                #[cfg(target_pointer_width = "16")]
+                {
+                    Self(unsafe { addr_of_mut!(sint16) })
+                }
+                #[cfg(target_pointer_width = "32")]
+                {
+                    Self(unsafe { addr_of_mut!(sint32) })
+                }
+                #[cfg(target_pointer_width = "64")]
+                {
+                    Self(unsafe { addr_of_mut!(sint64) })
+                }
+            }
+            (Type::Usize, _) => {
+                #[cfg(target_pointer_width = "16")]
+                {
+                    Self(unsafe { addr_of_mut!(uint16) })
+                }
+                #[cfg(target_pointer_width = "32")]
+                {
+                    Self(unsafe { addr_of_mut!(uint32) })
+                }
+                #[cfg(target_pointer_width = "64")]
+                {
+                    Self(unsafe { addr_of_mut!(uint64) })
+                }
+            }
+            (Type::Pointer, _) => Self(unsafe { addr_of_mut!(pointer) }),
+            (Type::F32, _) => Self(unsafe { addr_of_mut!(float) }),
+            (Type::F64, _) => Self(unsafe { addr_of_mut!(double) }),
+
+            // When not on PowerPC we can simply use libffi's `longdouble`.
+            (Type::LongDouble, false) => Self(unsafe { addr_of_mut!(longdouble) }),
+            // On PowerPC, `longdouble` is not thread safe and must be handled
+            // accordingly, with a clone for each `FfiType`.
+            (Type::LongDouble, true) => {
+                // SAFETY:
+                // `longdouble` is a type defined by libffi. It may hold
+                // incorrect values for size and alignment, but this should be
+                // fixed by `ffi_prep_cif`.
+                unsafe { Self::clone_from_ffi_type(unsafe { addr_of_mut!(longdouble) }) }
+            }
+
+            // When not on PowerPC we can simply use libffi's `complex_float`.
+            #[cfg(all(feature = "complex", not(windows)))]
+            (Type::ComplexFloat, false) => Self(unsafe { addr_of_mut!(complex_float) }),
+            // On PowerPC, `longdouble` is not thread safe. Therefore we need to
+            // handle complex types specially because they need an `elements`
+            // array that **might** contain a `longdouble`.
+            //
+            // While it is not strictly required to clone the first `elements`
+            // item for a complex float, it is done to keep things simpler and
+            // to avoid potential bugs when dropping the `FfiType`.
+            #[cfg(all(feature = "complex", not(windows)))]
+            (Type::ComplexFloat, true) => {
+                // SAFETY:
+                // `complex_float` is a type defined by libffi.
+                unsafe { Self::clone_from_ffi_type(addr_of_mut!(complex_float)) }
+            }
+
+            // When not on PowerPC we can simply use libffi's `complex_double`.
+            #[cfg(all(feature = "complex", not(windows)))]
+            (Type::ComplexDouble, false) => Self(unsafe { addr_of_mut!(complex_double) }),
+            // On PowerPC, `longdouble` is not thread safe. Therefore we need to
+            // handle complex types specially because they need an `elements`
+            // array that **might** contain a `longdouble`.
+            //
+            // While it is not strictly required to clone the first `elements`
+            // item for a complex double, it is done to keep things simpler and
+            // to avoid potential bugs when dropping the `FfiType`.
+            #[cfg(all(feature = "complex", not(windows)))]
+            (Type::ComplexDouble, true) => {
+                // SAFETY:
+                // `complex_double` is a type defined by libffi.
+                unsafe { Self::clone_from_ffi_type(addr_of_mut!(complex_double)) }
+            }
+
+            // When not on PowerPC we can simply use libffi's `complex_longdouble`.
+            #[cfg(all(feature = "complex", not(windows)))]
+            (Type::ComplexLongDouble, false) => Self(unsafe { addr_of_mut!(complex_longdouble) }),
+            // On PowerPC, `longdouble` is not thread safe. Therefore we need to
+            // handle complex types specially because they need an `elements`
+            // array that **might** contain a `longdouble`.
+            #[cfg(all(feature = "complex", not(windows)))]
+            (Type::ComplexLongDouble, true) => {
+                // SAFETY:
+                // `complex_longdouble` is a type defined by libffi. It may hold
+                // incorrect values for size and alignment, but this should be
+                // fixed by `ffi_prep_cif`.
+                unsafe { Self::clone_from_ffi_type(addr_of_mut!(longdouble)) }
+            }
+
+            (Type::Structure(items), _) => {
+                // Create `FfiType`s for every element in this struct.
+                let elements = items
+                    .iter()
+                    // Convert every `Type` to `FfiType`
+                    .map(FfiType::new)
+                    // Append a NULL pointer to the end of list so that libffi
+                    // knows there are no more elements.
+                    .chain(once(FfiType(null_mut())))
+                    .collect::<Box<[FfiType]>>();
+
+                let mut inner_type = Box::<ffi_type>::default();
+
+                // If we have not panicked so far, we *should* not panic until
+                // this function returns, in which case `FfiType`'s `Drop`
+                // implementation should take care of freeing the memory we have
+                // allocated.
+
+                inner_type.type_ = type_tag::STRUCT;
+                // Casting from `*mut [FfiType]` to `*mut *mut ffi_type` is okay
+                // here as `FfiType` is `#[repr(transparent)]` and only contains
+                // a single `*mut ffi_type`. This is therefore a conversion from
+                // `*mut [*mut ffi_type]` to `*mut *mut ffi_type`, where the
+                // outermost pointer points to the first `*mut ffi_type` in the
+                // slice.
+                //
+                // The last pointer (NULL) should prevent libffi from reading
+                // out of bounds.
+                inner_type.elements = Box::into_raw(elements).cast::<*mut ffi_type>();
+                // Size and alignment will be set by `ffi_prep_cif`.
+
+                Self(Box::into_raw(inner_type))
+            }
+        }
+    }
+
+    /// Get a pointer to the underlying `ffi_type`.
+    ///
+    /// Note that the pointer can only be used as long as `self` is alive. The
+    /// pointer should not be used for anything other than storing it in a
+    /// `Cif`, `FfiTypeArray`, or another `FfiType`.
+    pub fn as_ffi_ptr(&self) -> *mut ffi_type {
+        self.0
+    }
+
+    /// Helper function to create a new `FfiType` from a `*mut ffi_type`.
+    ///
+    /// # Safety
+    ///
+    /// The `ffi_type` must be well-formed. This function should only be called
+    /// on `ffi_type`s created by libffi or `FfiType`.
+    unsafe fn clone_from_ffi_type(ty: *mut ffi_type) -> Self {
+        let mut ty_clone = Box::new(*ty);
+
+        // If `elements` is `NULL` there is nothing more that needs to be done.
+        if ty_clone.elements.is_null() {
+            return Self(Box::into_raw(ty_clone));
+        }
+
+        // If `elements` is not `NULL` we need to clone each member of
+        // `elements` and allocate space to store the array.
+
+        let mut elements_vec: Vec<FfiType> = Vec::new();
+
+        unsafe {
+            let mut element_ptr = ty_clone.elements;
+            while !(*element_ptr).is_null() {
+                // Casting `*mut *mut ffi_type` to `*mut FfiType`. `FfiType` is
+                // `#[repr(transparent)]` with a single `*mut ffi_type` item.
+                let cloned_element = (*(element_ptr.cast::<FfiType>())).clone();
+
+                elements_vec.push(cloned_element);
+                element_ptr = element_ptr.add(1);
+            }
+        }
+
+        elements_vec.push(Self(null_mut()));
+
+        let elements = elements_vec.into_boxed_slice();
+
+        // If we have not panicked so far, we *should* not panic until this
+        // function returns, in which case `FfiType`'s `Drop` implementation
+        // should take care of freeing the memory we have allocated.
+
+        let slice_ptr = Box::into_raw(elements);
+        let elements_ptr = unsafe { (*slice_ptr).as_mut_ptr() };
+        // Casting from `*mut FfiType` to `*mut *mut ffi_type` is okay as
+        // `FfiType` is `#[repr(transparent)]` and only contains a single
+        // `*mut ffi_type`.
+        ty_clone.elements = elements_ptr.cast::<*mut ffi_type>();
+
+        Self(Box::into_raw(ty_clone))
+    }
+
+    /// Helper function to drop `Box`es owned by `self`.
+    ///
+    /// # Safety
+    ///
+    /// This function should only be called on structs on most architectures. On
+    /// PowerPC it should also be called on `long double`s and complex numbers.
+    ///
+    /// Do not call this function manually, it should only be called from
+    /// `FfiType`'s `Drop` implementation.
+    unsafe fn deallocate_boxes(&mut self) {
+        let self_ptr = self.0;
+        let self_box = unsafe { Box::from_raw(self_ptr) };
+
+        if !self_box.elements.is_null() {
+            unsafe {
+                // Initialize n_args to 1 as the while loop below does not count
+                // the last `NULL`.
+                let mut n_args = 1;
+
+                let mut element = self_box.elements;
+                while !(*element).is_null() {
+                    element = element.add(1);
+                    n_args += 1;
+                }
+
+                // Reconstruct the `Box` with the `elements` array. When it is
+                // dropped, the `FfiType`s in the array will also be dropped.
+                let _elements_box = Box::<[FfiType]>::from_raw(slice::from_raw_parts_mut(
+                    self_box.elements.cast::<FfiType>(),
+                    n_args,
+                ));
+            }
+        }
+    }
+}
+
+impl Clone for FfiType {
+    fn clone(&self) -> Self {
+        if self.0.is_null() {
+            return Self(null_mut());
+        }
+
+        // If `self.0` is not NULL, it should point to a valid `ffi_type`.
+        let self_type_tag = unsafe { (*self.0).type_ };
+
+        match (self_type_tag, Self::IS_POWERPC) {
+            (type_tag::STRUCT, _) | (type_tag::LONGDOUBLE, true) => {
+                // SAFETY:
+                // The `ffi_type` was created by `FfiType`.
+                unsafe { Self::clone_from_ffi_type(self.0) }
+            }
+
+            #[cfg(all(feature = "complex", not(windows)))]
+            (type_tag::COMPLEX, true) => {
+                // SAFETY:
+                // The `ffi_type` was created by `FfiType`.
+                unsafe { Self::clone_from_ffi_type(self.0) }
+            }
+
+            _ => {
+                // If nothing has matched no cloning is necessary
+                Self(self.0)
+            }
+        }
+    }
+}
+
+impl Drop for FfiType {
+    fn drop(&mut self) {
+        if self.0.is_null() {
+            // If `self.0` is `NULL`, there is nothing to drop.
+            return;
+        }
+
+        // If `self.0` is not `NULL`, it should point to a valid `ffi_type`.
+        let self_type_tag = unsafe { (*self.0).type_ };
+
+        match (self_type_tag, Self::IS_POWERPC) {
+            (type_tag::STRUCT, _) | (type_tag::LONGDOUBLE, true) => {
+                // SAFETY:
+                // Either a struct or a `long double` on PowerPC.
+                unsafe { self.deallocate_boxes() }
+            }
+
+            #[cfg(all(feature = "complex", not(windows)))]
+            (type_tag::COMPLEX, true) => {
+                // SAFETY:
+                // A complex on PowerPC.
+                unsafe { self.deallocate_boxes() }
+            }
+
+            _ => {
+                // If this is a type created by libffi, we should not do anything.
+            }
+        }
+    }
+}
+
+impl core::fmt::Debug for FfiType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.0.is_null() {
+            f.write_str("FfiType(NULL)")
+        } else {
+            // If `FfiType` is not NULL it should point to a valid `ffi_type`
+            unsafe { (*self.0).fmt(f) }
+        }
     }
 }
 
@@ -474,22 +833,22 @@ mod test {
 
     #[test]
     fn create_u64() {
-        Type::u64();
+        FfiType::new(&Type::U64);
     }
 
     #[test]
     fn clone_u64() {
-        let _ = Type::u64().clone().clone();
+        let _ = Type::U64.clone().clone();
     }
 
     #[test]
     fn create_struct() {
-        Type::structure(alloc::vec![Type::i64(), Type::i64(), Type::u64()]);
+        Type::structure(alloc::vec![Type::I64, Type::I64, Type::U64]);
     }
 
     #[test]
     fn clone_struct() {
-        let _ = Type::structure(alloc::vec![Type::i64(), Type::i64(), Type::u64()])
+        let _ = Type::structure(alloc::vec![Type::I64, Type::I64, Type::U64])
             .clone()
             .clone();
     }
@@ -498,10 +857,10 @@ mod test {
     #[test]
     fn verify_type_debug_behavior() {
         let ffi_type = Type::structure([
-            Type::u16(),
-            Type::f32(),
-            Type::structure([Type::i32(), Type::structure([])]),
-            Type::pointer(),
+            Type::U16,
+            Type::F32,
+            Type::structure([Type::I32, Type::structure([])]),
+            Type::Pointer,
         ]);
 
         let _string = format!("{ffi_type:?}");
@@ -509,15 +868,15 @@ mod test {
 
     #[test]
     fn verify_type_layout() {
-        let ffi_struct = Type::structure([
+        let type_struct = Type::structure([
             // First struct, containing a struct, i8, and u8
             Type::structure([
                 // Second struct, containing a i16, struct, and u16
-                Type::i16(),
+                Type::I16,
                 Type::structure([
                     // Third struct, containing a i32, u32 and struct
-                    Type::i32(),
-                    Type::u32(),
+                    Type::I32,
+                    Type::U32,
                     Type::structure([
                         // Fourth struct, only a struct
                         Type::structure([
@@ -525,17 +884,19 @@ mod test {
                         ]),
                     ]),
                 ]),
-                Type::u16(),
+                Type::U16,
             ]),
-            Type::i8(),
-            Type::u8(),
-            Type::f32(),
-            Type::f64(),
+            Type::I8,
+            Type::U8,
+            Type::F32,
+            Type::F64,
             #[cfg(all(feature = "complex", not(windows)))]
-            Type::c32(),
+            Type::ComplexFloat,
             #[cfg(all(feature = "complex", not(windows)))]
-            Type::c64(),
+            Type::ComplexDouble,
         ]);
+
+        let ffi_struct = FfiType::new(&type_struct);
 
         verify_struct_layout(&ffi_struct);
 
@@ -567,9 +928,9 @@ mod test {
     // Utility function to verify the layout of the struct created by
     // `verify_raw_type_layout` and to ensure proper memory handling when
     // cloning and dropping the `Type`.
-    fn verify_struct_layout(ty: &Type) {
+    fn verify_struct_layout(ty: &FfiType) {
         // First struct: struct, i8, u8
-        let struct_1 = unsafe { &**ty.0 };
+        let struct_1 = unsafe { &*ty.0 };
         assert_eq!(struct_1.size, 0);
         assert_eq!(struct_1.alignment, 0);
         assert_eq!(struct_1.type_, raw::FFI_TYPE_STRUCT);

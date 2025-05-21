@@ -16,9 +16,9 @@ use core::marker::PhantomData;
 use crate::low;
 pub use crate::low::{ffi_abi as FfiAbi, ffi_abi_FFI_DEFAULT_ABI, Callback, CallbackMut, CodePtr};
 
-mod util;
-
 mod types;
+pub(crate) use types::FfiType;
+use types::FfiTypeArray;
 pub use types::Type;
 
 mod builder;
@@ -73,8 +73,8 @@ pub fn arg<T>(r: &T) -> Arg {
 ///
 /// use libffi::middle::*;
 ///
-/// let args = vec![Type::f64(), Type::pointer()];
-/// let cif = Cif::new(args.into_iter(), Type::f64());
+/// let args = vec![Type::F64, Type::Pointer];
+/// let cif = Cif::new(args, Some(Type::F64));
 ///
 /// let n = unsafe { cif.call(CodePtr(add as *mut _), &[arg(&5f64), arg(&&6f64)]) };
 /// assert_eq!(11f64, n);
@@ -82,24 +82,37 @@ pub fn arg<T>(r: &T) -> Arg {
 #[derive(Debug)]
 pub struct Cif {
     cif: low::ffi_cif,
-    args: types::TypeArray,
-    result: Type,
+    args: FfiTypeArray,
+    result: FfiType,
 }
 
 // To clone a Cif we need to clone the types and then make sure the new
 // ffi_cif refers to the clones of the types.
 impl Clone for Cif {
     fn clone(&self) -> Self {
-        let mut copy = Cif {
-            cif: self.cif,
-            args: self.args.clone(),
-            result: self.result.clone(),
-        };
+        let mut cif = low::ffi_cif::default();
+        let args_clone = self.args.clone();
+        let result_clone = self.result.clone();
 
-        copy.cif.arg_types = copy.args.as_raw_ptr();
-        copy.cif.rtype = copy.result.as_raw_ptr();
+        unsafe {
+            low::prep_cif(
+                &mut cif,
+                self.cif.abi,
+                self.cif.nargs as usize,
+                result_clone.as_ffi_ptr(),
+                args_clone.as_ffi_ptr(),
+            )
+            // If `prep_cif` was previously successful using the given
+            // `cif`, `abi` and argument and result types, it should not
+            // fail.
+            .unwrap_unchecked();
+        }
 
-        copy
+        Self {
+            cif,
+            args: args_clone,
+            result: result_clone,
+        }
     }
 }
 
@@ -111,14 +124,20 @@ impl Cif {
     /// the resulting [`Cif`] retains references to them. Defaults to
     /// the platform’s default calling convention; this can be adjusted
     /// using [`Cif::set_abi`].
-    pub fn new<I>(args: I, result: Type) -> Self
+    pub fn new<I>(args: I, result: Option<Type>) -> Self
     where
         I: IntoIterator<Item = Type>,
-        I::IntoIter: ExactSizeIterator<Item = Type>,
     {
-        let args = args.into_iter();
-        let nargs = args.len();
-        let args = types::TypeArray::new(args);
+        let args = FfiTypeArray::new(args);
+        // SAFETY:
+        // `args` is properly initialized by `FfiTypeArray::new` and there are
+        // no other references to it that can be used to mutate it during the
+        // `len` function call.
+        let nargs = unsafe { args.len() };
+        let result = match result {
+            Some(result) => FfiType::new(&result),
+            None => FfiType::void(),
+        };
         let mut cif = low::ffi_cif::default();
 
         unsafe {
@@ -126,8 +145,8 @@ impl Cif {
                 &mut cif,
                 low::ffi_abi_FFI_DEFAULT_ABI,
                 nargs,
-                result.as_raw_ptr(),
-                args.as_raw_ptr(),
+                result.as_ffi_ptr(),
+                args.as_ffi_ptr(),
             )
         }
         .expect("low::prep_cif");
@@ -144,15 +163,21 @@ impl Cif {
     /// the resulting [`Cif`] retains references to them. Defaults to
     /// the platform’s default calling convention; this can be adjusted
     /// using [`Cif::set_abi`].
-    pub fn new_variadic<I>(args: I, fixed_args: usize, result: Type) -> Self
+    pub fn new_variadic<I>(args: I, fixed_args: usize, result: Option<Type>) -> Self
     where
         I: IntoIterator<Item = Type>,
-        I::IntoIter: ExactSizeIterator<Item = Type>,
     {
-        let args = args.into_iter();
-        let nargs = args.len();
-        let args = types::TypeArray::new(args);
-        let mut cif: low::ffi_cif = Default::default();
+        let args = FfiTypeArray::new(args);
+        // SAFETY:
+        // `args` is properly initialized by `FfiTypeArray::new` and there are
+        // no other references to it that can be used to mutate it during the
+        // `len` function call.
+        let nargs = unsafe { args.len() };
+        let result = match result {
+            Some(result) => FfiType::new(&result),
+            None => FfiType::void(),
+        };
+        let mut cif = low::ffi_cif::default();
 
         unsafe {
             low::prep_cif_var(
@@ -160,8 +185,8 @@ impl Cif {
                 low::ffi_abi_FFI_DEFAULT_ABI,
                 fixed_args,
                 nargs,
-                result.as_raw_ptr(),
-                args.as_raw_ptr(),
+                result.as_ffi_ptr(),
+                args.as_ffi_ptr(),
             )
         }
         .expect("low::prep_cif_var");
@@ -249,8 +274,7 @@ impl Cif {
 ///     *result = userdata(arg1, arg2);
 /// }
 ///
-/// let cif = Cif::new(vec![Type::u64(), Type::u64()].into_iter(),
-///                    Type::u64());
+/// let cif = Cif::new(vec![Type::U64, Type::U64], Some(Type::U64));
 /// let lambda = |x: u64, y: u64| x + y;
 /// let closure = Closure::new(cif, lambda_callback, &lambda);
 ///
@@ -468,7 +492,7 @@ mod test {
 
     #[test]
     fn call() {
-        let cif = Cif::new(alloc::vec![Type::i64(), Type::i64()], Type::i64());
+        let cif = Cif::new(alloc::vec![Type::I64, Type::I64], Some(Type::I64));
         let f = |m: i64, n: i64| -> i64 {
             unsafe { cif.call(CodePtr(add_it as *mut c_void), &[arg(&m), arg(&n)]) }
         };
@@ -484,7 +508,7 @@ mod test {
 
     #[test]
     fn closure() {
-        let cif = Cif::new(alloc::vec![Type::u64()], Type::u64());
+        let cif = Cif::new(alloc::vec![Type::U64], Some(Type::U64));
         let env: u64 = 5;
         let closure = Closure::new(cif, callback, &env);
 
@@ -506,7 +530,7 @@ mod test {
 
     #[test]
     fn rust_lambda() {
-        let cif = Cif::new(std::vec![Type::u64(), Type::u64()], Type::u64());
+        let cif = Cif::new(std::vec![Type::U64, Type::U64], Some(Type::U64));
         let env = |x: u64, y: u64| x + y;
         let closure = Closure::new(cif, callback2, &env);
 
@@ -533,13 +557,13 @@ mod test {
         let cif = Cif::new(
             alloc::vec![
                 Type::structure(alloc::vec![
-                    Type::structure(alloc::vec![Type::u64(), Type::u8(), Type::f64()]),
-                    Type::i8(),
-                    Type::i64(),
+                    Type::structure(alloc::vec![Type::U64, Type::U8, Type::F64]),
+                    Type::I8,
+                    Type::I64,
                 ]),
-                Type::u64(),
+                Type::U64,
             ],
-            Type::u64(),
+            Some(Type::U64),
         );
         let clone_cif = cif.clone();
 

@@ -17,8 +17,6 @@
 //! assert!((result - 5f32).abs() < 0.0001);
 //! ```
 
-use core::convert::TryInto;
-
 use crate::middle;
 pub use middle::CodePtr;
 
@@ -74,21 +72,15 @@ pub fn arg<T: super::CType>(arg: &T) -> Arg {
 /// # Safety
 /// The signature of the function pointer must match the types of the arguments and the return type.
 /// If the types do not match, we get UB.
-pub unsafe fn call<R: super::CType>(fun: CodePtr, args: &[Arg]) -> R {
+pub unsafe fn call<R: super::CRetType>(fun: CodePtr, args: &[Arg]) -> R {
     let types = args.iter().map(|arg| arg.type_.clone());
-    let cif = middle::Cif::new(types, R::reify().into_middle());
+    let cif = middle::Cif::new(types, R::get_return_type());
 
     let values = args
         .iter()
         .map(|arg| arg.value.clone())
         .collect::<alloc::vec::Vec<_>>();
-    // If `R` is a small integer type, libffi implicitly extends it to
-    // `ffi_arg` or `ffi_sarg`.  To account for this, use `R::RetType`
-    // as return type for the low-level call, and convert the result back.
-    cif.call::<R::RetType>(fun, &values)
-        .try_into()
-        .ok()
-        .unwrap()
+    cif.call::<R>(fun, &values)
 }
 
 /// Performs a dynamic call to a C function.

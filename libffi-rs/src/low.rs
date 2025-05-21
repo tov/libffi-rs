@@ -186,16 +186,43 @@ pub mod types {
 /// ```
 pub mod type_tag {
     use crate::raw;
-    use core::ffi::c_ushort;
 
-    /// Indicates a structure type.
-    pub const STRUCT: c_ushort = raw::ffi_type_enum_STRUCT;
+    /// Type tag for a `void` return type.
+    pub const VOID: u16 = raw::FFI_TYPE_VOID;
+    /// Type tag for a C `int`.
+    pub const INT: u16 = raw::FFI_TYPE_INT;
+    /// Type tag for a `f32`.
+    pub const FLOAT: u16 = raw::FFI_TYPE_FLOAT;
+    /// Type tag for a `f64`.
+    pub const DOUBLE: u16 = raw::FFI_TYPE_DOUBLE;
+    /// Type tag for a C `long double`.
+    pub const LONGDOUBLE: u16 = raw::FFI_TYPE_LONGDOUBLE;
+    /// Type tag for a `i8`.
+    pub const SINT8: u16 = raw::FFI_TYPE_SINT8;
+    /// Type tag for a `u8`.
+    pub const UINT8: u16 = raw::FFI_TYPE_UINT8;
+    /// Type tag for a `i16`.
+    pub const SINT16: u16 = raw::FFI_TYPE_SINT16;
+    /// Type tag for a `u16`.
+    pub const UINT16: u16 = raw::FFI_TYPE_UINT16;
+    /// Type tag for a `i32`.
+    pub const SINT32: u16 = raw::FFI_TYPE_SINT32;
+    /// Type tag for a `u32`.
+    pub const UINT32: u16 = raw::FFI_TYPE_UINT32;
+    /// Type tag for a `i64`.
+    pub const SINT64: u16 = raw::FFI_TYPE_SINT64;
+    /// Type tag for a `u64`.
+    pub const UINT64: u16 = raw::FFI_TYPE_UINT64;
+    /// Type tag for a custom struct.
+    pub const STRUCT: u16 = raw::FFI_TYPE_STRUCT;
+    /// Type tag for a pointer.
+    pub const POINTER: u16 = raw::FFI_TYPE_POINTER;
 
-    /// Indicates a complex number type.
+    /// Type tag for a complex number type.
     ///
     /// This item is enabled by `#[cfg(all(feature = "complex", not(windows)))]`.
     #[cfg(all(feature = "complex", not(windows)))]
-    pub const COMPLEX: c_ushort = raw::ffi_type_enum_COMPLEX;
+    pub const COMPLEX: u16 = raw::ffi_type_enum_COMPLEX;
 }
 
 /// Initalizes a CIF (Call Interface) with the given ABI

@@ -1,5 +1,5 @@
 use libffi::middle::Type;
 
 fn main() {
-    Type::structure(vec![Type::u16(), Type::u16()]);
+    Type::structure(vec![Type::U16, Type::U16]);
 }
