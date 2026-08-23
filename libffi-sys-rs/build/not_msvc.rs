@@ -75,30 +75,29 @@ pub fn configure_libffi(prefix: PathBuf, build_dir: &Path) {
 
     let target = std::env::var("TARGET").unwrap();
     let host = std::env::var("HOST").unwrap();
-    if target != host {
-        let cross_host = match target.as_str() {
-            // Autoconf uses riscv64 while Rust uses riscv64gc for the architecture
-            "riscv64gc-unknown-linux-gnu" | "riscv64a23-unknown-linux-gnu" => {
-                "riscv64-unknown-linux-gnu"
-            }
-            "riscv64gc-unknown-linux-musl" => "riscv64-unknown-linux-musl",
-            // Autoconf does not yet recognize illumos, but Solaris should be fine
-            "x86_64-unknown-illumos" => "x86_64-unknown-solaris",
-            // configure.host does not extract `ios-sim` as OS.
-            // The sources for `ios-sim` should be the same as `ios`.
-            "aarch64-apple-ios-sim" => "aarch64-apple-ios",
 
-            // MingW targets
-            "x86_64-pc-windows-gnu" | "x86_64-pc-windows-gnullvm" => "x86_64-w64-mingw32",
+    let cross_host = match target.as_str() {
+        // Autoconf uses riscv64 while Rust uses riscv64gc for the architecture
+        "riscv64gc-unknown-linux-gnu" | "riscv64a23-unknown-linux-gnu" => {
+            "riscv64-unknown-linux-gnu"
+        }
+        "riscv64gc-unknown-linux-musl" => "riscv64-unknown-linux-musl",
+        // Autoconf does not yet recognize illumos, but Solaris should be fine
+        "x86_64-unknown-illumos" => "x86_64-unknown-solaris",
+        // configure.host does not extract `ios-sim` as OS.
+        // The sources for `ios-sim` should be the same as `ios`.
+        "aarch64-apple-ios-sim" => "aarch64-apple-ios",
 
-            "i686-pc-windows-gnu" | "i686-pc-windows-gnullvm" => "i686-w64-mingw32",
+        // MingW targets
+        "x86_64-pc-windows-gnu" | "x86_64-pc-windows-gnullvm" => "x86_64-w64-mingw32",
 
-            "aarch64-pc-windows-gnullvm" => "aarch64-w64-mingw32",
-            // Everything else should be fine to pass straight through
-            other => other,
-        };
-        command.arg(format!("--host={cross_host}"));
-    }
+        "i686-pc-windows-gnu" | "i686-pc-windows-gnullvm" => "i686-w64-mingw32",
+
+        "aarch64-pc-windows-gnullvm" => "aarch64-w64-mingw32",
+        // Everything else should be fine to pass straight through
+        other => other,
+    };
+    command.arg(format!("--host={cross_host}"));
 
     let mut c_cfg = cc::Build::new();
     c_cfg
